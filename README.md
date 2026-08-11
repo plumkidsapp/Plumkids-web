@@ -16,3 +16,7 @@ Esta versión utiliza el mockup aprobado como base visual para reproducirlo de f
 - privacidad.html
 
 Los principales botones y enlaces del mockup tienen zonas interactivas superpuestas.
+
+
+## v2
+Corrección visual: las zonas interactivas ya no muestran bordes del navegador sobre los botones del mockup.
