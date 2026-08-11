@@ -1,6 +1,8 @@
-# Plumkids responsive v3
-
-- Escritorio: conserva exactamente el mockup aprobado.
-- Móvil (<=760px): usa un layout responsive dedicado, con texto y botones legibles.
-- Cloudflare Pages: framework None, build vacío, output `/`, rama main.
-- Footer actualizado a © 2026.
+# Plumkids responsive v4
+- Escritorio conserva el mockup aprobado.
+- Móvil responsive.
+- Hero móvil corregido.
+- Fichas individuales para 4 apps.
+- Flujo Probar / Comprar.
+- Checkout preparado para futura pasarela.
+- Login preparado para cuenta de padres.
