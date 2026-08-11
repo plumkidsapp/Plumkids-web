@@ -1,229 +1,182 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Plumkids: apps educativas seguras para aprender jugando.">
-  <title>Plumkids | Aprender jugando</title>
-  <style>
-    *{box-sizing:border-box}
-    html{scroll-behavior:smooth;background:#fff}
-    body{margin:0;background:#fff;font-family:Arial,Helvetica,sans-serif;color:#16133f}
-    .page{
-      position:relative;
-      width:min(100%, 941px);
-      margin:0 auto;
-      line-height:0;
-      background:#fff;
-      overflow:hidden;
-    }
-    .mockup{
-      display:block;
-      width:100%;
-      height:auto;
-      user-select:none;
-      -webkit-user-drag:none;
-    }
-    .hotspot{
-      position:absolute;
-      display:block;
-      z-index:10;
-      border:0 !important;
-      outline:0;
-      padding:0;
-      margin:0;
-      appearance:none;
-      -webkit-appearance:none;
-      box-shadow:none !important;
-      border-radius:14px;
-      background:transparent !important;
-      color:transparent;
-      cursor:pointer;
-      line-height:normal;
-    }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Plumkids: apps educativas seguras para aprender jugando.">
+<title>Plumkids | Aprender jugando</title>
+<style>
+:root{
+  --purple:#7136d4;--purple2:#8a51e9;--ink:#191544;--muted:#6f687e;
+  --line:#ebe5f5;--soft:#faf7ff;--green:#4d9c43;--pink:#ef5ca5;--yellow:#ffd45d
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#fff;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+button,a{font:inherit}
+a{text-decoration:none;color:inherit}
+.desktop{display:block;position:relative;width:min(100%,941px);margin:auto;line-height:0}
+.desktop img{display:block;width:100%;height:auto}
+.hotspot{position:absolute;z-index:5;border:0!important;padding:0;margin:0;background:transparent!important;appearance:none;-webkit-appearance:none;box-shadow:none!important;cursor:pointer;color:transparent}
+.hotspot:focus-visible{outline:3px solid rgba(113,54,212,.6);outline-offset:2px}
+.d-inicio{left:32.7%;top:1%;width:6.1%;height:2.9%}.d-apps{left:40.7%;top:1%;width:5.2%;height:2.9%}.d-planes{left:47.8%;top:1%;width:6.3%;height:2.9%}.d-como{left:56.1%;top:1%;width:10.4%;height:2.9%}
+.d-ingresar{left:72.4%;top:1%;width:8.8%;height:2.9%}.d-probar{left:82.2%;top:1%;width:11.5%;height:2.9%}
+.d-explorar{left:6.1%;top:19.3%;width:15.8%;height:2.9%}.d-demo{left:23.3%;top:19.3%;width:13.5%;height:2.9%}
+.d-try1{left:7%;top:55.3%;width:8.7%;height:2.1%}.d-buy1{left:16.3%;top:55.3%;width:8.9%;height:2.1%}
+.d-try2{left:28.6%;top:55.3%;width:8.5%;height:2.1%}.d-buy2{left:38.2%;top:55.3%;width:8.5%;height:2.1%}
+.d-try3{left:50.2%;top:55.3%;width:8.5%;height:2.1%}.d-buy3{left:59.7%;top:55.3%;width:8.7%;height:2.1%}
+.d-try4{left:72.2%;top:55.3%;width:8.4%;height:2.1%}.d-buy4{left:81.2%;top:55.3%;width:9%;height:2.1%}
+.d-plan1{left:11.4%;top:80.8%;width:17%;height:2.3%}.d-plan2{left:39.6%;top:80.8%;width:17.1%;height:2.3%}.d-plan3{left:67.4%;top:80.8%;width:17.1%;height:2.3%}
+.d-cta{left:38.5%;top:88.8%;width:20.4%;height:2%}
 
-    .hotspot::-moz-focus-inner{border:0;padding:0}
-    .hotspot{-webkit-tap-highlight-color:transparent}
+.mobile{display:none}
+.modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(26,14,54,.58);backdrop-filter:blur(5px)}
+.modal.show{display:flex}.dialog{width:min(430px,100%);background:#fff;border-radius:24px;padding:30px;text-align:center;box-shadow:0 25px 70px #0003}
+.dialog .heart{font-size:44px}.dialog h2{margin:8px 0;font-size:24px}.dialog p{color:var(--muted);line-height:1.55}
+.btn{display:inline-flex;align-items:center;justify-content:center;border-radius:12px;padding:13px 18px;font-weight:800;border:0;cursor:pointer}
+.primary{background:linear-gradient(135deg,#8246e8,#6228c4);color:#fff}.outline{background:#fff;border:1.5px solid #8045df;color:#6930ca}.green{background:#55a24a;color:#fff}.pink{background:#ef5ca5;color:#fff}.yellow{background:var(--yellow);color:#2b1c4e;border-radius:999px}
+.closeModal{margin-top:8px}
 
-    .hotspot:focus-visible{
-      outline:3px solid rgba(125,64,229,.7);
-      outline-offset:2px;
-    }
-    .anchor{
-      position:absolute;
-      left:0;
-      width:1px;
-      height:1px;
-      pointer-events:none;
-    }
-    /* Header */
-    .nav-inicio{left:32.7%;top:1.0%;width:6.1%;height:2.9%}
-    .nav-apps{left:40.7%;top:1.0%;width:5.2%;height:2.9%}
-    .nav-planes{left:47.8%;top:1.0%;width:6.3%;height:2.9%}
-    .nav-como{left:56.1%;top:1.0%;width:10.4%;height:2.9%}
-    .ingresar{left:72.4%;top:1.0%;width:8.8%;height:2.9%}
-    .probar-top{left:82.2%;top:1.0%;width:11.5%;height:2.9%}
-    /* Hero */
-    .explorar{left:6.1%;top:19.3%;width:15.8%;height:2.9%}
-    .demo{left:23.3%;top:19.3%;width:13.5%;height:2.9%}
-    /* Apps */
-    .all-apps{left:78.0%;top:38.2%;width:14.1%;height:2.0%}
-    .try1{left:7.0%;top:55.3%;width:8.7%;height:2.1%}
-    .buy1{left:16.3%;top:55.3%;width:8.9%;height:2.1%}
-    .try2{left:28.6%;top:55.3%;width:8.5%;height:2.1%}
-    .buy2{left:38.2%;top:55.3%;width:8.5%;height:2.1%}
-    .try3{left:50.2%;top:55.3%;width:8.5%;height:2.1%}
-    .buy3{left:59.7%;top:55.3%;width:8.7%;height:2.1%}
-    .try4{left:72.2%;top:55.3%;width:8.4%;height:2.1%}
-    .buy4{left:81.2%;top:55.3%;width:9.0%;height:2.1%}
-    /* Plans */
-    .plan1{left:11.4%;top:80.8%;width:17.0%;height:2.3%}
-    .plan2{left:39.6%;top:80.8%;width:17.1%;height:2.3%}
-    .plan3{left:67.4%;top:80.8%;width:17.1%;height:2.3%}
-    .cta{left:38.5%;top:88.8%;width:20.4%;height:2.0%}
-    /* Footer links */
-    .foot-apps{left:29.7%;top:92.6%;width:5.5%;height:1.3%}
-    .foot-planes{left:29.7%;top:93.7%;width:5.8%;height:1.3%}
-    .foot-como{left:29.7%;top:94.8%;width:9.0%;height:1.3%}
-    .foot-contact{left:46.0%;top:93.7%;width:8.5%;height:1.3%}
-    .foot-terms{left:46.0%;top:94.8%;width:13.0%;height:1.3%}
-    .foot-privacy{left:46.0%;top:95.9%;width:12.0%;height:1.3%}
-
-    .modal{
-      position:fixed; inset:0; z-index:100;
-      display:none; align-items:center; justify-content:center;
-      padding:20px; background:rgba(25,15,55,.55);
-      backdrop-filter:blur(5px);
-      line-height:1.45;
-    }
-    .modal.show{display:flex}
-    .dialog{
-      width:min(430px,100%);
-      background:#fff;border-radius:22px;padding:30px;text-align:center;
-      box-shadow:0 25px 70px rgba(0,0,0,.25);
-    }
-    .dialog .heart{font-size:42px}
-    .dialog h2{font-size:24px;margin:8px 0;color:#21174e}
-    .dialog p{font-size:15px;color:#666074;margin:0 0 20px}
-    .dialog button{
-      border:0;border-radius:12px;padding:12px 22px;
-      background:linear-gradient(135deg,#7d3fe8,#5d27bf);
-      color:white;font-weight:700;cursor:pointer;
-    }
-    .sr-only{
-      position:absolute!important;width:1px!important;height:1px!important;
-      padding:0!important;margin:-1px!important;overflow:hidden!important;
-      clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;
-    }
-    @media(max-width:600px){
-      body{background:#fff}
-      .page{width:100%}
-      .hotspot{border-radius:8px}
-    }
-  </style>
+@media(max-width:760px){
+  body{background:#fff}.desktop{display:none}.mobile{display:block}
+  .m-header{height:66px;position:sticky;top:0;z-index:30;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid #f0ebf8}
+  .m-wrap{width:min(100% - 28px,560px);margin:auto}
+  .m-head-inner{height:66px;display:flex;align-items:center}
+  .m-logo{display:flex;align-items:center;gap:9px;color:var(--purple);font-size:24px;font-weight:900}
+  .m-plum{width:24px;height:24px;border-radius:50%;background:linear-gradient(145deg,#914ff0,#5622b5);position:relative}
+  .m-plum:after{content:"";position:absolute;width:10px;height:6px;background:#70b65a;border-radius:10px 2px;right:-1px;top:-5px;transform:rotate(-20deg)}
+  .hamb{margin-left:auto;border:0;background:#f5efff;color:var(--purple);width:42px;height:42px;border-radius:12px;font-size:22px}
+  .m-nav{display:none;position:fixed;top:66px;left:0;right:0;background:#fff;border-bottom:1px solid var(--line);padding:10px 20px 18px;z-index:29;box-shadow:0 15px 30px #32105812}
+  .m-nav.open{display:flex;flex-direction:column}.m-nav a{padding:12px 4px;font-weight:800}
+  .m-hero{padding:38px 0 26px;background:radial-gradient(circle at 100% 35%,#eee0ff,transparent 35%),linear-gradient(135deg,#fff,#fbf6ff)}
+  .eyebrow{font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:#7b45d9;font-weight:900}
+  .m-hero h1{font-size:38px;line-height:1.04;letter-spacing:-.035em;margin:12px 0 16px}.m-hero h1 span{color:#8046df}
+  .m-hero p{font-size:16px;line-height:1.55;color:#666073;margin:0}
+  .m-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:22px 0 16px}
+  .trust{font-size:12px;font-weight:800;color:#4d4663;line-height:1.6}
+  .hero-device{display:block;width:100%;margin:24px auto 0;filter:drop-shadow(0 18px 22px rgba(52,27,90,.14))}
+  .m-benefits{padding:20px 0 8px}.benefit{border:1px solid var(--line);border-radius:18px;padding:17px;display:flex;gap:14px;align-items:center;margin-bottom:12px;box-shadow:0 7px 22px #39215a0d}
+  .benefit-icon{width:54px;height:54px;flex:0 0 54px;border-radius:50%;display:grid;place-items:center;font-size:25px}.b1{background:#eee2ff}.b2{background:#ffe7d6}.b3{background:#e3f4ca}
+  .benefit h3{margin:0 0 4px;font-size:16px}.benefit p{margin:0;font-size:13px;line-height:1.45;color:var(--muted)}
+  .m-section{padding:34px 0}.m-title{margin-bottom:20px}.m-title h2{font-size:28px;margin:5px 0 0}
+  .m-app{border:1px solid var(--line);border-radius:20px;overflow:hidden;background:#fff;margin-bottom:18px;box-shadow:0 10px 28px #39215a10}
+  .m-app-art{width:100%;display:block;aspect-ratio:1.63/1;object-fit:cover}
+  .m-app-body{padding:18px}.m-app-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .m-app h3{font-size:19px;margin:0}.age{font-size:10px;font-weight:900;padding:5px 8px;border-radius:999px;background:#f0e6ff;color:#7644d7;white-space:nowrap}
+  .age.greenage{background:#e8f6df;color:#45813a}.age.pinkage{background:#ffe5f1;color:#d94e91}
+  .m-app p{font-size:14px;color:var(--muted);line-height:1.5}.m-price{font-size:25px;color:#6830d0;font-weight:900;margin:15px 0}.m-price small{font-size:11px;color:#867f91}
+  .m-card-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .how{background:#fcfaff}.steps{display:grid;gap:12px}.step{display:grid;grid-template-columns:60px 1fr;align-items:center;gap:14px;padding:14px;border-radius:17px;background:#fff;border:1px solid var(--line)}
+  .step-icon{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:#f0e7ff;font-size:27px}.step h3{margin:0 0 4px}.step p{margin:0;color:var(--muted);font-size:13px;line-height:1.4}
+  .plans{padding-top:28px}.plan{border:1px solid #e2d6f5;border-radius:20px;padding:23px;margin-bottom:14px;position:relative}.plan.featured{border:2px solid #7c43dc;background:#fcfaff}.popular{position:absolute;right:14px;top:14px;background:#7c43dc;color:#fff;border-radius:999px;font-size:9px;padding:5px 9px;font-weight:900}
+  .plan h3{font-size:20px;margin:8px 0}.plan-price{font-size:25px;font-weight:900;color:#6730ce}.plan.club h3,.plan.club .plan-price{color:#41833a}.plan ul{list-style:none;padding:0;color:var(--muted);font-size:13px;line-height:1.9}.plan .btn{width:100%}
+  .cta{padding:10px 0 28px}.m-banner{border-radius:20px;background:linear-gradient(135deg,#8452e5,#6230c6);padding:27px 20px;text-align:center;color:#fff}.m-banner h2{font-size:25px;line-height:1.16;margin:0 0 17px}.m-banner .icons{font-size:32px;margin-bottom:8px}
+  .m-footer{background:#fbfaff;border-top:1px solid var(--line);padding:30px 0 20px}.m-footer p{font-size:13px;line-height:1.55;color:var(--muted)}.m-footer-links{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:22px 0}.m-footer-links h4{margin:0 0 9px}.m-footer-links a{display:block;font-size:13px;margin:8px 0}.copy{text-align:center;border-top:1px solid var(--line);padding-top:16px;font-size:11px;color:#857e91}
+}
+</style>
 </head>
 <body>
-  <main class="page" aria-label="Portal Plumkids">
-    <img class="mockup" src="assets/plumkids-mockup-aprobado.png"
-         alt="Página principal de Plumkids con apps educativas para niños, planes familiares y navegación.">
 
-    <span id="inicio" class="anchor" style="top:0"></span>
-    <span id="apps" class="anchor" style="top:37.2%"></span>
-    <span id="como" class="anchor" style="top:58.5%"></span>
-    <span id="planes" class="anchor" style="top:69.7%"></span>
-    <span id="contacto" class="anchor" style="top:91.5%"></span>
+<!-- Exact approved desktop version -->
+<main class="desktop" aria-label="Plumkids escritorio">
+  <img src="assets/plumkids-mockup-aprobado.png" alt="Portal Plumkids">
+  <a class="hotspot d-inicio" href="#m-inicio" aria-label="Inicio"></a>
+  <a class="hotspot d-apps" href="#m-apps" aria-label="Apps"></a>
+  <a class="hotspot d-planes" href="#m-planes" aria-label="Planes"></a>
+  <a class="hotspot d-como" href="#m-como" aria-label="Cómo funciona"></a>
+  <a class="hotspot d-ingresar" href="contacto.html" aria-label="Ingresar"></a>
+  <a class="hotspot d-probar" href="#m-apps" aria-label="Probar gratis"></a>
+  <a class="hotspot d-explorar" href="#m-apps" aria-label="Explorar apps"></a>
+  <button class="hotspot d-demo action" data-title="Demo Plumkids" data-text="Muy pronto podrás probar las apps educativas directamente desde Plumkids."></button>
+  <button class="hotspot d-try1 action" data-title="LectoAventura" data-text="La prueba gratuita estará disponible muy pronto."></button>
+  <button class="hotspot d-buy1 action" data-title="LectoAventura" data-text="El pago se habilitará cuando conectemos la pasarela."></button>
+  <button class="hotspot d-try2 action" data-title="MateAventura" data-text="La prueba gratuita estará disponible muy pronto."></button>
+  <button class="hotspot d-buy2 action" data-title="MateAventura" data-text="El pago se habilitará cuando conectemos la pasarela."></button>
+  <button class="hotspot d-try3 action" data-title="Memoria Mágica" data-text="La prueba gratuita estará disponible muy pronto."></button>
+  <button class="hotspot d-buy3 action" data-title="Memoria Mágica" data-text="El pago se habilitará cuando conectemos la pasarela."></button>
+  <button class="hotspot d-try4 action" data-title="Emociones en Juego" data-text="La prueba gratuita estará disponible muy pronto."></button>
+  <button class="hotspot d-buy4 action" data-title="Emociones en Juego" data-text="El pago se habilitará cuando conectemos la pasarela."></button>
+  <button class="hotspot d-plan1 action" data-title="Plan Individual" data-text="Muy pronto podrás contratar este plan."></button>
+  <button class="hotspot d-plan2 action" data-title="Plan Familiar" data-text="Muy pronto podrás contratar este plan."></button>
+  <button class="hotspot d-plan3 action" data-title="Club Plumkids" data-text="Muy pronto podrás contratar este plan."></button>
+  <a class="hotspot d-cta" href="#m-apps" aria-label="Comenzar ahora"></a>
+</main>
 
-    <a class="hotspot nav-inicio" href="#inicio" aria-label="Inicio"></a>
-    <a class="hotspot nav-apps" href="#apps" aria-label="Apps"></a>
-    <a class="hotspot nav-planes" href="#planes" aria-label="Planes"></a>
-    <a class="hotspot nav-como" href="#como" aria-label="Cómo funciona"></a>
-    <a class="hotspot ingresar" href="#contacto" aria-label="Ingresar"></a>
-    <a class="hotspot probar-top" href="#apps" aria-label="Probar gratis"></a>
-
-    <a class="hotspot explorar" href="#apps" aria-label="Explorar apps"></a>
-    <button class="hotspot demo action" data-title="Demo Plumkids"
-      data-text="Muy pronto podrás probar las apps educativas directamente desde Plumkids."
-      aria-label="Ver demo"></button>
-
-    <a class="hotspot all-apps" href="#apps" aria-label="Ver todas las apps"></a>
-
-    <button class="hotspot try1 action" data-title="LectoAventura"
-      data-text="La prueba gratuita de LectoAventura estará disponible muy pronto." aria-label="Probar LectoAventura"></button>
-    <button class="hotspot buy1 action" data-title="LectoAventura"
-      data-text="El pago se habilitará cuando conectemos la pasarela de pago." aria-label="Comprar LectoAventura"></button>
-
-    <button class="hotspot try2 action" data-title="MateAventura"
-      data-text="La prueba gratuita de MateAventura estará disponible muy pronto." aria-label="Probar MateAventura"></button>
-    <button class="hotspot buy2 action" data-title="MateAventura"
-      data-text="El pago se habilitará cuando conectemos la pasarela de pago." aria-label="Comprar MateAventura"></button>
-
-    <button class="hotspot try3 action" data-title="Memoria Mágica"
-      data-text="La prueba gratuita de Memoria Mágica estará disponible muy pronto." aria-label="Probar Memoria Mágica"></button>
-    <button class="hotspot buy3 action" data-title="Memoria Mágica"
-      data-text="El pago se habilitará cuando conectemos la pasarela de pago." aria-label="Comprar Memoria Mágica"></button>
-
-    <button class="hotspot try4 action" data-title="Emociones en Juego"
-      data-text="La prueba gratuita de Emociones en Juego estará disponible muy pronto." aria-label="Probar Emociones en Juego"></button>
-    <button class="hotspot buy4 action" data-title="Emociones en Juego"
-      data-text="El pago se habilitará cuando conectemos la pasarela de pago." aria-label="Comprar Emociones en Juego"></button>
-
-    <button class="hotspot plan1 action" data-title="Plan Individual"
-      data-text="Muy pronto podrás contratar el Plan Individual por $4.990 al mes." aria-label="Elegir plan Individual"></button>
-    <button class="hotspot plan2 action" data-title="Plan Familiar"
-      data-text="Muy pronto podrás contratar el Plan Familiar por $9.990 al mes." aria-label="Elegir plan Familiar"></button>
-    <button class="hotspot plan3 action" data-title="Club Plumkids"
-      data-text="Muy pronto podrás contratar Club Plumkids por $14.990 al mes." aria-label="Elegir Club Plumkids"></button>
-
-    <a class="hotspot cta" href="#apps" aria-label="Comenzar ahora"></a>
-
-    <a class="hotspot foot-apps" href="#apps" aria-label="Apps"></a>
-    <a class="hotspot foot-planes" href="#planes" aria-label="Planes"></a>
-    <a class="hotspot foot-como" href="#como" aria-label="Cómo funciona"></a>
-    <a class="hotspot foot-contact" href="contacto.html" aria-label="Contacto"></a>
-    <a class="hotspot foot-terms" href="terminos.html" aria-label="Términos y condiciones"></a>
-    <a class="hotspot foot-privacy" href="privacidad.html" aria-label="Política de privacidad"></a>
-
-    <section class="sr-only" aria-label="Información accesible de Plumkids">
-      <h1>Aprender jugando comienza en Plumkids</h1>
-      <p>Apps educativas seguras para niños, sin anuncios invasivos y pensadas para familias.</p>
-      <h2>Apps destacadas</h2>
-      <ul>
-        <li>LectoAventura, 3 a 6 años, $4.990 al mes.</li>
-        <li>MateAventura, 4 a 8 años, $4.990 al mes.</li>
-        <li>Memoria Mágica, 3 a 7 años, $4.990 al mes.</li>
-        <li>Emociones en Juego, 3 a 7 años, $4.990 al mes.</li>
-      </ul>
-    </section>
-  </main>
-
-  <div class="modal" id="modal" aria-hidden="true">
-    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <div class="heart">💜</div>
-      <h2 id="modalTitle">Plumkids</h2>
-      <p id="modalText">Esta función estará disponible muy pronto.</p>
-      <button id="closeModal">Entendido</button>
-    </div>
+<!-- Dedicated responsive mobile version -->
+<div class="mobile">
+<header class="m-header">
+  <div class="m-wrap m-head-inner">
+    <a href="#m-inicio" class="m-logo"><span class="m-plum"></span>Plumkids</a>
+    <button class="hamb" aria-label="Abrir menú">☰</button>
   </div>
+  <nav class="m-nav">
+    <a href="#m-inicio">Inicio</a><a href="#m-apps">Apps</a><a href="#m-como">Cómo funciona</a><a href="#m-planes">Planes</a><a href="contacto.html">Contacto</a>
+  </nav>
+</header>
+
+<section class="m-hero" id="m-inicio"><div class="m-wrap">
+  <span class="eyebrow">Apps educativas seguras para niños</span>
+  <h1>Aprender jugando comienza en <span>Plumkids</span></h1>
+  <p>Descubre apps y juegos educativos seguros, diseñados para estimular la curiosidad, la creatividad y el aprendizaje de tus hijos.</p>
+  <div class="m-actions"><a class="btn primary" href="#m-apps">Explorar apps</a><button class="btn outline action" data-title="Demo Plumkids" data-text="Muy pronto podrás probar las apps directamente desde Plumkids.">Ver demo ▶</button></div>
+  <div class="trust">🛡️ Seguro &nbsp;·&nbsp; Sin anuncios invasivos &nbsp;·&nbsp; Para familias</div>
+  <img class="hero-device" src="assets/hero-devices.png" alt="Apps Plumkids en diferentes dispositivos">
+</div></section>
+
+<section class="m-benefits"><div class="m-wrap">
+  <div class="benefit"><div class="benefit-icon b1">🛡️</div><div><h3>Seguro</h3><p>Entorno protegido, sin anuncios ni compras invasivas.</p></div></div>
+  <div class="benefit"><div class="benefit-icon b2">👧</div><div><h3>Apps por edades</h3><p>Contenido adecuado para cada etapa del desarrollo.</p></div></div>
+  <div class="benefit"><div class="benefit-icon b3">📊</div><div><h3>Seguimiento para padres</h3><p>Reportes de progreso para acompañar su aprendizaje.</p></div></div>
+</div></section>
+
+<section class="m-section" id="m-apps"><div class="m-wrap">
+  <div class="m-title"><span class="eyebrow">Catálogo inicial</span><h2>Apps destacadas</h2></div>
+
+  <article class="m-app"><img class="m-app-art" src="assets/app-lecto.png" alt="LectoAventura"><div class="m-app-body"><div class="m-app-head"><h3>LectoAventura</h3><span class="age">3–6 años</span></div><p>Aprende a leer jugando con historias y sonidos.</p><div class="m-price">$4.990 <small>/mes</small></div><div class="m-card-actions"><button class="btn outline action" data-title="LectoAventura" data-text="La prueba gratuita estará disponible muy pronto.">Probar</button><button class="btn primary action" data-title="LectoAventura" data-text="El pago se habilitará cuando conectemos la pasarela.">Comprar</button></div></div></article>
+
+  <article class="m-app"><img class="m-app-art" src="assets/app-mate.png" alt="MateAventura"><div class="m-app-body"><div class="m-app-head"><h3>MateAventura</h3><span class="age greenage">4–8 años</span></div><p>Matemáticas divertidas para pequeños genios.</p><div class="m-price">$4.990 <small>/mes</small></div><div class="m-card-actions"><button class="btn outline action" data-title="MateAventura" data-text="La prueba gratuita estará disponible muy pronto.">Probar</button><button class="btn green action" data-title="MateAventura" data-text="El pago se habilitará cuando conectemos la pasarela.">Comprar</button></div></div></article>
+
+  <article class="m-app"><img class="m-app-art" src="assets/app-memoria.png" alt="Memoria Mágica"><div class="m-app-body"><div class="m-app-head"><h3>Memoria Mágica</h3><span class="age">3–7 años</span></div><p>Mejora la memoria y la atención jugando.</p><div class="m-price">$4.990 <small>/mes</small></div><div class="m-card-actions"><button class="btn outline action" data-title="Memoria Mágica" data-text="La prueba gratuita estará disponible muy pronto.">Probar</button><button class="btn primary action" data-title="Memoria Mágica" data-text="El pago se habilitará cuando conectemos la pasarela.">Comprar</button></div></div></article>
+
+  <article class="m-app"><img class="m-app-art" src="assets/app-emociones.png" alt="Emociones en Juego"><div class="m-app-body"><div class="m-app-head"><h3>Emociones en Juego</h3><span class="age pinkage">3–7 años</span></div><p>Reconoce emociones y desarrolla empatía.</p><div class="m-price">$4.990 <small>/mes</small></div><div class="m-card-actions"><button class="btn outline action" data-title="Emociones en Juego" data-text="La prueba gratuita estará disponible muy pronto.">Probar</button><button class="btn pink action" data-title="Emociones en Juego" data-text="El pago se habilitará cuando conectemos la pasarela.">Comprar</button></div></div></article>
+</div></section>
+
+<section class="m-section how" id="m-como"><div class="m-wrap">
+  <div class="m-title"><span class="eyebrow">Simple para los padres</span><h2>Así funciona</h2></div>
+  <div class="steps">
+    <div class="step"><div class="step-icon">🔎</div><div><h3>1. Explora</h3><p>Descubre apps seguras y educativas.</p></div></div>
+    <div class="step"><div class="step-icon">🎮</div><div><h3>2. Prueba</h3><p>Conoce la experiencia antes de comprar.</p></div></div>
+    <div class="step"><div class="step-icon">🛒</div><div><h3>3. Compra</h3><p>Compra de forma segura y rápida en línea.</p></div></div>
+  </div>
+</div></section>
+
+<section class="m-section plans" id="m-planes"><div class="m-wrap">
+  <div class="m-title"><span class="eyebrow">Opciones flexibles</span><h2>Planes para cada familia</h2></div>
+  <article class="plan"><div>👤</div><h3>Individual</h3><div class="plan-price">$4.990 <small>/mes</small></div><ul><li>✓ Acceso a 1 app</li><li>✓ Reportes básicos</li></ul><button class="btn outline action" data-title="Plan Individual" data-text="Muy pronto podrás contratar este plan.">Elegir plan</button></article>
+  <article class="plan featured"><span class="popular">MÁS POPULAR</span><div>👥</div><h3>Familiar</h3><div class="plan-price">$9.990 <small>/mes</small></div><ul><li>✓ Acceso a hasta 5 apps</li><li>✓ Reportes avanzados</li></ul><button class="btn primary action" data-title="Plan Familiar" data-text="Muy pronto podrás contratar este plan.">Elegir plan</button></article>
+  <article class="plan club"><div>♛</div><h3>Club Plumkids</h3><div class="plan-price">$14.990 <small>/mes</small></div><ul><li>✓ Todas las apps incluidas</li><li>✓ Soporte premium 24/7</li></ul><button class="btn outline action" data-title="Club Plumkids" data-text="Muy pronto podrás contratar este plan.">Elegir plan</button></article>
+</div></section>
+
+<section class="cta"><div class="m-wrap"><div class="m-banner"><div class="icons">✈️ &nbsp;⭐&nbsp; 📖</div><h2>Dale a tus hijos una forma más inteligente de jugar</h2><a class="btn yellow" href="#m-apps">Comenzar ahora →</a></div></div></section>
+
+<footer class="m-footer"><div class="m-wrap">
+  <a href="#m-inicio" class="m-logo"><span class="m-plum"></span>Plumkids</a>
+  <p>Apps educativas seguras que inspiran, enseñan y acompañan cada etapa del crecimiento.</p>
+  <div class="m-footer-links"><div><h4>Explorar</h4><a href="#m-apps">Apps</a><a href="#m-planes">Planes</a><a href="#m-como">Cómo funciona</a></div><div><h4>Ayuda</h4><a href="contacto.html">Contacto</a><a href="terminos.html">Términos</a><a href="privacidad.html">Privacidad</a></div></div>
+  <div class="copy">© 2026 Plumkids. Todos los derechos reservados.</div>
+</div></footer>
+</div>
+
+<div class="modal" id="modal" aria-hidden="true"><div class="dialog"><div class="heart">💜</div><h2 id="modalTitle">Plumkids</h2><p id="modalText">Esta función estará disponible muy pronto.</p><button class="btn primary closeModal">Entendido</button></div></div>
 
 <script>
-  const modal = document.getElementById('modal');
-  const title = document.getElementById('modalTitle');
-  const text = document.getElementById('modalText');
-  document.querySelectorAll('.action').forEach(el => {
-    el.addEventListener('click', () => {
-      title.textContent = el.dataset.title || 'Plumkids';
-      text.textContent = el.dataset.text || 'Esta función estará disponible muy pronto.';
-      modal.classList.add('show');
-      modal.setAttribute('aria-hidden','false');
-    });
-  });
-  function closeModal(){
-    modal.classList.remove('show');
-    modal.setAttribute('aria-hidden','true');
-  }
-  document.getElementById('closeModal').addEventListener('click', closeModal);
-  modal.addEventListener('click', e => { if(e.target === modal) closeModal(); });
-  document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+const nav=document.querySelector('.m-nav'),hamb=document.querySelector('.hamb');
+hamb?.addEventListener('click',()=>nav.classList.toggle('open'));
+document.querySelectorAll('.m-nav a').forEach(a=>a.addEventListener('click',()=>nav.classList.remove('open')));
+const modal=document.getElementById('modal'),mt=document.getElementById('modalTitle'),mp=document.getElementById('modalText');
+document.querySelectorAll('.action').forEach(x=>x.addEventListener('click',()=>{mt.textContent=x.dataset.title||'Plumkids';mp.textContent=x.dataset.text||'Muy pronto.';modal.classList.add('show');modal.setAttribute('aria-hidden','false')}));
+function closeM(){modal.classList.remove('show');modal.setAttribute('aria-hidden','true')}
+document.querySelector('.closeModal').addEventListener('click',closeM);modal.addEventListener('click',e=>{if(e.target===modal)closeM()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeM()});
 </script>
 </body>
 </html>
