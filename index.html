@@ -5,199 +5,213 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Plumkids: apps educativas seguras para aprender jugando.">
   <title>Plumkids | Aprender jugando</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;background:#fff}
+    body{margin:0;background:#fff;font-family:Arial,Helvetica,sans-serif;color:#16133f}
+    .page{
+      position:relative;
+      width:min(100%, 941px);
+      margin:0 auto;
+      line-height:0;
+      background:#fff;
+      overflow:hidden;
+    }
+    .mockup{
+      display:block;
+      width:100%;
+      height:auto;
+      user-select:none;
+      -webkit-user-drag:none;
+    }
+    .hotspot{
+      position:absolute;
+      display:block;
+      z-index:10;
+      border-radius:14px;
+      background:transparent;
+      cursor:pointer;
+      line-height:normal;
+    }
+    .hotspot:focus-visible{
+      outline:3px solid rgba(125,64,229,.7);
+      outline-offset:2px;
+    }
+    .anchor{
+      position:absolute;
+      left:0;
+      width:1px;
+      height:1px;
+      pointer-events:none;
+    }
+    /* Header */
+    .nav-inicio{left:32.7%;top:1.0%;width:6.1%;height:2.9%}
+    .nav-apps{left:40.7%;top:1.0%;width:5.2%;height:2.9%}
+    .nav-planes{left:47.8%;top:1.0%;width:6.3%;height:2.9%}
+    .nav-como{left:56.1%;top:1.0%;width:10.4%;height:2.9%}
+    .ingresar{left:72.4%;top:1.0%;width:8.8%;height:2.9%}
+    .probar-top{left:82.2%;top:1.0%;width:11.5%;height:2.9%}
+    /* Hero */
+    .explorar{left:6.1%;top:19.3%;width:15.8%;height:2.9%}
+    .demo{left:23.3%;top:19.3%;width:13.5%;height:2.9%}
+    /* Apps */
+    .all-apps{left:78.0%;top:38.2%;width:14.1%;height:2.0%}
+    .try1{left:7.0%;top:55.3%;width:8.7%;height:2.1%}
+    .buy1{left:16.3%;top:55.3%;width:8.9%;height:2.1%}
+    .try2{left:28.6%;top:55.3%;width:8.5%;height:2.1%}
+    .buy2{left:38.2%;top:55.3%;width:8.5%;height:2.1%}
+    .try3{left:50.2%;top:55.3%;width:8.5%;height:2.1%}
+    .buy3{left:59.7%;top:55.3%;width:8.7%;height:2.1%}
+    .try4{left:72.2%;top:55.3%;width:8.4%;height:2.1%}
+    .buy4{left:81.2%;top:55.3%;width:9.0%;height:2.1%}
+    /* Plans */
+    .plan1{left:11.4%;top:80.8%;width:17.0%;height:2.3%}
+    .plan2{left:39.6%;top:80.8%;width:17.1%;height:2.3%}
+    .plan3{left:67.4%;top:80.8%;width:17.1%;height:2.3%}
+    .cta{left:38.5%;top:88.8%;width:20.4%;height:2.0%}
+    /* Footer links */
+    .foot-apps{left:29.7%;top:92.6%;width:5.5%;height:1.3%}
+    .foot-planes{left:29.7%;top:93.7%;width:5.8%;height:1.3%}
+    .foot-como{left:29.7%;top:94.8%;width:9.0%;height:1.3%}
+    .foot-contact{left:46.0%;top:93.7%;width:8.5%;height:1.3%}
+    .foot-terms{left:46.0%;top:94.8%;width:13.0%;height:1.3%}
+    .foot-privacy{left:46.0%;top:95.9%;width:12.0%;height:1.3%}
+
+    .modal{
+      position:fixed; inset:0; z-index:100;
+      display:none; align-items:center; justify-content:center;
+      padding:20px; background:rgba(25,15,55,.55);
+      backdrop-filter:blur(5px);
+      line-height:1.45;
+    }
+    .modal.show{display:flex}
+    .dialog{
+      width:min(430px,100%);
+      background:#fff;border-radius:22px;padding:30px;text-align:center;
+      box-shadow:0 25px 70px rgba(0,0,0,.25);
+    }
+    .dialog .heart{font-size:42px}
+    .dialog h2{font-size:24px;margin:8px 0;color:#21174e}
+    .dialog p{font-size:15px;color:#666074;margin:0 0 20px}
+    .dialog button{
+      border:0;border-radius:12px;padding:12px 22px;
+      background:linear-gradient(135deg,#7d3fe8,#5d27bf);
+      color:white;font-weight:700;cursor:pointer;
+    }
+    .sr-only{
+      position:absolute!important;width:1px!important;height:1px!important;
+      padding:0!important;margin:-1px!important;overflow:hidden!important;
+      clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;
+    }
+    @media(max-width:600px){
+      body{background:#fff}
+      .page{width:100%}
+      .hotspot{border-radius:8px}
+    }
+  </style>
 </head>
 <body>
-<header class="header">
-  <div class="container nav">
-    <a class="logo" href="#inicio"><span class="plum"></span>Plumkids</a>
-    <button class="menu" aria-label="Abrir menú">☰</button>
-    <nav>
-      <a href="#inicio">Inicio</a>
-      <a href="#apps">Apps</a>
-      <a href="#planes">Planes</a>
-      <a href="#como">Cómo funciona</a>
-    </nav>
-    <div class="actions">
-      <a class="btn ghost" href="#contacto">Ingresar</a>
-      <a class="btn primary" href="#apps">Probar gratis</a>
+  <main class="page" aria-label="Portal Plumkids">
+    <img class="mockup" src="assets/plumkids-mockup-aprobado.png"
+         alt="Página principal de Plumkids con apps educativas para niños, planes familiares y navegación.">
+
+    <span id="inicio" class="anchor" style="top:0"></span>
+    <span id="apps" class="anchor" style="top:37.2%"></span>
+    <span id="como" class="anchor" style="top:58.5%"></span>
+    <span id="planes" class="anchor" style="top:69.7%"></span>
+    <span id="contacto" class="anchor" style="top:91.5%"></span>
+
+    <a class="hotspot nav-inicio" href="#inicio" aria-label="Inicio"></a>
+    <a class="hotspot nav-apps" href="#apps" aria-label="Apps"></a>
+    <a class="hotspot nav-planes" href="#planes" aria-label="Planes"></a>
+    <a class="hotspot nav-como" href="#como" aria-label="Cómo funciona"></a>
+    <a class="hotspot ingresar" href="#contacto" aria-label="Ingresar"></a>
+    <a class="hotspot probar-top" href="#apps" aria-label="Probar gratis"></a>
+
+    <a class="hotspot explorar" href="#apps" aria-label="Explorar apps"></a>
+    <button class="hotspot demo action" data-title="Demo Plumkids"
+      data-text="Muy pronto podrás probar las apps educativas directamente desde Plumkids."
+      aria-label="Ver demo"></button>
+
+    <a class="hotspot all-apps" href="#apps" aria-label="Ver todas las apps"></a>
+
+    <button class="hotspot try1 action" data-title="LectoAventura"
+      data-text="La prueba gratuita de LectoAventura estará disponible muy pronto." aria-label="Probar LectoAventura"></button>
+    <button class="hotspot buy1 action" data-title="LectoAventura"
+      data-text="El pago se habilitará cuando conectemos la pasarela de pago." aria-label="Comprar LectoAventura"></button>
+
+    <button class="hotspot try2 action" data-title="MateAventura"
+      data-text="La prueba gratuita de MateAventura estará disponible muy pronto." aria-label="Probar MateAventura"></button>
+    <button class="hotspot buy2 action" data-title="MateAventura"
+      data-text="El pago se habilitará cuando conectemos la pasarela de pago." aria-label="Comprar MateAventura"></button>
+
+    <button class="hotspot try3 action" data-title="Memoria Mágica"
+      data-text="La prueba gratuita de Memoria Mágica estará disponible muy pronto." aria-label="Probar Memoria Mágica"></button>
+    <button class="hotspot buy3 action" data-title="Memoria Mágica"
+      data-text="El pago se habilitará cuando conectemos la pasarela de pago." aria-label="Comprar Memoria Mágica"></button>
+
+    <button class="hotspot try4 action" data-title="Emociones en Juego"
+      data-text="La prueba gratuita de Emociones en Juego estará disponible muy pronto." aria-label="Probar Emociones en Juego"></button>
+    <button class="hotspot buy4 action" data-title="Emociones en Juego"
+      data-text="El pago se habilitará cuando conectemos la pasarela de pago." aria-label="Comprar Emociones en Juego"></button>
+
+    <button class="hotspot plan1 action" data-title="Plan Individual"
+      data-text="Muy pronto podrás contratar el Plan Individual por $4.990 al mes." aria-label="Elegir plan Individual"></button>
+    <button class="hotspot plan2 action" data-title="Plan Familiar"
+      data-text="Muy pronto podrás contratar el Plan Familiar por $9.990 al mes." aria-label="Elegir plan Familiar"></button>
+    <button class="hotspot plan3 action" data-title="Club Plumkids"
+      data-text="Muy pronto podrás contratar Club Plumkids por $14.990 al mes." aria-label="Elegir Club Plumkids"></button>
+
+    <a class="hotspot cta" href="#apps" aria-label="Comenzar ahora"></a>
+
+    <a class="hotspot foot-apps" href="#apps" aria-label="Apps"></a>
+    <a class="hotspot foot-planes" href="#planes" aria-label="Planes"></a>
+    <a class="hotspot foot-como" href="#como" aria-label="Cómo funciona"></a>
+    <a class="hotspot foot-contact" href="contacto.html" aria-label="Contacto"></a>
+    <a class="hotspot foot-terms" href="terminos.html" aria-label="Términos y condiciones"></a>
+    <a class="hotspot foot-privacy" href="privacidad.html" aria-label="Política de privacidad"></a>
+
+    <section class="sr-only" aria-label="Información accesible de Plumkids">
+      <h1>Aprender jugando comienza en Plumkids</h1>
+      <p>Apps educativas seguras para niños, sin anuncios invasivos y pensadas para familias.</p>
+      <h2>Apps destacadas</h2>
+      <ul>
+        <li>LectoAventura, 3 a 6 años, $4.990 al mes.</li>
+        <li>MateAventura, 4 a 8 años, $4.990 al mes.</li>
+        <li>Memoria Mágica, 3 a 7 años, $4.990 al mes.</li>
+        <li>Emociones en Juego, 3 a 7 años, $4.990 al mes.</li>
+      </ul>
+    </section>
+  </main>
+
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="heart">💜</div>
+      <h2 id="modalTitle">Plumkids</h2>
+      <p id="modalText">Esta función estará disponible muy pronto.</p>
+      <button id="closeModal">Entendido</button>
     </div>
   </div>
-</header>
 
-<main>
-<section class="hero" id="inicio">
-  <div class="container hero-grid">
-    <div class="hero-copy">
-      <span class="eyebrow">Apps educativas seguras para niños</span>
-      <h1>Aprender jugando comienza en <em>Plumkids</em></h1>
-      <p>Descubre apps y juegos educativos diseñados para estimular la curiosidad, la creatividad y el aprendizaje de tus hijos.</p>
-      <div class="hero-actions">
-        <a class="btn primary big" href="#apps">Explorar apps →</a>
-        <button class="btn light big demo">Ver demo ▶</button>
-      </div>
-      <div class="trust">🛡️ Seguro · Sin anuncios invasivos · Para familias</div>
-    </div>
-
-    <div class="devices">
-      <div class="laptop">
-        <div class="screen math">
-          <b>MateAventura</b><small>Sumemos aventuras</small>
-          <div class="equation"><span>3</span> + <span>2</span> = <span class="ans">5</span></div>
-          <div class="dino">🦖</div>
-        </div>
-      </div>
-      <div class="tablet">
-        <div class="screen read">
-          <b>LectoAventura</b>
-          <div class="bear">🐻📖</div>
-          <div class="abc">A B C</div>
-        </div>
-      </div>
-      <div class="phone">
-        <div class="screen memory">
-          <b>Memoria<br>Mágica</b>
-          <div>⭐ 🍁<br>🌟 💜</div>
-        </div>
-      </div>
-      <div class="books">📚</div>
-    </div>
-  </div>
-</section>
-
-<section class="benefits">
-  <div class="container benefits-grid">
-    <article><div class="ico lilac">🛡️</div><div><h3>Seguro</h3><p>Entorno protegido, sin anuncios ni compras invasivas.</p></div></article>
-    <article><div class="ico peach">👧</div><div><h3>Apps por edades</h3><p>Contenido adecuado para cada etapa del desarrollo.</p></div></article>
-    <article><div class="ico green">📊</div><div><h3>Seguimiento para padres</h3><p>Reportes de progreso para acompañar el aprendizaje.</p></div></article>
-  </div>
-</section>
-
-<section class="section" id="apps">
-  <div class="container">
-    <div class="section-head">
-      <div><span class="eyebrow">Catálogo inicial</span><h2>Apps destacadas</h2></div>
-      <a href="#apps">Ver todas las apps →</a>
-    </div>
-
-    <div class="apps-grid">
-      <article class="app">
-        <div class="art reading">🐻📖<span>A<br>B<br>C</span></div>
-        <div class="body">
-          <div class="title"><h3>LectoAventura</h3><small>3–6 años</small></div>
-          <p>Aprende a leer jugando con historias y sonidos.</p>
-          <div class="price">$4.990 <small>/mes</small></div>
-          <div class="row"><button class="btn outline try">Probar</button><button class="btn primary buy" data-app="LectoAventura">Comprar</button></div>
-        </div>
-      </article>
-
-      <article class="app">
-        <div class="art maths">🦖<span>3<br>2 3</span></div>
-        <div class="body">
-          <div class="title"><h3>MateAventura</h3><small class="age-green">4–8 años</small></div>
-          <p>Matemáticas divertidas para pequeños genios.</p>
-          <div class="price">$4.990 <small>/mes</small></div>
-          <div class="row"><button class="btn outline try">Probar</button><button class="btn green-btn buy" data-app="MateAventura">Comprar</button></div>
-        </div>
-      </article>
-
-      <article class="app">
-        <div class="art mem">🧠<span>⭐<br>🌟</span></div>
-        <div class="body">
-          <div class="title"><h3>Memoria Mágica</h3><small>3–7 años</small></div>
-          <p>Mejora la memoria y la atención jugando.</p>
-          <div class="price">$4.990 <small>/mes</small></div>
-          <div class="row"><button class="btn outline try">Probar</button><button class="btn primary buy" data-app="Memoria Mágica">Comprar</button></div>
-        </div>
-      </article>
-
-      <article class="app">
-        <div class="art emotion">👦👧<span>😊<br>❤️</span></div>
-        <div class="body">
-          <div class="title"><h3>Emociones en Juego</h3><small class="age-pink">3–7 años</small></div>
-          <p>Reconoce emociones y desarrolla empatía.</p>
-          <div class="price">$4.990 <small>/mes</small></div>
-          <div class="row"><button class="btn outline try">Probar</button><button class="btn pink-btn buy" data-app="Emociones en Juego">Comprar</button></div>
-        </div>
-      </article>
-    </div>
-  </div>
-</section>
-
-<section class="how section" id="como">
-  <div class="container">
-    <div class="center"><span class="eyebrow">Simple para los padres</span><h2>Así funciona</h2></div>
-    <div class="steps">
-      <div><i>⌕</i><h3>1. Explora</h3><p>Descubre apps seguras y educativas.</p></div>
-      <b>⟶</b>
-      <div><i>🎮</i><h3>2. Prueba</h3><p>Conoce la experiencia antes de comprar.</p></div>
-      <b>⟶</b>
-      <div><i>🛒</i><h3>3. Compra</h3><p>Compra de forma segura y rápida.</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="plans section" id="planes">
-  <div class="container">
-    <div class="center"><span class="eyebrow">Opciones flexibles</span><h2>Planes para cada familia</h2></div>
-    <div class="plans-grid">
-      <article>
-        <div class="plan-icon">👤</div><h3>Individual</h3>
-        <div class="plan-price">$4.990 <small>/mes</small></div>
-        <p>✓ Acceso a 1 app<br>✓ Reportes básicos</p>
-        <a class="btn outline" href="#contacto">Elegir plan</a>
-      </article>
-      <article class="featured">
-        <span>MÁS POPULAR</span>
-        <div class="plan-icon">👥</div><h3>Familiar</h3>
-        <div class="plan-price">$9.990 <small>/mes</small></div>
-        <p>✓ Acceso a hasta 5 apps<br>✓ Reportes avanzados</p>
-        <a class="btn primary" href="#contacto">Elegir plan</a>
-      </article>
-      <article class="club">
-        <div class="plan-icon">♛</div><h3>Club Plumkids</h3>
-        <div class="plan-price">$14.990 <small>/mes</small></div>
-        <p>✓ Todas las apps incluidas<br>✓ Soporte premium</p>
-        <a class="btn green-outline" href="#contacto">Elegir plan</a>
-      </article>
-    </div>
-  </div>
-</section>
-
-<section class="cta">
-  <div class="container">
-    <div class="banner">
-      <span>✈️</span>
-      <div><h2>Dale a tus hijos una forma<br>más inteligente de jugar</h2><a class="btn yellow" href="#apps">Comenzar ahora →</a></div>
-      <span>📖</span>
-    </div>
-  </div>
-</section>
-</main>
-
-<footer id="contacto">
-  <div class="container footer-grid">
-    <div><a class="logo" href="#inicio"><span class="plum"></span>Plumkids</a><p>Apps educativas seguras que inspiran, enseñan y acompañan cada etapa del crecimiento.</p></div>
-    <div><h4>Explorar</h4><a href="#apps">Apps</a><a href="#planes">Planes</a><a href="#como">Cómo funciona</a></div>
-    <div><h4>Ayuda</h4><a href="contacto.html">Contacto</a><a href="terminos.html">Términos</a><a href="privacidad.html">Privacidad</a></div>
-    <div><h4>Síguenos</h4><div class="social">◎ f ▶ ♪</div></div>
-  </div>
-  <div class="container copyright">© 2026 Plumkids · Hecho para familias 💜</div>
-</footer>
-
-<div class="modal" id="modal">
-  <div class="backdrop"></div>
-  <div class="modal-card">
-    <button class="close" aria-label="Cerrar">×</button>
-    <div class="heart">💜</div>
-    <h2 id="modalTitle">Plumkids</h2>
-    <p id="modalText">Esta función estará disponible muy pronto.</p>
-    <button class="btn primary close2">Entendido</button>
-  </div>
-</div>
-<script src="script.js"></script>
+<script>
+  const modal = document.getElementById('modal');
+  const title = document.getElementById('modalTitle');
+  const text = document.getElementById('modalText');
+  document.querySelectorAll('.action').forEach(el => {
+    el.addEventListener('click', () => {
+      title.textContent = el.dataset.title || 'Plumkids';
+      text.textContent = el.dataset.text || 'Esta función estará disponible muy pronto.';
+      modal.classList.add('show');
+      modal.setAttribute('aria-hidden','false');
+    });
+  });
+  function closeModal(){
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden','true');
+  }
+  document.getElementById('closeModal').addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if(e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+</script>
 </body>
 </html>

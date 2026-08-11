@@ -1,17 +1,18 @@
-# Plumkids Web v1
+# Plumkids — versión visual exacta del mockup aprobado
 
-Primera versión funcional del portal Plumkids para Cloudflare Pages.
+Esta versión utiliza el mockup aprobado como base visual para reproducirlo de forma prácticamente idéntica en Cloudflare Pages.
 
-Configuración:
-- Production branch: `main`
-- Framework preset: `None`
+## Cloudflare Pages
+- Production branch: main
+- Framework preset: None
 - Build command: vacío
-- Build output directory: `/`
+- Build output directory: /
 
-Archivos:
+## Archivos
 - index.html
-- styles.css
-- script.js
-- privacidad.html
-- terminos.html
+- assets/plumkids-mockup-aprobado.png
 - contacto.html
+- terminos.html
+- privacidad.html
+
+Los principales botones y enlaces del mockup tienen zonas interactivas superpuestas.
