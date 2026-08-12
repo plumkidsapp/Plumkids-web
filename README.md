@@ -18,7 +18,7 @@
 
 ## v6 — Modelo de pago único
 - Cada app cuesta USD $4.99, una sola vez.
-- Referencia visible en Colombia: ≈ COP $15.650.
+- Referencia visible en Colombia: COP $15.900.
 - Se eliminó "/mes".
 - Se eliminó el modelo de suscripción/planes de la interfaz.
 - La sección de planes fue reemplazada por "Compra una vez".
@@ -41,3 +41,18 @@
 - Precio Colombia: COP $15.900 por app.
 - Precio internacional mostrado: USD $4.99.
 - Falta automatizar el acceso posterior a un pago aprobado.
+
+
+## v9 — Checkout corregido
+- Precio comercial Colombia: COP $15.900 por app.
+- USD $4.99 se mantiene como referencia internacional.
+- Checkout ya indica que Mercado Pago está conectado.
+- Se eliminó el texto "pendiente de conexión".
+- Se refuerza: pago único, sin suscripción ni mensualidades.
+
+
+## v10 — Comportamiento de enlaces corregido
+- Los 4 botones Comprar abren Mercado Pago en una pestaña nueva.
+- Se normalizó target="_blank" + rel="noopener noreferrer" en todos los enlaces mpago.li.
+- Checkout actualizado: COP $15.900 es el precio real en Colombia.
+- Se eliminó el mensaje de pago pendiente.
