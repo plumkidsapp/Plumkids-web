@@ -23,3 +23,21 @@
 - Se eliminó el modelo de suscripción/planes de la interfaz.
 - La sección de planes fue reemplazada por "Compra una vez".
 - Para Colombia, Mercado Pago debe configurarse como pago único / Link de pago, no como Plan de suscripción.
+
+
+## v7 — Primer pago real conectado
+- LectoAventura: botón Comprar conectado a Mercado Pago.
+- Link: https://mpago.li/12f3maq
+- Las otras tres apps continúan pendientes de crear sus links.
+- La entrega automática de acceso después del pago todavía no está implementada.
+
+
+## v8 — Los 4 pagos conectados
+- LectoAventura → https://mpago.li/1Hd4ZN5
+- MateAventura → https://mpago.li/32iDiej
+- Memoria Mágica → https://mpago.li/12f3maq
+- Emociones en Juego → https://mpago.li/1A1f9tB
+- Todos son pagos únicos.
+- Precio Colombia: COP $15.900 por app.
+- Precio internacional mostrado: USD $4.99.
+- Falta automatizar el acceso posterior a un pago aprobado.
