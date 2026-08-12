@@ -1,0 +1,1 @@
+import{json}from'../lib/auth.js';export async function onRequestGet(context){if(!context.env.DB)return json({ok:false,db:false},500);try{await context.env.DB.prepare('SELECT 1').first();return json({ok:true,db:true})}catch{return json({ok:false,db:false},500)}}

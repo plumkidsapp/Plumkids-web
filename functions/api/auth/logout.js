@@ -1,0 +1,1 @@
+import{json,getCookie,sha256,clearSessionCookie}from'../../lib/auth.js';export async function onRequestPost(context){const raw=getCookie(context.request,'plum_session');if(raw&&context.env.DB){try{await context.env.DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(await sha256(raw)).run()}catch{}}return json({ok:true},200,{'Set-Cookie':clearSessionCookie()})}

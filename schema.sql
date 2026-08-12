@@ -1,0 +1,11 @@
+PRAGMA foreign_keys = ON;
+CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY,first_name TEXT NOT NULL,last_name TEXT NOT NULL,email TEXT NOT NULL UNIQUE COLLATE NOCASE,password_hash TEXT NOT NULL,password_salt TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY,user_id TEXT NOT NULL,token_hash TEXT NOT NULL UNIQUE,expires_at TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE);
+CREATE INDEX IF NOT EXISTS idx_sessions_token_hash ON sessions(token_hash);CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
+CREATE TABLE IF NOT EXISTS children (id TEXT PRIMARY KEY,user_id TEXT NOT NULL,name TEXT NOT NULL,age INTEGER NOT NULL CHECK(age BETWEEN 2 AND 17),created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE);
+CREATE INDEX IF NOT EXISTS idx_children_user_id ON children(user_id);
+CREATE TABLE IF NOT EXISTS apps (slug TEXT PRIMARY KEY,name TEXT NOT NULL,price_cop INTEGER NOT NULL,price_usd_cents INTEGER NOT NULL,active INTEGER NOT NULL DEFAULT 1);
+INSERT OR IGNORE INTO apps(slug,name,price_cop,price_usd_cents) VALUES ('lectoaventura','LectoAventura',15900,499),('mateaventura','MateAventura',15900,499),('memoria-magica','Memoria Mágica',15900,499),('emociones-en-juego','Emociones en Juego',15900,499);
+CREATE TABLE IF NOT EXISTS entitlements (id TEXT PRIMARY KEY,user_id TEXT NOT NULL,app_slug TEXT NOT NULL,source TEXT NOT NULL DEFAULT 'purchase',source_reference TEXT,granted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,revoked_at TEXT,UNIQUE(user_id, app_slug),FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,FOREIGN KEY(app_slug) REFERENCES apps(slug));
+CREATE INDEX IF NOT EXISTS idx_entitlements_user_id ON entitlements(user_id);
+CREATE TABLE IF NOT EXISTS payments (id TEXT PRIMARY KEY,provider TEXT NOT NULL,provider_payment_id TEXT UNIQUE,user_id TEXT,app_slug TEXT,amount INTEGER,currency TEXT,status TEXT NOT NULL,payer_email TEXT,raw_payload TEXT,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(user_id) REFERENCES users(id),FOREIGN KEY(app_slug) REFERENCES apps(slug));

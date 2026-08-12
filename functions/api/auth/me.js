@@ -1,0 +1,1 @@
+import{json,currentUser}from'../../lib/auth.js';export async function onRequestGet(context){const u=await currentUser(context.request,context.env);if(!u)return json({error:'No autenticado.'},401);return json({user:{id:u.id,first_name:u.first_name,last_name:u.last_name,email:u.email}})}
