@@ -73,6 +73,59 @@ a{text-decoration:none;color:inherit}
   .cta{padding:10px 0 28px}.m-banner{border-radius:20px;background:linear-gradient(135deg,#8452e5,#6230c6);padding:27px 20px;text-align:center;color:#fff}.m-banner h2{font-size:25px;line-height:1.16;margin:0 0 17px}.m-banner .icons{font-size:32px;margin-bottom:8px}
   .m-footer{background:#fbfaff;border-top:1px solid var(--line);padding:30px 0 20px}.m-footer p{font-size:13px;line-height:1.55;color:var(--muted)}.m-footer-links{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:22px 0}.m-footer-links h4{margin:0 0 9px}.m-footer-links a{display:block;font-size:13px;margin:8px 0}.copy{text-align:center;border-top:1px solid var(--line);padding-top:16px;font-size:11px;color:#857e91}
 }
+
+.desktop-price{
+  position:absolute;
+  z-index:7;
+  pointer-events:none;
+  background:#fff;
+  color:#6b2fd1;
+  font-family:Arial,Helvetica,sans-serif;
+  font-weight:900;
+  line-height:1;
+  display:flex;
+  align-items:center;
+  white-space:nowrap;
+}
+.desktop-price small{
+  color:#777184;
+  font-weight:400;
+  font-size:.46em;
+  margin-left:5px;
+}
+.dp-app{top:53.45%;height:2.25%;font-size:18px;padding:3px 4px}
+.dp1{left:6.7%;width:15.2%}.dp2{left:28.6%;width:15.2%}.dp3{left:50.8%;width:15.2%}.dp4{left:72.3%;width:15.2%}
+.dp-plan{top:75.65%;height:2.3%;font-size:18px;padding:4px 5px}
+.dpp1{left:15.2%;width:15.5%}.dpp2{left:43.6%;width:15.5%}.dpp3{left:71.4%;width:16.2%;color:#38812f}
+@media(max-width:760px){.desktop-price{display:none}}
+
+
+.desktop-purchase{
+  position:absolute;
+  z-index:8;
+  left:5.6%;
+  top:70.7%;
+  width:88.8%;
+  height:13.3%;
+  background:#fff;
+  border:1px solid #e6ddf3;
+  border-radius:18px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-family:Arial,Helvetica,sans-serif;
+  line-height:1.25;
+  padding:18px 30px;
+}
+.desktop-purchase .ey{font-size:11px;color:#7440d4;font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px}
+.desktop-purchase h2{font-size:25px;color:#191544;margin:0 0 8px}
+.desktop-purchase p{font-size:13px;color:#6f687e;margin:0 0 15px}
+.desktop-purchase .badges{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.desktop-purchase .badges span{font-size:12px;color:#4f4864;font-weight:700}
+@media(max-width:760px){.desktop-purchase{display:none}}
+
 </style>
 </head>
 <body>
@@ -80,9 +133,13 @@ a{text-decoration:none;color:inherit}
 <!-- Exact approved desktop version -->
 <main class="desktop" aria-label="Plumkids escritorio">
   <img src="assets/plumkids-mockup-aprobado.png" alt="Portal Plumkids">
+  <div class="desktop-price dp-app dp1">USD $4.99 <small>· ≈ COP $15.650</small></div>
+  <div class="desktop-price dp-app dp2">USD $4.99 <small>· ≈ COP $15.650</small></div>
+  <div class="desktop-price dp-app dp3">USD $4.99 <small>· ≈ COP $15.650</small></div>
+  <div class="desktop-price dp-app dp4">USD $4.99 <small>· ≈ COP $15.650</small></div>
   <a class="hotspot d-inicio" href="#m-inicio" aria-label="Inicio"></a>
   <a class="hotspot d-apps" href="#m-apps" aria-label="Apps"></a>
-  <a class="hotspot d-planes" href="#m-planes" aria-label="Planes"></a>
+  <a class="hotspot d-planes" href="#m-planes" aria-label="Precios"></a>
   <a class="hotspot d-como" href="#m-como" aria-label="Cómo funciona"></a>
   <a class="hotspot d-ingresar" href="login.html" aria-label="Ingresar"></a>
   <a class="hotspot d-probar" href="#m-apps" aria-label="Probar gratis"></a>
@@ -99,7 +156,15 @@ a{text-decoration:none;color:inherit}
   <a class="hotspot d-plan1" href="checkout.html?item=plan-individual" aria-label="Elegir Plan Individual"></a>
   <a class="hotspot d-plan2" href="checkout.html?item=plan-familiar" aria-label="Elegir Plan Familiar"></a>
   <a class="hotspot d-plan3" href="checkout.html?item=club-plumkids" aria-label="Elegir Club Plumkids"></a>
-  <a class="hotspot d-cta" href="#m-apps" aria-label="Comenzar ahora"></a>
+  
+  <section class="desktop-purchase" aria-label="Compra única">
+    <div class="ey">Pago único</div>
+    <h2>Compra una app. Úsala sin mensualidades.</h2>
+    <p>Cada aplicación Plumkids se adquiere individualmente por USD $4.99.</p>
+    <div class="badges"><span>✓ Sin suscripción</span><span>✓ Pago único</span><span>✓ Acceso a la app adquirida</span></div>
+  </section>
+
+<a class="hotspot d-cta" href="#m-apps" aria-label="Comenzar ahora"></a>
 </main>
 
 <!-- Dedicated responsive mobile version -->
@@ -110,7 +175,7 @@ a{text-decoration:none;color:inherit}
     <button class="hamb" aria-label="Abrir menú">☰</button>
   </div>
   <nav class="m-nav">
-    <a href="#m-inicio">Inicio</a><a href="#m-apps">Apps</a><a href="#m-como">Cómo funciona</a><a href="#m-planes">Planes</a><a href="login.html">Ingresar</a><a href="contacto.html">Contacto</a>
+    <a href="#m-inicio">Inicio</a><a href="#m-apps">Apps</a><a href="#m-como">Cómo funciona</a><a href="#m-planes">Precios</a><a href="login.html">Ingresar</a><a href="contacto.html">Contacto</a>
   </nav>
 </header>
 
@@ -132,13 +197,13 @@ a{text-decoration:none;color:inherit}
 <section class="m-section" id="m-apps"><div class="m-wrap">
   <div class="m-title"><span class="eyebrow">Catálogo inicial</span><h2>Apps destacadas</h2></div>
 
-  <article class="m-app"><img class="m-app-art" src="assets/app-lecto.png" alt="LectoAventura"><div class="m-app-body"><div class="m-app-head"><h3>LectoAventura</h3><span class="age">3–6 años</span></div><p>Aprende a leer jugando con historias y sonidos.</p><div class="m-price">$4.990 <small>/mes</small></div><div class="m-card-actions"><a class="btn outline" href="apps/lectoaventura.html#probar">Probar</a><a class="btn primary" href="checkout.html?item=lectoaventura">Comprar</a></div></div></article>
+  <article class="m-app"><img class="m-app-art" src="assets/app-lecto.png" alt="LectoAventura"><div class="m-app-body"><div class="m-app-head"><h3>LectoAventura</h3><span class="age">3–6 años</span></div><p>Aprende a leer jugando con historias y sonidos.</p><div class="m-price">USD $4.99 <small>· ≈ COP $15.650</small></div><div class="m-card-actions"><a class="btn outline" href="apps/lectoaventura.html#probar">Probar</a><a class="btn primary" href="checkout.html?item=lectoaventura">Comprar</a></div></div></article>
 
-  <article class="m-app"><img class="m-app-art" src="assets/app-mate.png" alt="MateAventura"><div class="m-app-body"><div class="m-app-head"><h3>MateAventura</h3><span class="age greenage">4–8 años</span></div><p>Matemáticas divertidas para pequeños genios.</p><div class="m-price">$4.990 <small>/mes</small></div><div class="m-card-actions"><a class="btn outline" href="apps/mateaventura.html#probar">Probar</a><a class="btn green" href="checkout.html?item=mateaventura">Comprar</a></div></div></article>
+  <article class="m-app"><img class="m-app-art" src="assets/app-mate.png" alt="MateAventura"><div class="m-app-body"><div class="m-app-head"><h3>MateAventura</h3><span class="age greenage">4–8 años</span></div><p>Matemáticas divertidas para pequeños genios.</p><div class="m-price">USD $4.99 <small>· ≈ COP $15.650</small></div><div class="m-card-actions"><a class="btn outline" href="apps/mateaventura.html#probar">Probar</a><a class="btn green" href="checkout.html?item=mateaventura">Comprar</a></div></div></article>
 
-  <article class="m-app"><img class="m-app-art" src="assets/app-memoria.png" alt="Memoria Mágica"><div class="m-app-body"><div class="m-app-head"><h3>Memoria Mágica</h3><span class="age">3–7 años</span></div><p>Mejora la memoria y la atención jugando.</p><div class="m-price">$4.990 <small>/mes</small></div><div class="m-card-actions"><a class="btn outline" href="apps/memoria-magica.html#probar">Probar</a><a class="btn primary" href="checkout.html?item=memoria-magica">Comprar</a></div></div></article>
+  <article class="m-app"><img class="m-app-art" src="assets/app-memoria.png" alt="Memoria Mágica"><div class="m-app-body"><div class="m-app-head"><h3>Memoria Mágica</h3><span class="age">3–7 años</span></div><p>Mejora la memoria y la atención jugando.</p><div class="m-price">USD $4.99 <small>· ≈ COP $15.650</small></div><div class="m-card-actions"><a class="btn outline" href="apps/memoria-magica.html#probar">Probar</a><a class="btn primary" href="checkout.html?item=memoria-magica">Comprar</a></div></div></article>
 
-  <article class="m-app"><img class="m-app-art" src="assets/app-emociones.png" alt="Emociones en Juego"><div class="m-app-body"><div class="m-app-head"><h3>Emociones en Juego</h3><span class="age pinkage">3–7 años</span></div><p>Reconoce emociones y desarrolla empatía.</p><div class="m-price">$4.990 <small>/mes</small></div><div class="m-card-actions"><a class="btn outline" href="apps/emociones-en-juego.html#probar">Probar</a><a class="btn pink" href="checkout.html?item=emociones-en-juego">Comprar</a></div></div></article>
+  <article class="m-app"><img class="m-app-art" src="assets/app-emociones.png" alt="Emociones en Juego"><div class="m-app-body"><div class="m-app-head"><h3>Emociones en Juego</h3><span class="age pinkage">3–7 años</span></div><p>Reconoce emociones y desarrolla empatía.</p><div class="m-price">USD $4.99 <small>· ≈ COP $15.650</small></div><div class="m-card-actions"><a class="btn outline" href="apps/emociones-en-juego.html#probar">Probar</a><a class="btn pink" href="checkout.html?item=emociones-en-juego">Comprar</a></div></div></article>
 </div></section>
 
 <section class="m-section how" id="m-como"><div class="m-wrap">
@@ -150,11 +215,23 @@ a{text-decoration:none;color:inherit}
   </div>
 </div></section>
 
+
 <section class="m-section plans" id="m-planes"><div class="m-wrap">
-  <div class="m-title"><span class="eyebrow">Opciones flexibles</span><h2>Planes para cada familia</h2></div>
-  <article class="plan"><div>👤</div><h3>Individual</h3><div class="plan-price">$4.990 <small>/mes</small></div><ul><li>✓ Acceso a 1 app</li><li>✓ Reportes básicos</li></ul><a class="btn outline" href="checkout.html?item=plan-individual">Elegir plan</a></article>
-  <article class="plan featured"><span class="popular">MÁS POPULAR</span><div>👥</div><h3>Familiar</h3><div class="plan-price">$9.990 <small>/mes</small></div><ul><li>✓ Acceso a hasta 5 apps</li><li>✓ Reportes avanzados</li></ul><a class="btn primary" href="checkout.html?item=plan-familiar">Elegir plan</a></article>
-  <article class="plan club"><div>♛</div><h3>Club Plumkids</h3><div class="plan-price">$14.990 <small>/mes</small></div><ul><li>✓ Todas las apps incluidas</li><li>✓ Soporte premium 24/7</li></ul><a class="btn outline club-button" href="checkout.html?item=club-plumkids">Elegir plan</a></article>
+  <div class="m-title"><span class="eyebrow">SIN SUSCRIPCIONES</span><h2>Compra una vez</h2></div>
+  <article class="plan featured">
+    <span class="popular">PAGO ÚNICO</span>
+    <div style="font-size:28px">🔓</div>
+    <h3>Tu app, sin mensualidades</h3>
+    <div class="plan-price">USD $4.99</div>
+    <p style="margin-top:-6px;color:#6f687e;font-weight:700">≈ COP $15.650</p>
+    <ul>
+      <li>✓ Compra individual por aplicación</li>
+      <li>✓ Sin cobros mensuales</li>
+      <li>✓ Acceso a la app adquirida</li>
+      <li>✓ Compra administrada por adultos</li>
+    </ul>
+    <a class="btn primary" href="#m-apps">Elegir una app</a>
+  </article>
 </div></section>
 
 <section class="cta"><div class="m-wrap"><div class="m-banner"><div class="icons">✈️ &nbsp;⭐&nbsp; 📖</div><h2>Dale a tus hijos una forma más inteligente de jugar</h2><a class="btn yellow" href="#m-apps">Comenzar ahora →</a></div></div></section>
@@ -162,7 +239,7 @@ a{text-decoration:none;color:inherit}
 <footer class="m-footer"><div class="m-wrap">
   <a href="#m-inicio" class="m-logo"><span class="m-plum"></span>Plumkids</a>
   <p>Apps educativas seguras que inspiran, enseñan y acompañan cada etapa del crecimiento.</p>
-  <div class="m-footer-links"><div><h4>Explorar</h4><a href="#m-apps">Apps</a><a href="#m-planes">Planes</a><a href="#m-como">Cómo funciona</a></div><div><h4>Ayuda</h4><a href="contacto.html">Contacto</a><a href="terminos.html">Términos</a><a href="privacidad.html">Privacidad</a></div></div>
+  <div class="m-footer-links"><div><h4>Explorar</h4><a href="#m-apps">Apps</a><a href="#m-planes">Precios</a><a href="#m-como">Cómo funciona</a></div><div><h4>Ayuda</h4><a href="contacto.html">Contacto</a><a href="terminos.html">Términos</a><a href="privacidad.html">Privacidad</a></div></div>
   <div class="copy">© 2026 Plumkids. Todos los derechos reservados.</div>
 </div></footer>
 </div>
