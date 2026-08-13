@@ -35,3 +35,11 @@ Mercado Pago: pago aprobado → identificar cuenta → insertar `entitlements` �
 - PBKDF2 ajustado de 210.000 a 100.000 iteraciones por límite del runtime de Cloudflare.
 - El bloque completo de registro ahora captura errores de criptografía, D1 y sesión.
 - Se agregó `console.error` sin exponer contraseñas ni datos sensibles.
+
+
+## v13 — Imágenes oficiales en Mi Plumkids
+- Se eliminaron los emojis provisionales de las apps activadas.
+- LectoAventura usa `assets/app-lecto.png`.
+- MateAventura usa `assets/app-mate.png`.
+- Memoria Mágica usa `assets/app-memoria.png`.
+- Emociones en Juego usa `assets/app-emociones.png`.
