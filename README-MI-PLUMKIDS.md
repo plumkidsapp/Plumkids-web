@@ -29,3 +29,9 @@ Esta versión añade el módulo de cuentas familiares y deja lista la base para 
 
 ## Pendiente siguiente
 Mercado Pago: pago aprobado → identificar cuenta → insertar `entitlements` → la app aparece en Mis apps.
+
+
+## v12 — Corrección de autenticación
+- PBKDF2 ajustado de 210.000 a 100.000 iteraciones por límite del runtime de Cloudflare.
+- El bloque completo de registro ahora captura errores de criptografía, D1 y sesión.
+- Se agregó `console.error` sin exponer contraseñas ni datos sensibles.
