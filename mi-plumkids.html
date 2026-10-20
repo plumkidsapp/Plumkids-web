@@ -1,4 +1,9 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mi Plumkids</title><link rel="stylesheet" href="account.css"></head><body><header class="top"><div class="wrap top-in"><a class="logo" href="index.html"><span class="plum"></span>Plumkids</a><div class="top-actions"><a class="btn btn-light hide-mobile" href="index.html#apps">Explorar apps</a><button id="logoutBtn" class="btn btn-danger">Salir</button></div></div></header><main class="wrap dashboard"><div id="loading"><div class="spinner"></div></div><div id="dashboardContent" hidden><div id="accessNotice" class="notice"></div><section class="welcome"><div><span class="badge">MI PLUMKIDS</span><h1 id="welcomeName">Hola</h1><p>Administra tus apps y perfiles familiares.</p></div><a class="btn btn-primary" href="index.html#apps">Comprar otra app</a></section><div class="dashboard-grid"><section class="panel"><div class="panel-head"><h2>Mis apps</h2><span id="appCount" class="badge">0 apps</span></div><div id="appsContainer" class="apps-grid"></div></section><aside class="panel"><div class="panel-head"><h2>Niños/as</h2></div><div id="childrenContainer"></div><form id="childForm" class="inline-form"><strong>Agregar perfil</strong><div class="field"><label>Nombre</label><input name="name" maxlength="80" required></div><div class="field"><label>Edad</label><input name="age" type="number" min="2" max="17" required></div><button class="btn btn-outline full" type="submit">Agregar</button></form></aside></div></div></main><footer class="footer">© 2026 Plumkids · Mi Plumkids.</footer><script>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mi Plumkids</title><link rel="stylesheet" href="account.css"></head><body><header class="top"><div class="wrap top-in"><a class="logo" href="index.html"><span class="plum"></span>Plumkids</a><div class="top-actions"><a class="btn btn-light hide-mobile" href="index.html#apps">Explorar apps</a><button id="logoutBtn" class="btn btn-danger">Salir</button></div></div></header><main class="wrap dashboard"><div id="loading"><div class="spinner"></div></div><div id="dashboardContent" hidden><div id="accessNotice" class="notice"></div><section class="welcome"><div><span class="badge">MI PLUMKIDS</span><h1 id="welcomeName">Hola</h1><p>Administra tus apps y perfiles familiares.</p></div><a class="btn btn-primary" href="index.html#apps">Comprar otra app</a></section><div class="dashboard-grid"><section class="panel"><div class="panel-head"><h2>Mis apps</h2><span id="appCount" class="badge">0 apps</span></div><div id="appsContainer" class="apps-grid"></div></section><aside class="panel"><div class="panel-head"><h2>Niños/as</h2></div><div id="childrenContainer"></div><form id="childForm" class="inline-form"><strong>Agregar perfil</strong><div class="field"><label>Nombre</label><input name="name" maxlength="80" required></div><div class="field"><label>Edad</label><input name="age" type="number" min="2" max="17" required></div><button class="btn btn-outline full" type="submit">Agregar</button></form></aside></div>
+<section id="progressPanel" class="panel" style="margin-top:20px">
+  <div class="panel-head"><h2>Progreso de aprendizaje</h2><span class="badge">NUEVO</span></div>
+  <div id="progressSummary"><p class="muted">Aún no hay actividad registrada.</p></div>
+</section>
+</div></main><footer class="footer">© 2026 Plumkids · Mi Plumkids.</footer><script>
 const appInfo={
   'lectoaventura':{name:'LectoAventura',image:'assets/app-lecto.png',url:'play/lectoaventura.html'},
   'mateaventura':{name:'MateAventura',image:'assets/app-mate.png',url:'play/mateaventura.html'},
@@ -40,6 +45,31 @@ if(accessParams.get('access')==='required'){
   n.className='notice show error';
 }
 
-async function load(){try{const [me,ent,children]=await Promise.all([api('/api/auth/me'),api('/api/entitlements'),api('/api/children')]);document.getElementById('welcomeName').textContent=`Hola, ${me.user.first_name}`;renderApps(ent.entitlements||[]);renderChildren(children.children||[]);document.getElementById('loading').hidden=true;document.getElementById('dashboardContent').hidden=false}catch(e){console.error(e)}}
+
+function renderLearningProgress(rows){
+  const c=document.getElementById('progressSummary');
+  if(!c)return;
+  if(!rows.length){
+    c.innerHTML='<p class="muted">Aún no hay actividad registrada. Cuando un niño complete una actividad, aparecerá aquí.</p>';
+    return;
+  }
+  c.innerHTML='<div class="progress-list"></div>';
+  const list=c.querySelector('.progress-list');
+  rows.forEach(r=>{
+    const total=5;
+    const done=Math.min(total,Number(r.completed_activities)||0);
+    const pct=Math.round(done/total*100);
+    list.insertAdjacentHTML('beforeend',`
+      <div class="progress-row">
+        <div>
+          <strong>${escapeHtml(r.child_name)} · ${escapeHtml(r.app_name)}</strong>
+          <span>${done} de ${total} actividades · ${Number(r.stars)||0} estrellas · ${Number(r.total_score)||0} puntos</span>
+        </div>
+        <div class="mini-progress"><span style="width:${pct}%"></span></div>
+      </div>`);
+  });
+}
+
+async function load(){try{const [me,ent,children,learning]=await Promise.all([api('/api/auth/me'),api('/api/entitlements'),api('/api/children'),api('/api/learning/summary')]);document.getElementById('welcomeName').textContent=`Hola, ${me.user.first_name}`;renderApps(ent.entitlements||[]);renderChildren(children.children||[]);renderLearningProgress(learning.progress||[]);document.getElementById('loading').hidden=true;document.getElementById('dashboardContent').hidden=false}catch(e){console.error(e)}}
 document.getElementById('logoutBtn').addEventListener('click',async()=>{try{await fetch('/api/auth/logout',{method:'POST'})}finally{location.href='login.html'}});document.getElementById('childForm').addEventListener('submit',async(e)=>{e.preventDefault();const f=e.currentTarget;try{await api('/api/children',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:f.name.value.trim(),age:Number(f.age.value)})});f.reset();const d=await api('/api/children');renderChildren(d.children||[])}catch(err){alert(err.message)}});load();
 </script></body></html>

@@ -2,18 +2,63 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>LectoAventura | Plumkids</title>
 <link rel="stylesheet" href="../account.css">
 <style>
-.launch{width:min(900px,calc(100% - 32px));margin:34px auto 60px}
-.launch-card{display:grid;grid-template-columns:minmax(250px,.9fr) 1.1fr;gap:28px;background:#fff;border:1px solid var(--line);border-radius:24px;padding:26px;box-shadow:0 14px 40px rgba(54,30,86,.08)}
-.launch-art{width:100%;border-radius:18px;display:block}
-.launch-copy{display:flex;flex-direction:column;justify-content:center}
-.launch-copy h1{font-size:38px;margin:10px 0}
-.ready{background:#eef9ed;color:#356f2f;border-radius:12px;padding:12px 14px;font-weight:700;margin:8px 0 18px}
-.launch-actions{display:flex;gap:10px;flex-wrap:wrap}
-@media(max-width:700px){.launch-card{grid-template-columns:1fr;padding:18px}.launch-copy h1{font-size:31px}}
+:root{
+  --sky:#e9f7ff;--sun:#ffd86b;--forest:#5a9b54;--violet:#7436d8;
+  --ink:#22164b;--soft:#fbf8ff;--line:#e7ddf6;
+}
+body{background:linear-gradient(#f8fcff,#fbf8ff);min-height:100vh}
+.game-shell{width:min(1050px,calc(100% - 28px));margin:24px auto 60px}
+.game-top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.game-title{display:flex;align-items:center;gap:12px}
+.game-title img{width:64px;height:64px;object-fit:cover;border-radius:16px}
+.game-title h1{margin:0;font-size:30px}.game-title p{margin:3px 0 0;color:var(--muted);font-size:13px}
+.stats{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.stat{background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-weight:800;font-size:13px}
+.screen{display:none}.screen.active{display:block}
+.hero-card{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;background:#fff;border:1px solid var(--line);border-radius:26px;padding:28px;box-shadow:0 16px 40px rgba(64,34,105,.08)}
+.hero-copy h2{font-size:36px;margin:8px 0 12px}.hero-copy p{font-size:17px;color:var(--muted);line-height:1.6}
+.hero-art{border-radius:22px;background:linear-gradient(145deg,#efe3ff,#e7f7ff);display:grid;place-items:center;min-height:280px;font-size:100px;position:relative;overflow:hidden}
+.hero-art:after{content:"ABC";position:absolute;bottom:18px;right:22px;font-size:36px;font-weight:900;color:#7136d455}
+.child-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:18px}
+.child-option{border:2px solid var(--line);background:#fff;border-radius:18px;padding:16px;cursor:pointer;text-align:left}
+.child-option.selected{border-color:#7a3edf;background:#faf6ff;box-shadow:0 0 0 3px #7a3edf15}
+.child-avatar{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:#efe4ff;font-size:25px;margin-bottom:8px}
+.world-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.world-head h2{margin:0;font-size:28px}
+.level-path{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.level-card{border:1px solid var(--line);border-radius:20px;background:#fff;padding:16px;min-height:210px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.level-card.locked{opacity:.52;filter:grayscale(.2)}
+.level-card.done{border-color:#b6ddb0;background:#fbfff9}
+.level-number{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#efe5ff;color:#6f33ce;font-weight:900;margin-bottom:10px}
+.level-card.done .level-number{background:#e6f5e2;color:#3e7c37}
+.level-card h3{margin:0 0 6px;font-size:17px}.level-card p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}
+.level-card .stars{margin-top:auto;font-size:20px;letter-spacing:2px;padding:12px 0 8px}
+.level-card button{width:100%}
+.activity-card{background:#fff;border:1px solid var(--line);border-radius:26px;padding:26px;box-shadow:0 14px 38px rgba(61,32,103,.07)}
+.activity-meta{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:18px}
+.progressbar{height:10px;background:#eee7f7;border-radius:999px;overflow:hidden;flex:1}.progressbar>span{display:block;height:100%;background:linear-gradient(90deg,#8045e3,#a16cf1);width:0}
+.prompt{text-align:center;padding:16px 10px}.prompt h2{font-size:29px;margin:8px 0}.prompt p{color:var(--muted);margin:0}
+.sound-btn{border:0;background:#eee4ff;color:#6c31cb;width:52px;height:52px;border-radius:50%;font-size:23px;cursor:pointer}
+.answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}
+.answer{border:2px solid var(--line);background:#fff;border-radius:18px;padding:18px;min-height:96px;font-weight:900;font-size:22px;color:var(--ink);cursor:pointer;transition:.15s}
+.answer:hover{transform:translateY(-1px);border-color:#cbb3ef}
+.answer.correct{border-color:#6dad64;background:#eef9ec}.answer.wrong{border-color:#ee9f98;background:#fff1ef}
+.answer .emoji{display:block;font-size:42px;margin-bottom:6px}
+.feedback{min-height:55px;margin-top:16px;border-radius:15px;padding:14px;text-align:center;font-weight:800;display:none}
+.feedback.show{display:block}.feedback.ok{background:#eef9ed;color:#356f2f}.feedback.bad{background:#fff2f0;color:#8a1c13}
+.finish{text-align:center;background:#fff;border:1px solid var(--line);border-radius:26px;padding:34px}
+.finish .big{font-size:70px}.finish h2{font-size:34px;margin:8px 0}.finish-stars{font-size:36px;letter-spacing:5px;margin:12px}
+.row-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.parent-note{margin-top:18px;padding:14px;border-radius:16px;background:#f8f4ff;color:#5f5670;font-size:13px}
+@media(max-width:850px){.hero-card{grid-template-columns:1fr}.level-path{grid-template-columns:1fr 1fr}.hero-art{min-height:210px}}
+@media(max-width:600px){
+  .game-shell{width:min(100% - 18px,520px);margin-top:12px}.game-top{align-items:flex-start}.game-title img{width:50px;height:50px}.game-title h1{font-size:23px}.stats{gap:5px}.stat{font-size:11px;padding:6px 9px}
+  .hero-card,.activity-card{padding:18px;border-radius:20px}.hero-copy h2{font-size:30px}.level-path{grid-template-columns:1fr}.answers{grid-template-columns:1fr}.answer{min-height:76px}.prompt h2{font-size:25px}
+}
 </style>
 </head>
 <body>
@@ -22,23 +67,283 @@
 <div class="top-actions"><a class="btn btn-light" href="../mi-plumkids.html">Mi Plumkids</a></div>
 </div></header>
 
-<main class="launch">
-<section class="launch-card">
-<div><img class="launch-art" src="../assets/app-lecto.png" alt="LectoAventura"></div>
-<div class="launch-copy">
-<span class="badge">3–6 años · Lectura y comprensión</span>
-<h1>LectoAventura</h1>
-<div class="ready">✓ Acceso verificado para tu cuenta.</div>
-<p class="muted">Este es el espacio protegido donde funcionará la aplicación completa. La página pública de producto seguirá disponible para conocerla antes de comprar.</p>
-<p><strong>Siguiente etapa:</strong> niveles, actividades interactivas, puntuación y progreso del niño.</p>
-<div class="launch-actions">
-<a class="btn btn-primary" href="../mi-plumkids.html">Volver a Mis apps</a>
-<a class="btn btn-outline" href="../apps/lectoaventura.html">Ver ficha de la app</a>
+<main class="game-shell">
+<div class="game-top">
+  <div class="game-title">
+    <img src="../assets/app-lecto.png" alt="LectoAventura">
+    <div><h1>LectoAventura</h1><p>Primer mundo · Letras y sonidos</p></div>
+  </div>
+  <div class="stats">
+    <span class="stat" id="childStat">👤 Perfil</span>
+    <span class="stat" id="starStat">⭐ 0</span>
+    <span class="stat" id="scoreStat">🏆 0</span>
+  </div>
 </div>
-</div>
+
+<section id="profileScreen" class="screen active">
+  <div class="hero-card">
+    <div class="hero-copy">
+      <span class="badge">ANTES DE JUGAR</span>
+      <h2>¿Quién va a vivir la aventura?</h2>
+      <p>Elige el perfil infantil. El avance se guardará para ese niño o niña.</p>
+      <div id="childGrid" class="child-grid"></div>
+      <div class="row-actions" style="justify-content:flex-start">
+        <button id="continueProfile" class="btn btn-primary" disabled>Continuar</button>
+        <a class="btn btn-outline" href="../mi-plumkids.html">Administrar perfiles</a>
+      </div>
+    </div>
+    <div class="hero-art">🦁📚</div>
+  </div>
+</section>
+
+<section id="mapScreen" class="screen">
+  <div class="world-head">
+    <div><span class="badge">MUNDO 1</span><h2>El Bosque de las Letras</h2></div>
+    <button id="changeChild" class="btn btn-light">Cambiar perfil</button>
+  </div>
+  <div id="levelPath" class="level-path"></div>
+  <div class="parent-note">💡 El progreso se guarda automáticamente en la cuenta familiar. Cada actividad completada puede otorgar hasta 3 estrellas.</div>
+</section>
+
+<section id="activityScreen" class="screen">
+  <div class="activity-card">
+    <div class="activity-meta">
+      <button id="backMap" class="btn btn-light">← Mapa</button>
+      <div class="progressbar"><span id="questionProgress"></span></div>
+      <strong id="questionCount">1/5</strong>
+    </div>
+    <div class="prompt">
+      <button id="speakBtn" class="sound-btn" aria-label="Escuchar instrucción">🔊</button>
+      <h2 id="promptTitle">Pregunta</h2>
+      <p id="promptHint"></p>
+    </div>
+    <div id="answers" class="answers"></div>
+    <div id="feedback" class="feedback"></div>
+  </div>
+</section>
+
+<section id="finishScreen" class="screen">
+  <div class="finish">
+    <div class="big" id="finishIcon">🎉</div>
+    <span class="badge">ACTIVIDAD COMPLETADA</span>
+    <h2 id="finishTitle">¡Muy bien!</h2>
+    <p id="finishText" class="muted"></p>
+    <div id="finishStars" class="finish-stars">⭐⭐⭐</div>
+    <h3 id="finishScore">0 puntos</h3>
+    <div class="row-actions">
+      <button id="nextActivity" class="btn btn-primary">Siguiente actividad</button>
+      <button id="finishMap" class="btn btn-outline">Volver al mapa</button>
+    </div>
+  </div>
 </section>
 </main>
 
-<footer class="footer">© 2026 Plumkids · Área protegida.</footer>
+<footer class="footer">© 2026 Plumkids · LectoAventura.</footer>
+
+<script>
+const activities=[
+  {
+    id:'L1-A1',title:'La letra A',subtitle:'Reconoce la letra A',icon:'🍎',
+    questions:[
+      {say:'¿Cuál es la letra A?',title:'¿Cuál es la letra A?',hint:'Toca la letra correcta.',answers:['A','M','S','P'],correct:'A'},
+      {say:'¿Cuál palabra comienza con A de avión?',title:'¿Qué palabra empieza con A?',hint:'Busca el dibujo correcto.',answers:[['✈️','Avión'],['🐻','Oso'],['🌞','Sol'],['🍞','Pan']],correct:'Avión'},
+      {say:'Encuentra la a minúscula',title:'Encuentra la a minúscula',hint:'Mayúscula y minúscula son parte de la misma familia.',answers:['e','a','o','u'],correct:'a'},
+      {say:'¿Cuál palabra empieza con A?',title:'¿Cuál empieza con A?',hint:'Piensa en el primer sonido.',answers:[['🐝','Abeja'],['🐭','Ratón'],['🌙','Luna'],['🐟','Pez']],correct:'Abeja'},
+      {say:'Completa la familia de la letra A',title:'A y ...',hint:'Elige su versión minúscula.',answers:['m','s','a','p'],correct:'a'}
+    ]
+  },
+  {
+    id:'L1-A2',title:'La letra M',subtitle:'Reconoce M y su sonido',icon:'🐒',
+    questions:[
+      {say:'¿Cuál es la letra M?',title:'¿Cuál es la letra M?',hint:'Toca la letra correcta.',answers:['N','M','A','L'],correct:'M'},
+      {say:'¿Qué palabra empieza con M?',title:'¿Qué empieza con M?',hint:'Escucha el sonido mmm.',answers:[['🐒','Mono'],['🦁','León'],['🐘','Elefante'],['🐻','Oso']],correct:'Mono'},
+      {say:'Encuentra la m minúscula',title:'Encuentra la m minúscula',hint:'Busca la pareja de M.',answers:['n','m','w','u'],correct:'m'},
+      {say:'¿Qué palabra empieza con M?',title:'¿Cuál empieza con M?',hint:'Piensa en el primer sonido.',answers:[['🍎','Manzana'],['🍐','Pera'],['🍊','Naranja'],['🍇','Uva']],correct:'Manzana'},
+      {say:'Completa la familia de la letra M',title:'M y ...',hint:'Elige su versión minúscula.',answers:['a','m','n','l'],correct:'m'}
+    ]
+  },
+  {
+    id:'L1-A3',title:'La letra S',subtitle:'Escucha y encuentra la S',icon:'☀️',
+    questions:[
+      {say:'¿Cuál es la letra S?',title:'¿Cuál es la letra S?',hint:'Toca la letra correcta.',answers:['C','S','Z','M'],correct:'S'},
+      {say:'¿Qué palabra empieza con S?',title:'¿Qué empieza con S?',hint:'Escucha sss.',answers:[['☀️','Sol'],['🐱','Gato'],['🏠','Casa'],['🌳','Árbol']],correct:'Sol'},
+      {say:'Encuentra la s minúscula',title:'Encuentra la s minúscula',hint:'Busca la pareja de S.',answers:['c','z','s','m'],correct:'s'},
+      {say:'¿Qué palabra empieza con S?',title:'¿Cuál empieza con S?',hint:'Piensa en el primer sonido.',answers:[['🐸','Sapo'],['🐶','Perro'],['🐰','Conejo'],['🐦','Ave']],correct:'Sapo'},
+      {say:'Completa la familia de la letra S',title:'S y ...',hint:'Elige su versión minúscula.',answers:['s','m','a','l'],correct:'s'}
+    ]
+  },
+  {
+    id:'L1-A4',title:'Sonido inicial',subtitle:'A, M o S',icon:'👂',
+    questions:[
+      {say:'¿Con qué letra empieza avión?',title:'Avión empieza con...',hint:'A, M o S',answers:['A','M','S'],correct:'A'},
+      {say:'¿Con qué letra empieza mono?',title:'Mono empieza con...',hint:'A, M o S',answers:['S','A','M'],correct:'M'},
+      {say:'¿Con qué letra empieza sol?',title:'Sol empieza con...',hint:'A, M o S',answers:['M','S','A'],correct:'S'},
+      {say:'¿Con qué letra empieza abeja?',title:'Abeja empieza con...',hint:'A, M o S',answers:['S','M','A'],correct:'A'},
+      {say:'¿Con qué letra empieza sapo?',title:'Sapo empieza con...',hint:'A, M o S',answers:['A','S','M'],correct:'S'}
+    ]
+  },
+  {
+    id:'L1-A5',title:'Reto del bosque',subtitle:'Repasa lo aprendido',icon:'🏆',
+    questions:[
+      {say:'Elige la pareja correcta de A',title:'A va con...',hint:'Busca su minúscula.',answers:['m','a','s','o'],correct:'a'},
+      {say:'Elige la palabra que empieza con M',title:'¿Cuál empieza con M?',hint:'Escucha el primer sonido.',answers:[['🌙','Mesa'],['☀️','Sol'],['🐝','Abeja'],['🐻','Oso']],correct:'Mesa'},
+      {say:'Elige la palabra que empieza con S',title:'¿Cuál empieza con S?',hint:'Escucha sss.',answers:[['🐸','Sapo'],['🍎','Manzana'],['✈️','Avión'],['🐒','Mono']],correct:'Sapo'},
+      {say:'¿Cuál de estas es una letra mayúscula?',title:'Encuentra la mayúscula',hint:'Mira su tamaño y forma.',answers:['a','m','S','s'],correct:'S'},
+      {say:'¿Qué letra falta en la familia M y m?',title:'M y ...',hint:'Elige la minúscula.',answers:['m','a','s','u'],correct:'m'}
+    ]
+  }
+];
+
+let children=[],selectedChild=null,progress=null,attemptMap={};
+let currentActivity=null,qIndex=0,correctCount=0,activityStarted=0,answerLocked=false;
+
+const $=s=>document.querySelector(s);
+function showScreen(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$('#'+id).classList.add('active')}
+function safe(v){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+async function api(url,opts={}){
+  const r=await fetch(url,{credentials:'same-origin',...opts});
+  if(r.status===401){location.href='../login.html?next='+encodeURIComponent(location.pathname);throw new Error('Sesión expirada')}
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(d.error||'Error');
+  return d;
+}
+async function loadChildren(){
+  const d=await api('/api/children');
+  children=d.children||[];
+  const grid=$('#childGrid');
+  grid.innerHTML='';
+  if(!children.length){
+    grid.innerHTML='<p>No hay perfiles infantiles todavía.</p>';
+    $('#continueProfile').disabled=true;
+    return;
+  }
+  children.forEach(ch=>{
+    const b=document.createElement('button');
+    b.className='child-option';
+    b.innerHTML=`<div class="child-avatar">🧒</div><strong>${safe(ch.name)}</strong><div class="muted">${ch.age} años</div>`;
+    b.onclick=()=>{
+      document.querySelectorAll('.child-option').forEach(x=>x.classList.remove('selected'));
+      b.classList.add('selected');selectedChild=ch;$('#continueProfile').disabled=false;
+    };
+    grid.appendChild(b);
+  });
+}
+async function loadProgress(){
+  const d=await api('/api/learning/lectoaventura/progress?child='+encodeURIComponent(selectedChild.id));
+  progress=d.progress;
+  attemptMap={};
+  (d.attempts||[]).forEach(a=>attemptMap[a.activity_id]=a);
+  $('#childStat').textContent='👤 '+selectedChild.name;
+  $('#starStat').textContent='⭐ '+(progress.stars||0);
+  $('#scoreStat').textContent='🏆 '+(progress.total_score||0);
+  renderMap();
+}
+function renderMap(){
+  const box=$('#levelPath');box.innerHTML='';
+  activities.forEach((a,i)=>{
+    const attempt=attemptMap[a.id];
+    const unlocked=i===0 || activities.slice(0,i).every(prev=>attemptMap[prev.id]);
+    const done=!!attempt;
+    const el=document.createElement('article');
+    el.className='level-card '+(done?'done ':'')+(unlocked?'':'locked');
+    const stars=done?'⭐'.repeat(Number(attempt.best_stars)||0)+'☆'.repeat(3-(Number(attempt.best_stars)||0)):'☆☆☆';
+    el.innerHTML=`
+      <div class="level-number">${done?'✓':i+1}</div>
+      <div style="font-size:34px">${a.icon}</div>
+      <h3>${a.title}</h3><p>${a.subtitle}</p>
+      <div class="stars">${stars}</div>
+      <button class="btn ${unlocked?'btn-primary':'btn-light'}" ${unlocked?'':'disabled'}>${done?'Jugar otra vez':unlocked?'Comenzar':'Bloqueado 🔒'}</button>`;
+    if(unlocked)el.querySelector('button').onclick=()=>startActivity(a);
+    box.appendChild(el);
+  });
+}
+function startActivity(a){
+  currentActivity=a;qIndex=0;correctCount=0;activityStarted=Date.now();answerLocked=false;
+  showScreen('activityScreen');renderQuestion();
+}
+function speak(text){
+  if(!('speechSynthesis'in window))return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='es-CO';u.rate=.9;u.pitch=1.05;
+  speechSynthesis.speak(u);
+}
+function renderQuestion(){
+  const q=currentActivity.questions[qIndex];
+  $('#questionCount').textContent=`${qIndex+1}/${currentActivity.questions.length}`;
+  $('#questionProgress').style.width=`${((qIndex)/currentActivity.questions.length)*100}%`;
+  $('#promptTitle').textContent=q.title;$('#promptHint').textContent=q.hint||'';
+  $('#speakBtn').onclick=()=>speak(q.say||q.title);
+  const ans=$('#answers');ans.innerHTML='';answerLocked=false;
+  $('#feedback').className='feedback';$('#feedback').textContent='';
+  q.answers.forEach(opt=>{
+    const value=Array.isArray(opt)?opt[1]:opt;
+    const b=document.createElement('button');b.className='answer';
+    b.innerHTML=Array.isArray(opt)?`<span class="emoji">${opt[0]}</span>${safe(opt[1])}`:safe(opt);
+    b.onclick=()=>chooseAnswer(b,value,q.correct);
+    ans.appendChild(b);
+  });
+}
+function chooseAnswer(button,value,correct){
+  if(answerLocked)return;answerLocked=true;
+  const ok=value===correct;
+  if(ok){correctCount++;button.classList.add('correct')}
+  else{
+    button.classList.add('wrong');
+    [...$('#answers').children].forEach(b=>{
+      if(b.textContent.trim().endsWith(correct))b.classList.add('correct');
+    });
+  }
+  const f=$('#feedback');f.className='feedback show '+(ok?'ok':'bad');
+  f.textContent=ok?'¡Muy bien! 🌟':'Casi. Mira la respuesta correcta y seguimos.';
+  setTimeout(()=>{
+    qIndex++;
+    if(qIndex<currentActivity.questions.length)renderQuestion();
+    else finishActivity();
+  },850);
+}
+async function finishActivity(){
+  const total=currentActivity.questions.length;
+  const pct=correctCount/total;
+  const stars=pct>=.9?3:pct>=.7?2:1;
+  const score=Math.round(pct*100);
+  const duration=Math.round((Date.now()-activityStarted)/1000);
+  $('#questionProgress').style.width='100%';
+  showScreen('finishScreen');
+  $('#finishIcon').textContent=stars===3?'🏆':stars===2?'🎉':'🌱';
+  $('#finishTitle').textContent=stars===3?'¡Excelente aventura!':stars===2?'¡Muy buen trabajo!':'¡Buen comienzo!';
+  $('#finishText').textContent=`Acertaste ${correctCount} de ${total}.`;
+  $('#finishStars').textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
+  $('#finishScore').textContent=score+' puntos';
+
+  try{
+    await api('/api/learning/lectoaventura/progress?child='+encodeURIComponent(selectedChild.id),{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        activityId:currentActivity.id,score,stars,
+        correctAnswers:correctCount,totalQuestions:total,durationSeconds:duration
+      })
+    });
+    await loadProgress();
+  }catch(e){console.error(e)}
+
+  const i=activities.findIndex(a=>a.id===currentActivity.id);
+  const next=activities[i+1];
+  $('#nextActivity').style.display=next?'inline-flex':'none';
+  if(next)$('#nextActivity').onclick=()=>startActivity(next);
+}
+$('#continueProfile').onclick=async()=>{
+  if(!selectedChild)return;
+  await loadProgress();showScreen('mapScreen');
+};
+$('#changeChild').onclick=()=>{selectedChild=null;showScreen('profileScreen')};
+$('#backMap').onclick=()=>{speechSynthesis?.cancel?.();showScreen('mapScreen')};
+$('#finishMap').onclick=()=>showScreen('mapScreen');
+
+loadChildren().catch(e=>{
+  console.error(e);
+  $('#childGrid').innerHTML='<p>No fue posible cargar los perfiles.</p>';
+});
+</script>
 </body>
 </html>
