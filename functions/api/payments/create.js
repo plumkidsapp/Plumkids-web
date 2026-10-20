@@ -58,11 +58,19 @@ export async function onRequestPost(context){
     payer:{
       email:user.email
     },
+    config:{
+      online:{
+        success_url:`https://plumkids-web.pages.dev/pago-resultado.html?estado=aprobado&order=${encodeURIComponent(localOrderId)}`,
+        failure_url:`https://plumkids-web.pages.dev/pago-resultado.html?estado=fallido&order=${encodeURIComponent(localOrderId)}`,
+        pending_url:`https://plumkids-web.pages.dev/pago-resultado.html?estado=pendiente&order=${encodeURIComponent(localOrderId)}`,
+        auto_return:'all'
+      }
+    },
     items:[{
       title:app.name,
       unit_price:amountString,
-      quantity:1,
-      }]
+      quantity:1
+    }]
   };
 
   try{
@@ -106,8 +114,7 @@ export async function onRequestPost(context){
           item_title:app.name,
           item_unit_price:amountString,
           item_quantity:1,
-          item_unit_measure:'unit',
-          item_total_amount:amountString
+          return_urls_configured:true
         }
       };
 
