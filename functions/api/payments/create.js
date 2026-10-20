@@ -38,7 +38,7 @@ export async function onRequestPost(context){
 
   const localOrderId=uuid();
   const amount=Number(app.price_cop);
-  const amountString=amount.toFixed(2);
+  const amountString=String(Math.round(amount));
 
   await env.DB.prepare(
     `INSERT INTO payments
@@ -62,9 +62,7 @@ export async function onRequestPost(context){
       title:app.name,
       unit_price:amountString,
       quantity:1,
-      unit_measure:'unit',
-      total_amount:amountString
-    }]
+      }]
   };
 
   try{
