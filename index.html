@@ -20,7 +20,10 @@ a{text-decoration:none;color:inherit}
 .hotspot{position:absolute;z-index:5;border:0!important;padding:0;margin:0;background:transparent!important;appearance:none;-webkit-appearance:none;box-shadow:none!important;cursor:pointer;color:transparent}
 .hotspot:focus-visible{outline:3px solid rgba(113,54,212,.6);outline-offset:2px}
 .d-inicio{left:32.7%;top:1%;width:6.1%;height:2.9%}.d-apps{left:40.7%;top:1%;width:5.2%;height:2.9%}.d-planes{left:47.8%;top:1%;width:6.3%;height:2.9%}.d-como{left:56.1%;top:1%;width:10.4%;height:2.9%}
-.d-ingresar{left:72.4%;top:1%;width:8.8%;height:2.9%}.d-probar{left:82.2%;top:1%;width:11.5%;height:2.9%}
+.d-ingresar{left:72.4%;top:1%;width:8.8%;height:2.9%}
+.session-account{display:none;position:absolute;z-index:9;left:72.15%;top:1%;width:9.4%;height:2.9%;align-items:center;justify-content:center;background:#fff;border:1px solid #dacaf4;border-radius:10px;color:#6c34cd;font:700 10px Arial,Helvetica,sans-serif;line-height:1}
+.session-account.show{display:flex}
+.d-probar{left:82.2%;top:1%;width:11.5%;height:2.9%}
 .d-explorar{left:6.1%;top:19.3%;width:15.8%;height:2.9%}.d-demo{left:23.3%;top:19.3%;width:13.5%;height:2.9%}
 .d-try1{left:7%;top:55.3%;width:8.7%;height:2.1%}.d-buy1{left:16.3%;top:55.3%;width:8.9%;height:2.1%}
 .d-try2{left:28.6%;top:55.3%;width:8.5%;height:2.1%}.d-buy2{left:38.2%;top:55.3%;width:8.5%;height:2.1%}
@@ -141,7 +144,7 @@ a{text-decoration:none;color:inherit}
   <a class="hotspot d-apps" href="#m-apps" aria-label="Apps"></a>
   <a class="hotspot d-planes" href="#m-planes" aria-label="Precios"></a>
   <a class="hotspot d-como" href="#m-como" aria-label="Cómo funciona"></a>
-  <a class="hotspot d-ingresar" href="login.html" aria-label="Ingresar"></a>
+  <a class="hotspot d-ingresar" href="login.html" aria-label="Ingresar"></a><a class="session-account" href="mi-plumkids.html" aria-label="Mi Plumkids">Mi Plumkids</a>
   <a class="hotspot d-probar" href="#m-apps" aria-label="Probar gratis"></a>
   <a class="hotspot d-explorar" href="#m-apps" aria-label="Explorar apps"></a>
   <button class="hotspot d-demo action" data-title="Demo Plumkids" data-text="Muy pronto podrás probar las apps educativas directamente desde Plumkids."></button>
@@ -254,6 +257,20 @@ const modal=document.getElementById('modal'),mt=document.getElementById('modalTi
 document.querySelectorAll('.action').forEach(x=>x.addEventListener('click',()=>{mt.textContent=x.dataset.title||'Plumkids';mp.textContent=x.dataset.text||'Muy pronto.';modal.classList.add('show');modal.setAttribute('aria-hidden','false')}));
 function closeM(){modal.classList.remove('show');modal.setAttribute('aria-hidden','true')}
 document.querySelector('.closeModal').addEventListener('click',closeM);modal.addEventListener('click',e=>{if(e.target===modal)closeM()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeM()});
+
+(async()=>{
+  try{
+    const r=await fetch('/api/auth/me',{credentials:'same-origin'});
+    if(!r.ok)return;
+    document.querySelectorAll('a[href="login.html"]').forEach(a=>{
+      a.href='mi-plumkids.html';
+      a.setAttribute('aria-label','Mi Plumkids');
+      if(a.textContent.trim()==='Ingresar')a.textContent='Mi Plumkids';
+    });
+    document.querySelector('.session-account')?.classList.add('show');
+  }catch{}
+})();
+
 </script>
 </body>
 </html>
