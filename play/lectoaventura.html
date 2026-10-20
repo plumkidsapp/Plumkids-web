@@ -98,7 +98,7 @@ body{background:linear-gradient(#f8fcff,#fbf8ff);min-height:100vh}
 
 <section id="mapScreen" class="screen">
   <div class="world-head">
-    <div><span class="badge">MUNDO 1</span><h2>El Bosque de las Letras</h2></div>
+    <div><span class="badge">MUNDO 1 · BETA ABIERTA</span><h2>El Bosque de las Letras</h2></div>
     <button id="changeChild" class="btn btn-light">Cambiar perfil</button>
   </div>
   <div id="levelPath" class="level-path"></div>
@@ -242,7 +242,7 @@ function renderMap(){
   const box=$('#levelPath');box.innerHTML='';
   activities.forEach((a,i)=>{
     const attempt=attemptMap[a.id];
-    const unlocked=i===0 || activities.slice(0,i).every(prev=>attemptMap[prev.id]);
+    const unlocked=true; // BETA: todas las actividades abiertas para pruebas
     const done=!!attempt;
     const el=document.createElement('article');
     el.className='level-card '+(done?'done ':'')+(unlocked?'':'locked');

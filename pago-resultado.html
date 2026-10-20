@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Estado de compra | Plumkids</title><link rel="stylesheet" href="account.css">
+<style>.result-shell{width:min(540px,calc(100% - 30px));margin:45px auto 70px}.result-card{text-align:center;background:#fff;border:1px solid var(--line);border-radius:24px;padding:32px;box-shadow:0 14px 40px rgba(54,30,86,.08)}.result-icon{font-size:62px;margin:8px}.result-card h1{font-size:31px}.result-card p{color:var(--muted)}</style></head>
+<body><header class="top"><div class="wrap top-in"><a class="logo" href="index.html"><span class="plum"></span>Plumkids</a></div></header>
+<main class="result-shell"><section class="result-card"><span class="badge">COMPRA PLUMKIDS</span><div id="icon" class="result-icon">⏳</div><h1 id="title">Confirmando tu pago</h1><p id="text">Estamos esperando la confirmación segura de Mercado Pago.</p><div id="details" class="notice"></div><a class="btn btn-primary full" href="mi-plumkids.html">Ir a Mi Plumkids</a></section></main><footer class="footer">© 2026 Plumkids.</footer>
+<script>
+const params=new URLSearchParams(location.search),localOrder=params.get('order')||'',initial=params.get('estado')||'';
+const icon=document.getElementById('icon'),title=document.getElementById('title'),text=document.getElementById('text'),details=document.getElementById('details');let tries=0;
+if(initial==='fallido'){icon.textContent='⚠️';title.textContent='El pago no se completó';text.textContent='No se habilitó ninguna aplicación.'}
+if(initial==='pendiente'){icon.textContent='⏳';title.textContent='Pago pendiente';text.textContent='Mercado Pago todavía está procesando la operación.'}
+async function check(){if(!localOrder)return;try{const r=await fetch('/api/payments/status?order='+encodeURIComponent(localOrder),{credentials:'same-origin'});if(r.status===401){location.href='/login.html?next='+encodeURIComponent(location.pathname+location.search);return}const d=await r.json().catch(()=>({}));if(!r.ok)return;if(d.access_enabled||d.order.status==='approved'){icon.textContent='✅';title.textContent='¡Compra aprobada!';text.textContent=`${d.order.app_name} ya está disponible en tu cuenta.`;details.textContent='Puedes abrirla desde Mi Plumkids.';details.className='notice show ok';return}if(String(d.order.status).includes('rejected')||String(d.order.status).includes('cancelled')||String(d.order.status).includes('failed')){icon.textContent='⚠️';title.textContent='El pago no fue aprobado';text.textContent='No se habilitó la aplicación.';return}tries++;if(tries<30)setTimeout(check,2000);else{details.textContent='La confirmación está tardando un poco. Puedes entrar a Mi Plumkids más tarde; el acceso se activará cuando Mercado Pago confirme el pago.';details.className='notice show'}}catch{}}
+check();
+</script></body></html>
