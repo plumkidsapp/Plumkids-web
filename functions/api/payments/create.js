@@ -1,17 +1,8 @@
 import{json,currentUser,uuid}from'../../lib/auth.js';
 
-const APP_BASE='https://plumkids-web.pages.dev';
-
-function safeMpError(result,status){
-  return {
-    http_status:status,
-    error:result?.error??null,
-    message:result?.message??null,
-    code:result?.code??null,
-    status:result?.status??null,
-    details:result?.details??null,
-    cause:result?.cause??null
-  };
+function safeText(value,max=4000){
+  const s=String(value??'');
+  return s.length>max?s.slice(0,max):s;
 }
 
 export async function onRequestPost(context){
@@ -24,11 +15,8 @@ export async function onRequestPost(context){
   if(!user)return json({error:'Debes iniciar sesión antes de comprar.'},401);
 
   let body;
-  try{
-    body=await request.json();
-  }catch{
-    return json({error:'Solicitud inválida.'},400);
-  }
+  try{body=await request.json()}
+  catch{return json({error:'Solicitud inválida.'},400)}
 
   const appSlug=String(body.appSlug||'').trim();
 
@@ -43,12 +31,10 @@ export async function onRequestPost(context){
      WHERE user_id=? AND app_slug=? AND revoked_at IS NULL`
   ).bind(user.id,app.slug).first();
 
-  if(owned){
-    return json({
-      error:'Esta aplicación ya está habilitada en tu cuenta.',
-      already_owned:true
-    },409);
-  }
+  if(owned)return json({
+    error:'Esta aplicación ya está habilitada en tu cuenta.',
+    already_owned:true
+  },409);
 
   const localOrderId=uuid();
   const amount=Number(app.price_cop);
@@ -59,20 +45,11 @@ export async function onRequestPost(context){
      (id,provider,user_id,app_slug,amount,currency,status,payer_email)
      VALUES(?,?,?,?,?,?,?,?)`
   ).bind(
-    localOrderId,
-    'mercadopago-orders',
-    user.id,
-    app.slug,
-    amount,
-    'COP',
-    'creating',
-    user.email
+    localOrderId,'mercadopago-orders',user.id,app.slug,
+    amount,'COP','creating',user.email
   ).run();
 
-  /*
-    Payload intentionally kept very close to Mercado Pago's documented
-    Checkout Pro Orders API example for the first production test.
-  */
+  // Diagnostic v19: exact minimal payload from Mercado Pago Checkout Pro Orders docs.
   const orderPayload={
     type:'online',
     processing_mode:'manual',
@@ -80,14 +57,6 @@ export async function onRequestPost(context){
     external_reference:localOrderId,
     payer:{
       email:user.email
-    },
-    config:{
-      online:{
-        success_url:`${APP_BASE}/pago-resultado.html?estado=aprobado&order=${encodeURIComponent(localOrderId)}`,
-        failure_url:`${APP_BASE}/pago-resultado.html?estado=fallido&order=${encodeURIComponent(localOrderId)}`,
-        pending_url:`${APP_BASE}/pago-resultado.html?estado=pendiente&order=${encodeURIComponent(localOrderId)}`,
-        auto_return:'approved'
-      }
     },
     items:[{
       title:app.name,
@@ -110,10 +79,39 @@ export async function onRequestPost(context){
       body:JSON.stringify(orderPayload)
     });
 
-    const result=await mp.json().catch(()=>({}));
+    // Read the raw body first so we can diagnose non-JSON Mercado Pago responses.
+    const raw=await mp.text();
+
+    let result={};
+    try{result=raw?JSON.parse(raw):{}}
+    catch{result={}}
 
     if(!mp.ok||!result.id||!result.checkout_url){
-      const diagnostic=safeMpError(result,mp.status);
+      const diagnostic={
+        http_status:mp.status,
+        status_text:mp.statusText||null,
+        content_type:mp.headers.get('content-type')||null,
+        request_id:mp.headers.get('x-request-id')||null,
+        raw_response:safeText(raw),
+        parsed_error:result?.error??null,
+        parsed_message:result?.message??null,
+        parsed_code:result?.code??null,
+        parsed_status:result?.status??null,
+        parsed_details:result?.details??null,
+        parsed_cause:result?.cause??null,
+        request_summary:{
+          type:orderPayload.type,
+          processing_mode:orderPayload.processing_mode,
+          total_amount:orderPayload.total_amount,
+          external_reference:orderPayload.external_reference,
+          payer_email:user.email,
+          item_title:app.name,
+          item_unit_price:amountString,
+          item_quantity:1,
+          item_unit_measure:'unit',
+          item_total_amount:amountString
+        }
+      };
 
       await env.DB.prepare(
         `UPDATE payments
@@ -127,7 +125,7 @@ export async function onRequestPost(context){
 
       return json({
         error:'Mercado Pago rechazó la creación del pago.',
-        diagnostic_code:result?.code||result?.error||'order_error'
+        http_status:mp.status
       },502);
     }
 
@@ -177,10 +175,6 @@ export async function onRequestPost(context){
        WHERE id=?`
     ).bind(JSON.stringify(diagnostic),localOrderId).run();
 
-    console.error('MP_ORDER_CREATE_EXCEPTION',diagnostic);
-
-    return json({
-      error:'No fue posible conectar con Mercado Pago.'
-    },502);
+    return json({error:'No fue posible conectar con Mercado Pago.'},502);
   }
 }
