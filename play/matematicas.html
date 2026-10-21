@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plumkids | Generador de Matemáticas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Quicksand:wght@600;700&family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --accent: #fdcb6e;
+            --bg-body: #dfe6e9;
+            --text: #2d3436;
+            --white: #ffffff;
+            --btn-shadow: #4834d4;
+        }
+
+        /* THEME PRESETS */
+        body.theme-dino { --primary: #00b894; --secondary: #55efc4; --accent: #ffeaa7; --btn-shadow: #006266; }
+        body.theme-ocean { --primary: #0984e3; --secondary: #74b9ff; --accent: #fab1a0; --btn-shadow: #0c2461; }
+        body.theme-sunset { --primary: #e17055; --secondary: #ff7675; --accent: #ffeaa7; --btn-shadow: #d63031; }
+        body.theme-berry { --primary: #e84393; --secondary: #fd79a8; --accent: #fdcb6e; --btn-shadow: #b33771; }
+
+        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+        body {
+            margin: 0;
+            font-family: 'Quicksand', 'Noto Sans', sans-serif; 
+            background-color: var(--bg-body);
+            display: flex;
+            min-height: 100vh;
+            color: var(--text);
+            transition: background 0.3s;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 380px;
+            background: var(--white);
+            padding: 25px;
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            border-right: 4px solid rgba(0,0,0,0.1);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .brand {
+            font-family: 'Chewy', cursive;
+            font-size: 2rem;
+            color: var(--primary);
+            text-align: center;
+            text-shadow: 2px 2px 0px var(--accent);
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        .section-title {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #b2bec3;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+            border-bottom: 2px solid #f1f2f6;
+            padding-bottom: 5px;
+        }
+
+        label { display: block; font-weight: 700; font-size: 0.9rem; margin-bottom: 5px; }
+
+        select, input[type="text"], input[type="number"] {
+            width: 100%; padding: 10px;
+            border: 2px solid #dfe6e9; border-radius: 10px;
+            font-family: inherit; font-weight: 700;
+        }
+        select:focus, input:focus { outline: none; border-color: var(--primary); }
+
+        .theme-grid { display: flex; gap: 10px; margin-bottom: 10px; }
+        .theme-btn {
+            width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+            border: 3px solid transparent; transition: transform 0.2s;
+        }
+        .theme-btn:hover { transform: scale(1.2); }
+
+        .lang-edit-box {
+            background: #f8f9fa; padding: 10px; border-radius: 10px; border: 1px solid #ddd;
+            display: none;
+        }
+        .lang-edit-box.open { display: block; }
+        .lang-row { display: grid; grid-template-columns: 1fr 2fr; gap: 5px; margin-bottom: 5px; align-items: center; font-size: 0.8rem;}
+
+        .btn-main {
+            background: var(--primary); color: white; border: none;
+            padding: 15px; border-radius: 50px; font-family: 'Chewy', cursive;
+            font-size: 1.5rem; cursor: pointer; width: 100%;
+            box-shadow: 0 5px 0 var(--btn-shadow); margin-top: 10px;
+            transition: all 0.2s;
+        }
+        .btn-main:active { transform: translateY(5px); box-shadow: none; }
+
+        .btn-sec {
+            background: white; border: 2px solid var(--primary); color: var(--primary);
+            padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%;
+        }
+        .btn-sec:hover { background: #f1f2f6; }
+
+        /* --- PREVIEW AREA --- */
+        .main-content {
+            margin-left: 380px; flex: 1; padding: 40px;
+            display: flex; justify-content: center;
+            background-image: radial-gradient(rgba(0,0,0,0.05) 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+
+        .paper {
+            width: 210mm; min-height: 297mm; background: white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        .header {
+            background: var(--primary); color: white;
+            padding: 30px 40px 10px 40px; position: relative;
+            transition: background 0.3s;
+            /* FORCE PRINT COLOR */
+            -webkit-print-color-adjust: exact !important; 
+            print-color-adjust: exact !important;
+        }
+
+        .title-row { display: flex; justify-content: space-between; align-items: flex-start; }
+        .sheet-title {
+            font-family: 'Chewy', 'Noto Sans', sans-serif; 
+            font-size: 3rem; margin: 0;
+            color: var(--accent); text-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+            line-height: 1.1; max-width: 80%;
+        }
+        .emoji-deco { font-size: 2.5rem; }
+
+        .info-row { display: flex; gap: 30px; margin-top: 20px; }
+        .info-box { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+        .info-label { font-size: 0.8rem; font-weight: 800; color: var(--accent); text-transform: uppercase; }
+        .info-line { height: 35px; background: rgba(255,255,255,0.9); border-radius: 8px; width: 100%; }
+
+        .wave { display: block; width: 100%; height: auto; margin-top: -1px; fill: var(--primary); transition: fill 0.3s; }
+
+        /* --- GRID SYSTEM --- */
+        .grid {
+            padding: 20px 40px;
+            display: grid;
+            flex-grow: 1;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 50px;
+            row-gap: 20px;
+            align-content: start; 
+        }
+
+        .q-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 2px dashed #dfe6e9;
+            font-family: 'Chewy', sans-serif;
+            font-size: 1.8rem;
+            color: var(--text);
+            white-space: nowrap;
+            break-inside: avoid;
+        }
+
+        .eq-text { margin-right: 15px; flex-shrink: 0; }
+        
+        .ans-box {
+            width: 80px; height: 50px;
+            border: 3px solid #dfe6e9; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            color: transparent; font-size: 1.5rem; flex-shrink: 0;
+        }
+        .ans-box.show { background: #ffeaa7; color: #d63031; border-color: #d63031; }
+
+        /* --- COMPACT MODE --- */
+        .grid.compact {
+            grid-template-columns: 1fr 1fr 1fr;
+            column-gap: 25px;
+            row-gap: 15px;
+        }
+        .grid.compact .q-card { font-size: 1.3rem; padding: 5px 0; }
+        .grid.compact .ans-box { width: 50px; height: 35px; border-width: 2px; border-radius: 8px; }
+
+        .footer {
+            text-align: center; padding: 20px; font-size: 0.8rem; color: #b2bec3;
+            border-top: 1px solid #f1f2f6;
+            margin-top: auto; /* Push to bottom but respect container */
+        }
+
+        /* --- PRINT FIX FINAL (SAFETY LAYOUT) --- */
+        @media print {
+            @page { 
+                size: A4; 
+                margin: 0; /* Browser margin reset */
+            }
+            
+            /* Force Colors */
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+            body, .main-content { 
+                display: block !important; 
+                margin: 0 !important; padding: 0 !important;
+                background: white !important;
+            }
+
+            .sidebar { display: none !important; }
+            
+            .paper { 
+                box-shadow: none !important; 
+                width: 100% !important;
+                /* Gunakan Auto agar tidak memaksa tinggi jika konten sedikit, 
+                   tapi layout akan dikompres agar muat 1 halaman */
+                min-height: auto !important; 
+                padding-bottom: 0 !important;
+            }
+
+            /* --- RAHASIA AGAR MUAT 1 HALAMAN --- */
+            /* Kompres Header */
+            .header { padding: 20px 40px 10px 40px !important; }
+            .sheet-title { font-size: 2.5rem !important; }
+            .emoji-deco { font-size: 2rem !important; }
+            .info-row { margin-top: 10px !important; }
+
+            /* Kompres Grid & Soal */
+            .grid { 
+                row-gap: 10px !important; /* Jarak antar baris diperkecil */
+                padding: 10px 40px !important; 
+            }
+            
+            /* Kompres Kartu Soal */
+            .q-card { 
+                padding: 5px 0 !important; /* Padding soal diperkecil */
+                font-size: 1.6rem !important;
+                border-bottom-width: 1px !important;
+            }
+
+            /* Kompres Kotak Jawaban */
+            .ans-box {
+                width: 70px !important;
+                height: 40px !important;
+                border-width: 2px !important;
+            }
+
+            /* Footer aman */
+            .footer { 
+                padding: 10px !important; 
+                font-size: 0.7rem !important;
+            }
+            
+            body:not(.print-key) .ans-box { color: transparent !important; }
+            body.print-key .ans-box { color: black !important; border-color: black; }
+        }
+    </style>
+
+<style id="plumkids-integration">
+.plumkids-return{
+  position:fixed;right:14px;bottom:14px;z-index:99999;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:42px;padding:0 14px;border-radius:999px;
+  background:#7136d4;color:#fff;text-decoration:none;
+  font:800 13px Arial,Helvetica,sans-serif;
+  box-shadow:0 8px 24px rgba(49,25,87,.25);
+  border:2px solid rgba(255,255,255,.75);
+}
+.plumkids-return:hover{background:#5f28bd}
+@media(max-width:640px){
+  .plumkids-return{right:10px;bottom:10px;font-size:12px;min-height:38px;padding:0 12px}
+}
+@media print{.plumkids-return{display:none!important}}
+</style>
+
+</head>
+<body class="theme-magic">
+<a class="plumkids-return" href="../mi-plumkids.html" aria-label="Volver a Mi Plumkids">← Mi Plumkids</a> 
+    <div class="sidebar">
+        <div class="brand">Plumkids<br>Generador de Matemáticas</div>
+
+        <div class="section-title">Tema de Color</div>
+        <div class="theme-grid">
+            <div class="theme-btn" style="background:#6c5ce7" onclick="setTheme('magic')" title="Morado Mágico"></div>
+            <div class="theme-btn" style="background:#0984e3" onclick="setTheme('ocean')" title="Azul Océano"></div>
+            <div class="theme-btn" style="background:#00b894" onclick="setTheme('dino')" title="Verde Dino"></div>
+            <div class="theme-btn" style="background:#e17055" onclick="setTheme('sunset')" title="Naranja Atardecer"></div>
+            <div class="theme-btn" style="background:#e84393" onclick="setTheme('berry')" title="Rosa Berry"></div>
+        </div>
+
+        <div class="section-title">Idioma (Mundo)</div>
+        <select id="langPreset" onchange="loadLang()">
+            <option value="en">🇺🇸 English</option>
+            <option value="id">🇮🇩 Indonesia</option>
+            <option value="hi">🇮🇳 हिन्दी (Hindi / India)</option>
+            <option value="ms">🇲🇾 Melayu</option>
+            <option value="es" selected>🌎 Español (Latinoamérica)</option>
+            <option value="de">🇩🇪 Deutsch</option>
+            <option value="fr">🇫🇷 Français</option>
+            <option value="pt">🇧🇷 Português</option>
+            <option value="nl">🇳🇱 Nederlands</option>
+            <option value="it">🇮🇹 Italiano</option>
+            <option value="ru">🇷🇺 Русский</option>
+            <option value="jp">🇯🇵 日本語 (Japanese)</option>
+            <option value="kr">🇰🇷 한국어 (Korean)</option>
+            <option value="cn">🇨🇳 中文 (Chinese)</option>
+            <option value="th">🇹🇭 ไทย (Thai)</option>
+            <option value="vi">🇻🇳 Tiếng Việt (Vietnamese)</option>
+            <option value="ar">🇸🇦 Arab (RTL)</option>
+            <option value="custom">🛠️ Custom / Edit</option>
+        </select>
+        
+        <button class="btn-sec" onclick="toggleEditLang()" style="margin-top:5px; font-size:0.8rem;">✏️ Editar Etiquetas de Texto</button>
+        
+        <div class="lang-edit-box" id="customLangBox">
+            <div class="lang-row"><span>Título:</span> <input type="text" id="txt_title"></div>
+            <div class="lang-row"><span>Nombre:</span> <input type="text" id="txt_name"></div>
+            <div class="lang-row"><span>Fecha:</span> <input type="text" id="txt_class"></div>
+            <div class="lang-row"><span>Pie de página:</span> <input type="text" id="txt_footer"></div>
+            <button class="btn-main" style="font-size:1rem; padding:8px;" onclick="applyCustomLang()">Aplicar Texto</button>
+        </div>
+
+        <div class="section-title">Configuración</div>
+        <label>Operación</label>
+        <select id="op">
+            <option value="+">Suma (+)</option>
+            <option value="-">Resta (-)</option>
+            <option value="x">Multiplicación (×)</option>
+            <option value=":">División (÷)</option>
+        </select>
+
+        <label>Dificultad</label>
+        <select id="diff">
+            <option value="easy">Fácil (1-10)</option>
+            <option value="medium" selected>Media (10-50)</option>
+            <option value="hard">Difícil (50-100)</option>
+        </select>
+
+        <label>Total de Preguntas: <span id="countDisplay">20</span></label>
+        <input type="range" id="count" min="10" max="60" step="2" value="20" oninput="document.getElementById('countDisplay').innerText=this.value">
+        <small style="color:#636e72; display:block; margin-top:-5px;">* Más de 24 preguntas usarán 3 columnas</small>
+
+<button class="btn-main" onclick="generateAndSyncAnswer()">¡GENERAR!</button>
+
+
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="btn-sec" onclick="printSheet(false)">Imprimir Hoja</button>
+            <button class="btn-sec" style="color:red; border-color:red;" onclick="printSheet(true)">Imprimir Respuestas</button>
+        </div>
+		<label style="font-size:0.8rem; display:flex; align-items:center; gap:6px; cursor:pointer;">
+    <input type="checkbox" id="toggleAnswer" onchange="toggleAnswer()">
+    Mostrar Respuestas
+</label>
+
+			<button class="btn-sec" onclick="saveAsImage()">💾 Guardar como Imagen</button>
+			
+    </div>
+
+
+
+    <div class="main-content">
+        <div class="paper">
+            <div class="header">
+                <div class="title-row">
+                    <h1 class="sheet-title" id="outTitle">PRÁCTICA DE MATEMÁTICAS</h1>
+                    <div class="emoji-deco" id="headerEmoji">✨🎩🐰</div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-box">
+                        <span class="info-label" id="outName">NOMBRE:</span>
+                        <div class="info-line"></div>
+                    </div>
+                    <div class="info-box">
+                        <span class="info-label" id="outClass">FECHA:</span>
+                        <div class="info-line"></div>
+                    </div>
+                </div>
+            </div>
+
+            <svg class="wave" viewBox="0 0 1440 80" preserveAspectRatio="none">
+                <path d="M0,32L48,37.3C96,43,192,53,288,58.7C384,64,480,64,576,53.3C672,43,768,21,864,21.3C960,21,1056,43,1152,48C1248,53,1344,43,1392,37.3L1440,32L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path>
+            </svg>
+
+            <div class="grid" id="grid">
+                </div>
+
+            <div class="footer" id="outFooter">Creado con Plumkids</div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. DATA THEME ---
+        const themes = {
+            magic: { class: 'theme-magic', emojis: ['✨', '🎩', '🐰'] },
+            ocean: { class: 'theme-ocean', emojis: ['🐳', '🐙', '🌊'] },
+            dino:  { class: 'theme-dino',  emojis: ['🦖', '🦕', '🌿'] },
+            sunset:{ class: 'theme-sunset',emojis: ['🦁', '☀️', '🏜️'] },
+            berry: { class: 'theme-berry', emojis: ['🍒', '🧁', '🦄'] }
+        };
+
+        // --- 2. DATA BAHASA ---
+        const langData = {
+            en: { title: "MATH PRACTICE", name: "NAME:", class: "CLASS:", footer: "Plumkids Resources" },
+            id: { title: "LATIHAN MATEMATIKA", name: "NAMA:", class: "KELAS:", footer: "Sumber Belajar Plumkids" },
+            hi: { title: "गणित अभ्यास", name: "नाम:", class: "कक्षा:", footer: "मैथप्रेस संसाधन" },
+            ms: { title: "LATIHAN MATEMATIK", name: "NAMA:", class: "KELAS:", footer: "Sumber Plumkids" },
+            es: { title: "PRÁCTICA DE MATEMÁTICAS", name: "NOMBRE:", class: "FECHA:", footer: "Creado con Plumkids" },
+            de: { title: "MATHE ÜBUNG", name: "NAME:", class: "KLASSE:", footer: "Plumkids Ressourcen" },
+            fr: { title: "EXERCICES DE MATHS", name: "NOM:", class: "CLASSE:", footer: "Ressources Plumkids" },
+            pt: { title: "PRÁTICA DE MATEMÁTICA", name: "NOME:", class: "TURMA:", footer: "Recursos Plumkids" },
+            nl: { title: "REKENOEFENINGEN", name: "NAAM:", class: "KLAS:", footer: "Plumkids Bronnen" },
+            it: { title: "ESERCIZI DI MATEMATICA", name: "NOME:", class: "CLASSE:", footer: "Risorse Plumkids" },
+            ru: { title: "МАТЕМАТИКА", name: "ИМЯ:", class: "КЛАСС:", footer: "Ресурсы Plumkids" },
+            jp: { title: "数学の練習", name: "名前:", class: "クラス:", footer: "Plumkids リソース" },
+            kr: { title: "수학 연습", name: "이름:", class: "반:", footer: "Plumkids 자료" },
+            cn: { title: "数学练习", name: "姓名:", class: "班级:", footer: "Plumkids 资源" },
+            th: { title: "แบบฝึกหัดคณิตศาสตร์", name: "ชื่อ:", class: "ชั้น:", footer: "แหล่งข้อมูล Plumkids" },
+            vi: { title: "BÀI TẬP TOÁN", name: "TÊN:", class: "LỚP:", footer: "Tài liệu Plumkids" },
+            ar: { title: "تدريبات الرياضيات", name: "الاسم:", class: "الصف:", footer: "موارد Plumkids" }
+        };
+
+        let currentTheme = 'magic';
+
+        function setTheme(themeName) {
+            document.body.classList.remove('theme-magic', 'theme-ocean', 'theme-dino', 'theme-sunset', 'theme-berry');
+            document.body.classList.add(themes[themeName].class);
+            currentTheme = themeName;
+            document.getElementById('headerEmoji').innerText = themes[themeName].emojis.join('');
+        }
+
+        function loadLang() {
+            const val = document.getElementById('langPreset').value;
+            if(val === 'ar') document.body.style.direction = 'rtl';
+            else document.body.style.direction = 'ltr';
+
+            if(val === 'custom') {
+                toggleEditLang();
+                return;
+            }
+            const data = langData[val];
+            document.getElementById('txt_title').value = data.title;
+            document.getElementById('txt_name').value = data.name;
+            document.getElementById('txt_class').value = data.class;
+            document.getElementById('txt_footer').value = data.footer;
+            applyCustomLang();
+        }
+
+        function toggleEditLang() {
+            const box = document.getElementById('customLangBox');
+            box.style.display = box.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function applyCustomLang() {
+            document.getElementById('outTitle').innerText = document.getElementById('txt_title').value;
+            document.getElementById('outName').innerText = document.getElementById('txt_name').value;
+            document.getElementById('outClass').innerText = document.getElementById('txt_class').value;
+            document.getElementById('outFooter').innerText = document.getElementById('txt_footer').value;
+        }
+
+        function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+        function generate() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = ''; 
+            const count = parseInt(document.getElementById('count').value);
+            const op = document.getElementById('op').value;
+            const diff = document.getElementById('diff').value;
+
+
+
+            // --- AUTO LAYOUT LOGIC ---
+            if (count > 24) grid.classList.add('compact'); // 3 Cols
+            else grid.classList.remove('compact'); // 2 Cols
+
+            let min, max;
+            if (diff === 'easy') { min = 1; max = 10; }
+            else if (diff === 'medium') { min = 10; max = 50; }
+            else { min = 50; max = 100; }
+
+            for (let i = 1; i <= count; i++) {
+                let n1 = getRandomInt(min, max);
+                let n2 = getRandomInt(min, max);
+                let ans = 0; let symbol = '';
+
+                if (op === '+') { symbol = '+'; ans = n1 + n2; }
+                else if (op === '-') { 
+                    symbol = '-'; 
+                    if(n1 < n2) [n1, n2] = [n2, n1]; 
+                    ans = n1 - n2; 
+                }
+                else if (op === 'x') {
+                    symbol = '×';
+                    let limit = diff === 'hard' ? 12 : 9;
+                    n2 = getRandomInt(2, limit);
+                    ans = n1 * n2;
+                }
+                // --- REVISED DIVISION LOGIC (BASED ON n1) ---
+                else if (op === ':') {
+                    symbol = '÷';
+                    
+                    let localMin, localMax;
+                    
+                    // Set range strict to user request for "Dividend" (Soal)
+                    if (diff === 'easy') { 
+                        localMin = 4; // Biar tidak terlalu mudah seperti 2:1
+                        localMax = 10; 
+                    } else if (diff === 'medium') { 
+                        localMin = 10; 
+                        localMax = 50; 
+                    } else { 
+                        localMin = 50; 
+                        localMax = 100; 
+                    }
+
+                    let found = false;
+                    // Safety loop: Try 50 times to find a number that has divisors
+                    // This ensures we respect the "min-max" for the question number (n1)
+                    for(let attempt=0; attempt<50; attempt++){
+                        // 1. Pick the Question Number (n1) STRICTLY inside range
+                        let tempN1 = getRandomInt(localMin, localMax);
+                        
+                        // 2. Find valid divisors for this specific number
+                        // (We exclude 1 to make it a bit more challenging, e.g., avoid 7:1)
+                        let divisors = [];
+                        for(let k=2; k < tempN1; k++){
+                            if(tempN1 % k === 0) divisors.push(k);
+                        }
+                        
+                        // 3. If we found divisors, we use this number!
+                        if(divisors.length > 0){
+                            n1 = tempN1;
+                            // Pick random divisor from list
+                            n2 = divisors[getRandomInt(0, divisors.length - 1)];
+                            ans = n1 / n2;
+                            found = true;
+                            break;
+                        }
+                    }
+                    
+                    // Fallback just in case RNG fails (very rare)
+                    if(!found) {
+                        if(diff === 'easy') { n1=6; n2=2; ans=3; }
+                        else if(diff === 'medium') { n1=20; n2=2; ans=10; }
+                        else { n1=80; n2=8; ans=10; }
+                    }
+                }
+
+                const div = document.createElement('div');
+                div.className = 'q-card';
+                div.innerHTML = `
+                    <div class="eq-text">
+                        <span style="color:#b2bec3; font-size:0.8em; margin-right:5px;">${i}.</span>
+                        ${n1} ${symbol} ${n2} =
+                    </div>
+                    <div class="ans-box">${ans}</div>
+                `;
+                grid.appendChild(div);
+            }
+            applyCustomLang();
+        }
+
+        function printSheet(key) {
+            if(key) document.body.classList.add('print-key');
+            else document.body.classList.remove('print-key');
+            window.print();
+        }
+
+        window.onload = function() {
+            loadLang(); 
+            generate();
+            setTheme('magic');
+        }
+		
+    </script>
+	<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+function toggleAnswer() {
+    const show = document.getElementById('toggleAnswer').checked;
+    document.querySelectorAll('.ans-box').forEach(el => {
+        el.classList.toggle('show', show);
+    });
+}
+
+function saveAsImage() {
+    const target = document.querySelector('.paper');
+
+    const isChrome = /Chrome/.test(navigator.userAgent) && !/Firefox/.test(navigator.userAgent);
+
+    html2canvas(target, {
+        scale: isChrome ? 1.5 : 2,
+        useCORS: true,
+        backgroundColor: "#ffffff"
+    }).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "plumkids-matematicas.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    });
+}
+</script>
+<script>
+function generateAndSyncAnswer() {
+    generate(); // fungsi lama, tidak diubah
+
+    // kalau Show Answer sedang aktif, tampilkan lagi jawabannya
+    const chk = document.getElementById('toggleAnswer');
+    if (chk && chk.checked) {
+        toggleAnswer();
+    }
+}
+</script>
+
+
+</body>
+</html>

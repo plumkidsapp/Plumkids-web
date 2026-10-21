@@ -8,7 +8,27 @@ const protectedApps={
   '/play/memoria-magica':'memoria-magica',
   '/play/memoria-magica.html':'memoria-magica',
   '/play/emociones-en-juego':'emociones-en-juego',
-  '/play/emociones-en-juego.html':'emociones-en-juego'
+  '/play/emociones-en-juego.html':'emociones-en-juego',
+  '/play/crucigramas':'crucigramas',
+  '/play/crucigramas.html':'crucigramas',
+  '/play/hojas-vocabulario':'hojas-vocabulario',
+  '/play/hojas-vocabulario.html':'hojas-vocabulario',
+  '/play/laberintos':'laberintos',
+  '/play/laberintos.html':'laberintos',
+  '/play/matematicas-emojis':'matematicas-emojis',
+  '/play/matematicas-emojis.html':'matematicas-emojis',
+  '/play/matematicas':'matematicas',
+  '/play/matematicas.html':'matematicas',
+  '/play/quiz-reloj':'quiz-reloj',
+  '/play/quiz-reloj.html':'quiz-reloj',
+  '/play/secuencias':'secuencias',
+  '/play/secuencias.html':'secuencias',
+  '/play/sopa-letras':'sopa-letras',
+  '/play/sopa-letras.html':'sopa-letras',
+  '/play/trazado-formas':'trazado-formas',
+  '/play/trazado-formas.html':'trazado-formas',
+  '/play/trazos-lineas':'trazos-lineas',
+  '/play/trazos-lineas.html':'trazos-lineas'
 };
 
 export async function onRequest(context){

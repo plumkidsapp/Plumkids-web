@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plumkids | Generador de Hojas de Vocabulario</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Codystar&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #0288D1;
+            --primary-light: #B3E5FC;
+            --accent: #FFD600;
+            --secondary: #7CB342;
+            --text: #37474F;
+            --bg: #E1F5FE;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
+        body { font-family: 'Nunito', sans-serif; background: var(--bg); height: 100vh; display: flex; overflow: hidden; color: var(--text); }
+
+        /* --- DECORATION --- */
+        .deco-bg { position: absolute; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        .cloud { position: absolute; background: white; border-radius: 50px; opacity: 0.8; box-shadow: 0 8px 0 #81D4FA; }
+        .c1 { width: 140px; height: 70px; top: 5%; left: 5%; animation: float 6s infinite alternate; }
+        .c2 { width: 200px; height: 90px; top: 15%; right: 10%; animation: float 8s infinite alternate-reverse; }
+        .grass { position: absolute; bottom: 0; width: 100%; height: 60px; background: #AED581; border-radius: 50% 50% 0 0 / 20px 20px 0 0; }
+        @keyframes float { from { transform: translateY(0); } to { transform: translateY(-15px); } }
+
+        /* --- LAYOUT --- */
+        .app-container { display: flex; width: 100%; height: 100%; z-index: 10; }
+        
+        /* SIDEBAR */
+        .sidebar {
+            width: 350px; background: white; padding: 25px; display: flex; flex-direction: column; gap: 15px;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.05); overflow-y: auto; border-right: 6px solid var(--primary-light);
+        }
+        .logo { font-family: 'Chewy', cursive; font-size: 2rem; color: var(--primary); text-align: center; text-shadow: 2px 2px 0 var(--accent); margin-bottom: 5px; line-height: 1.2; }
+        
+        .control-group label { font-weight: 800; color: var(--primary); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 5px; display: block; }
+        .input-ui {
+            width: 100%; padding: 12px; border: 3px solid #E0E0E0; border-radius: 12px;
+            font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 1rem; color: #455A64;
+            background: #FAFAFA; outline: none; transition: 0.2s; cursor: pointer;
+        }
+        .input-ui:focus { border-color: var(--primary); background: white; }
+        
+        /* Branding Inputs */
+        .input-brand { border-color: #FFD54F; background: #FFFDE7; }
+        .input-brand:focus { border-color: #FFC107; background: white; }
+
+        .btn {
+            border: none; width: 100%; padding: 15px; border-radius: 15px; cursor: pointer;
+            font-family: 'Chewy', cursive; font-size: 1.5rem; text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+            transition: transform 0.1s; margin-top: 5px;
+        }
+        .btn-gen { background: var(--accent); color: #5D4037; box-shadow: 0 5px 0 #FFAB00; margin-top: auto; }
+        .btn-gen:active { transform: translateY(5px); box-shadow: none; }
+        .btn-print { background: var(--secondary); color: white; box-shadow: 0 5px 0 #558B2F; }
+        .btn-print:active { transform: translateY(5px); box-shadow: none; }
+
+        /* WORKSPACE */
+        .workspace { flex: 1; padding: 40px; overflow-y: auto; display: flex; justify-content: center; align-items: flex-start; }
+        
+        /* PAPER FIX: Flex Column to prevent overlap */
+        .paper {
+            background: white; width: 210mm; min-height: 297mm; padding: 12mm 15mm; /* Reduced top padding slightly */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 10px;
+            border-top: 15px solid var(--primary); border-bottom: 15px solid var(--secondary);
+            display: flex; flex-direction: column; /* This is key */
+        }
+
+        .paper-header { 
+            display: flex; justify-content: space-between; align-items: flex-end; 
+            border-bottom: 3px dashed #CFD8DC; padding-bottom: 10px; margin-bottom: 20px; 
+            flex-shrink: 0;
+        }
+        .title-text { font-family: 'Chewy', cursive; font-size: 2.5rem; color: var(--primary); line-height: 1; text-transform: uppercase; }
+        .student-info { width: 45%; }
+        .line-input { border-bottom: 2px solid #CFD8DC; height: 30px; margin-bottom: 8px; display: flex; justify-content: space-between; color: #B0BEC5; font-size: 0.9rem; align-items: flex-end; }
+
+        /* GRID FIX: Allow grow */
+        .grid-container { 
+            display: grid; gap: 10px; /* Reduced gap slightly for 10 items fit */
+            flex-grow: 1; /* Pushes footer down */
+        }
+
+        /* FOOTER FIX: No longer absolute, it sits in flow */
+        .paper-footer {
+            margin-top: 20px; /* Space between content and footer */
+            text-align: center; color: #90A4AE; font-size: 0.9rem; font-weight: 700;
+            flex-shrink: 0;
+            padding-bottom: 5px;
+        }
+
+        /* MATCH MODE - Compacted slightly */
+        .match-row {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #F1F8E9; border: 2px solid #DCEDC8; border-radius: 12px; 
+            padding: 5px 15px; height: 72px; /* Reduced from 80px to fit 10 items better */
+        }
+        .match-icon { font-size: 2.6rem; width: 60px; text-align: center; }
+        .match-dots { flex: 1; display: flex; justify-content: space-between; padding: 0 20px; align-items: center; opacity: 0.4; }
+        .dot { width: 10px; height: 10px; background: #90A4AE; border-radius: 50%; }
+        .match-word { font-size: 1.3rem; font-weight: 800; color: var(--text); width: 200px; text-align: right; }
+
+        /* MISSING LETTERS - Compacted */
+        .miss-list { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .miss-card {
+            border: 2px solid #B3E5FC; border-radius: 12px; padding: 8px 15px; /* Compacted padding */
+            display: flex; align-items: center; background: white;
+        }
+        .miss-icon { font-size: 2.6rem; margin-right: 20px; }
+        .word-boxes { display: flex; gap: 4px; }
+        .char-box {
+            width: 40px; height: 50px; /* Compacted box */
+            border: 2px solid #546E7A; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; font-weight: 900; background: #FFF9C4; color: #37474F;
+        }
+        .char-box.empty { background: white; border: 2px dashed #B0BEC5; color: transparent; }
+
+        /* TRACING */
+        .trace-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .trace-card {
+            border: 2px solid #E0E0E0; border-radius: 15px; padding: 12px; text-align: center; background: #FAFAFA;
+        }
+        .trace-icon { font-size: 2.6rem; margin-bottom: 5px; }
+        .trace-word {
+            font-family: 'Codystar', cursive; font-weight: 400; font-size: 2.2rem;
+            color: #BDBDBD; letter-spacing: 2px; line-height: 1.2; margin-top: 5px;
+        }
+        .solid-word { font-size: 0.9rem; color: #78909C; font-weight: 700; }
+
+        /* PRINT */
+        @media print {
+            body { background: white; height: auto; overflow: visible; }
+            .sidebar, .deco-bg, .btn { display: none !important; }
+            .workspace { padding: 0; display: block; }
+            .paper { 
+                box-shadow: none; border: none; padding: 0; width: 100%; min-height: 0; 
+                display: block; /* Print reset */
+            }
+            /* Explicit layout for print to avoid breaks */
+            .paper-header { margin-bottom: 15px; }
+            .grid-container { gap: 8px; }
+            .match-row { height: 68px; page-break-inside: avoid; }
+            .miss-card { page-break-inside: avoid; }
+            .trace-card { page-break-inside: avoid; }
+            .paper-footer { margin-top: 30px; position: fixed; bottom: 0; width: 100%; text-align: center; background: white; }
+            @page { size: A4; margin: 10mm; }
+        }
+
+        body[dir="rtl"] .match-word { text-align: left; }
+        body[dir="rtl"] .match-row { flex-direction: row-reverse; }
+        body[dir="rtl"] .miss-icon { margin-left: 20px; margin-right: 0; }
+    </style>
+
+<style id="plumkids-integration">
+.plumkids-return{
+  position:fixed;right:14px;bottom:14px;z-index:99999;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:42px;padding:0 14px;border-radius:999px;
+  background:#7136d4;color:#fff;text-decoration:none;
+  font:800 13px Arial,Helvetica,sans-serif;
+  box-shadow:0 8px 24px rgba(49,25,87,.25);
+  border:2px solid rgba(255,255,255,.75);
+}
+.plumkids-return:hover{background:#5f28bd}
+@media(max-width:640px){
+  .plumkids-return{right:10px;bottom:10px;font-size:12px;min-height:38px;padding:0 12px}
+}
+@media print{.plumkids-return{display:none!important}}
+</style>
+
+</head>
+<body>
+<a class="plumkids-return" href="../mi-plumkids.html" aria-label="Volver a Mi Plumkids">← Mi Plumkids</a>
+
+<div class="deco-bg">
+    <div class="cloud c1"></div>
+    <div class="cloud c2"></div>
+    <div class="grass"></div>
+</div>
+
+<div class="app-container">
+    <aside class="sidebar">
+        <div class="logo">Plumkids<br>Generador de Hojas de Vocabulario</div>
+
+        <div class="control-group">
+            <label>Marca e Información</label>
+            <input type="text" id="customTitle" class="input-ui input-brand" placeholder="Título personalizado (ej. Práctica 1)" oninput="updateBranding()">
+            <input type="text" id="customFooter" class="input-ui input-brand" placeholder="Pie de página (ej. MiMarca.com)" style="margin-top:8px" oninput="updateBranding()">
+        </div>
+
+        <div class="control-group">
+            <label>Idioma</label>
+            <select id="langSelect" class="input-ui" onchange="updateUI()">
+                <option value="en">🇺🇸 English</option>
+                <option value="id">🇮🇩 Indonesia</option>
+                <option value="es" selected>🌎 Español (Latinoamérica)</option>
+                <option value="fr">🇫🇷 Français</option>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="it">🇮🇹 Italiano</option>
+                <option value="jp">🇯🇵 Japanese</option>
+                <option value="kr">🇰🇷 Korean</option>
+                <option value="cn">🇨🇳 Chinese</option>
+                <option value="ar">🇸🇦 Arabic</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Modo</label>
+            <select id="modeSelect" class="input-ui">
+                <option value="match">🧩 Unir con Líneas</option>
+                <option value="missing">❓ Letras Faltantes</option>
+                <option value="trace">✍️ Trazado (Punteado)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Categoría</label>
+            <select id="catSelect" class="input-ui">
+                <optgroup label="Naturaleza y Animales">
+                    <option value="animals_wild">🦁 Animales Salvajes </option>
+                    <option value="animals_farm">🐄 Animales de Granja </option>
+                    <option value="animals_sea">🐠 Animales Marinos </option>
+                    <option value="nature">🌳 Naturaleza </option>
+                </optgroup>
+                <optgroup label="Comida">
+                    <option value="fruits">🍎 Frutas </option>
+                    <option value="veg">🥕 Verduras </option>
+                    <option value="food">🍔 Comida y Bebida </option>
+                </optgroup>
+                <optgroup label="Objetos Cotidianos">
+                    <option value="transport">🚗 Transporte </option>
+                    <option value="school">🎒 Escuela </option>
+                    <option value="clothes">👕 Ropa </option>
+                    <option value="home">🏠 Objetos del Hogar </option>
+                </optgroup>
+                 <optgroup label="Básicos">
+                    <option value="colors">🎨 Colores </option>
+                    <option value="shapes">🔷 Formas </option>
+                    <option value="sports">⚽ Deportes </option>
+                </optgroup>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Cantidad de Preguntas: <span id="countDisplay">10</span></label>
+            <input type="range" id="countRange" min="4" max="10" value="10" class="input-ui" oninput="document.getElementById('countDisplay').innerText = this.value">
+        </div>
+
+        <button class="btn btn-gen" onclick="generate()">¡GENERAR!</button>
+        <button class="btn btn-print" onclick="window.print()">IMPRIMIR</button>
+		<button class="btn btn-print" onclick="saveAsImage()">GUARDAR COMO IMAGEN</button>
+
+    </aside>
+
+    <main class="workspace">
+        <div class="paper" id="paper">
+            <header class="paper-header">
+                <div class="title-text" id="sheetTitle">Hoja de Trabajo</div>
+                <div class="student-info">
+                    <div class="line-input"><span id="lblDate">Fecha:</span> <span>... / ... / ...</span></div>
+                    <div class="line-input"><span id="lblName">Nombre:</span></div>
+                </div>
+            </header>
+            
+            <div id="contentGrid" class="grid-container"></div>
+            
+            <div class="paper-footer" id="sheetFooter"></div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // MASSIVE DATABASE (Safe Content)
+    const db = {
+        animals_wild: [
+            {i:"🦁",en:"LION",id:"SINGA",es:"LEÓN",fr:"LION",de:"LÖWE",it:"LEONE",jp:"ライオン",kr:"사자",cn:"狮子",ar:"أسد"},
+            {i:"🐯",en:"TIGER",id:"HARIMAU",es:"TIGRE",fr:"TIGRE",de:"TIGER",it:"TIGRE",jp:"トラ",kr:"호랑이",cn:"老虎",ar:"نمر"},
+            {i:"🐘",en:"ELEPHANT",id:"GAJAH",es:"ELEFANTE",fr:"ÉLÉPHANT",de:"ELEFANT",it:"ELEFANTE",jp:"ゾウ",kr:"코끼리",cn:"大象",ar:"فيل"},
+            {i:"🦒",en:"GIRAFFE",id:"JARAPAH",es:"JIRAFA",fr:"GIRAFE",de:"GIRAFFE",it:"GIRAFFA",jp:"キリン",kr:"기린",cn:"长颈鹿",ar:"زرافة"},
+            {i:"🐒",en:"MONKEY",id:"MONYET",es:"MONO",fr:"SINGE",de:"AFF",it:"SCIMMIA",jp:"猿",kr:"원숭이",cn:"猴子",ar:"قرد"},
+            {i:"🦓",en:"ZEBRA",id:"ZEBRA",es:"CEBRA",fr:"ZÈBRE",de:"ZEBRA",it:"ZEBRA",jp:"シマウマ",kr:"얼룩말",cn:"斑马",ar:"حمار وحشي"},
+            {i:"🐻",en:"BEAR",id:"BERUANG",es:"OSO",fr:"OURS",de:"BÄR",it:"ORSO",jp:"熊",kr:"곰",cn:"熊",ar:"دب"},
+            {i:"🐊",en:"CROCODILE",id:"BUAYA",es:"COCODRILO",fr:"CROCODILE",de:"KROKODIL",it:"COCCODRILLO",jp:"ワニ",kr:"악어",cn:"鳄鱼",ar:"تمساح"},
+            {i:"🐍",en:"SNAKE",id:"ULAR",es:"SERPIENTE",fr:"SERPENT",de:"SCHLANGE",it:"SERPENTE",jp:"ヘビ",kr:"뱀",cn:"蛇",ar:"ثعبان"},
+            {i:"🐼",en:"PANDA",id:"PANDA",es:"PANDA",fr:"PANDA",de:"PANDA",it:"PANDA",jp:"パンダ",kr:"판다",cn:"熊猫",ar:"باندا"},
+            {i:"🦏",en:"RHINO",id:"BADAK",es:"RINOCERONTE",fr:"RHINOCÉROS",de:"NASHORN",it:"RINOCERONTE",jp:"サイ",kr:"코뿔소",cn:"犀牛",ar:"وحيد القرن"},
+            {i:"🦛",en:"HIPPO",id:"KUDA NIL",es:"HIPOPÓTAMO",fr:"HIPPOPOTAME",de:"NILPFERD",it:"IPPOPOTAMO",jp:"カバ",kr:"하마",cn:"河马",ar:"فرس النهر"},
+            {i:"🦊",en:"FOX",id:"RUBAH",es:"ZORRO",fr:"RENARD",de:"FUCHS",it:"VOLPE",jp:"キツネ",kr:"여우",cn:"狐狸",ar:"ثعلب"},
+            {i:"🦌",en:"DEER",id:"RUSA",es:"CIERVO",fr:"CERF",de:"HIRSCH",it:"CERVO",jp:"鹿",kr:"사슴",cn:"鹿",ar:"غزال"},
+            {i:"🦘",en:"KANGAROO",id:"KANGURU",es:"CANGURO",fr:"KANGOUROU",de:"KÄNGURU",it:"CANGURO",jp:"カンガルー",kr:"캥거루",cn:"袋鼠",ar:"كنغر"},
+            {i:"🐨",en:"KOALA",id:"KOALA",es:"KOALA",fr:"KOALA",de:"KOALA",it:"KOALA",jp:"コアラ",kr:"코알라",cn:"考拉",ar:"كوالا"},
+            {i:"🐆",en:"LEOPARD",id:"MACAN TUTUL",es:"LEOPARDO",fr:"LÉOPARD",de:"LEOPARD",it:"LEOPARDO",jp:"ヒョウ",kr:"표범",cn:"豹",ar:"فهد"},
+            {i:"🦍",en:"GORILLA",id:"GORILA",es:"GORILA",fr:"GORILLE",de:"GORILLA",it:"GORILLA",jp:"ゴリラ",kr:"고릴라",cn:"大猩猩",ar:"غوريلا"},
+            {i:"🐪",en:"CAMEL",id:"UNTA",es:"CAMELLO",fr:"CHAMEAU",de:"KAMEL",it:"CAMMELLO",jp:"ラクダ",kr:"낙타",cn:"骆驼",ar:"جمل"},
+            {i:"🐺",en:"WOLF",id:"SERIGALA",es:"LOBO",fr:"LOUP",de:"WOLF",it:"LUPO",jp:"オオカミ",kr:"늑대",cn:"狼",ar:"ذئب"},
+            {i:"🦔",en:"HEDGEHOG",id:"LANDAK",es:"ERIZO",fr:"HÉRISSON",de:"IGEL",it:"RICCIO",jp:"ハリネズミ",kr:"고슴도치",cn:"刺猬",ar:"قنفذ"},
+            {i:"🦦",en:"OTTER",id:"BERANG",es:"NUTRIA",fr:"LOUTRE",de:"OTTER",it:"LONTRA",jp:"カワウソ",kr:"수달",cn:"水獭",ar:"ثعلب الماء"},
+            {i:"🦇",en:"BAT",id:"KELELAWAR",es:"MURCIÉLAGO",fr:"CHAUVE-SOURIS",de:"FLEDERMAUS",it:"PIPISTRELLO",jp:"コウモリ",kr:"박쥐",cn:"蝙蝠",ar:"خفاش"},
+            {i:"🦝",en:"RACCOON",id:"RAKUN",es:"MAPACHE",fr:"RATON",de:"WASCHBÄR",it:"PROCIONE",jp:"アライグマ",kr:"너구리",cn:"浣熊",ar:"راكون"},
+            {i:"🦉",en:"OWL",id:"BURUNG HANTU",es:"BÚHO",fr:"HIBOU",de:"EULE",it:"GUFO",jp:"フクロウ",kr:"올빼미",cn:"猫头鹰",ar:"بومة"},
+            {i:"🦅",en:"EAGLE",id:"ELANG",es:"ÁGUILA",fr:"AIGLE",de:"ADLER",it:"AQUILA",jp:"鷲",kr:"독수리",cn:"鹰",ar:"نسر"},
+            {i:"🐆",en:"CHEETAH",id:"CITAH",es:"GUEPARDO",fr:"GUÉPARD",de:"GEPARD",it:"GHEPARDO",jp:"チーター",kr:"치타",cn:"猎豹",ar:"فهد"},
+            {i:"🦥",en:"SLOTH",id:"KUKANG",es:"PEREZOSO",fr:"PARESSEUX",de:"FAULTIER",it:"BRADIPO",jp:"ナマケモノ",kr:"나무늘보",cn:"树懒",ar:"كسلان"},
+            {i:"🦨",en:"SKUNK",id:"SIGUNG",es:"ZORRILLO",fr:"MOUFETTE",de:"STINKTIER",it:"PUZZOLA",jp:"スカンク",kr:"스컹크",cn:"臭鼬",ar:"ظربان"},
+            {i:"🦬",en:"BISON",id:"BISON",es:"BISONTE",fr:"BISON",de:"BISON",it:"BISONTE",jp:"バイソン",kr:"들소",cn:"野牛",ar:"بيسون"}
+        ],
+        animals_farm: [
+            {i:"🐄",en:"COW",id:"SAPI",es:"VACA",fr:"VACHE",de:"KUH",it:"MUCCA",jp:"牛",kr:"소",cn:"牛",ar:"بقرة"},
+            {i:"🐏",en:"SHEEP",id:"DOMBA",es:"OVEJA",fr:"MOUTON",de:"SCHAF",it:"PECORA",jp:"羊",kr:"양",cn:"羊",ar:"خروف"},
+            {i:"🐐",en:"GOAT",id:"KAMBING",es:"CABRA",fr:"CHÈVRE",de:"ZIEGE",it:"CAPRA",jp:"ヤギ",kr:"염소",cn:"山羊",ar:"ماعز"},
+            {i:"🐎",en:"HORSE",id:"KUDA",es:"CABALLO",fr:"CHEVAL",de:"PFERD",it:"CAVALLO",jp:"馬",kr:"말",cn:"马",ar:"حصان"},
+            {i:"🐇",en:"RABBIT",id:"KELINCI",es:"CONEJO",fr:"LAPIN",de:"HASE",it:"CONIGLIO",jp:"ウサギ",kr:"토끼",cn:"兔子",ar:"أرنب"},
+            {i:"🐓",en:"ROOSTER",id:"AYAM JAGO",es:"GALLO",fr:"COQ",de:"HAHN",it:"GALLO",jp:"雄鶏",kr:"수탉",cn:"公鸡",ar:"ديك"},
+            {i:"🐈",en:"CAT",id:"KUCING",es:"GATO",fr:"CHAT",de:"KATZE",it:"GATTO",jp:"猫",kr:"고양이",cn:"猫",ar:"قطة"},
+            {i:"🦆",en:"DUCK",id:"BEBEK",es:"PATO",fr:"CANARD",de:"ENTE",it:"ANATRA",jp:"アヒル",kr:"오리",cn:"鸭子",ar:"بطة"},
+            {i:"🦃",en:"TURKEY",id:"KALKUN",es:"PAVO",fr:"DINDE",de:"TRUTHAHN",it:"TACCHINO",jp:"七面鳥",kr:"칠면조",cn:"火鸡",ar:"ديك رومي"},
+            {i:"🐥",en:"CHICK",id:"ANAK AYAM",es:"POLLITO",fr:"POUSSIN",de:"KÜKEN",it:"PULCINO",jp:"ヒヨコ",kr:"병아리",cn:"小鸡",ar:"كتكوت"},
+            {i:"🐔",en:"HEN",id:"AYAM",es:"GALLINA",fr:"POULE",de:"HENNE",it:"GALLINA",jp:"雌鶏",kr:"암탉",cn:"母鸡",ar:"دجاجة"},
+            {i:"🐴",en:"PONY",id:"KUDA PONI",es:"PONI",fr:"PONEY",de:"PONY",it:"PONY",jp:"ポニー",kr:"조랑말",cn:"小马",ar:"مهر"},
+            {i:"🐃",en:"BUFFALO",id:"KERBAU",es:"BÚFALO",fr:"BUFFLE",de:"BÜFFEL",it:"BUFALO",jp:"水牛",kr:"물소",cn:"水牛",ar:"جاموس"},
+            {i:"🐂",en:"OX",id:"LEMBU",es:"BUEY",fr:"BOEUF",de:"OCHSE",it:"BUE",jp:"雄牛",kr:"황소",cn:"公牛",ar:"ثور"},
+            {i:"🦙",en:"LLAMA",id:"LAMA",es:"LLAMA",fr:"LAMA",de:"LAMA",it:"LAMA",jp:"ラマ",kr:"라마",cn:"羊驼",ar:"لاما"},
+            {i:"🦢",en:"GOOSE",id:"ANGSA",es:"GANSO",fr:"OIE",de:"GANS",it:"OCA",jp:"ガチョウ",kr:"거위",cn:"鹅",ar:"إوزة"},
+            {i:"🐁",en:"MOUSE",id:"TIKUS",es:"RATÓN",fr:"SOURIS",de:"MAUS",it:"TOPO",jp:"ネズミ",kr:"쥐",cn:"老鼠",ar:"فأر"},
+            {i:"🐢",en:"TURTLE",id:"KURA-KURA",es:"TORTUGA",fr:"TORTUE",de:"SCHILDKRÖTE",it:"TARTARUGA",jp:"亀",kr:"거북이",cn:"乌龟",ar:"سلحفاة"},
+            {i:"🐸",en:"FROG",id:"KATAK",es:"RANA",fr:"GRENOUILLE",de:"FROSCH",it:"RANA",jp:"カエル",kr:"개구리",cn:"青蛙",ar:"ضفدع"},
+            {i:"🐌",en:"SNAIL",id:"SIPUT",es:"CARACOL",fr:"ESCARGOT",de:"SCHNECKE",it:"LUMACA",jp:"カタツムリ",kr:"달팽이",cn:"蜗牛",ar:"حلزون"},
+            {i:"🐟",en:"FISH",id:"IKAN",es:"PEZ",fr:"POISSON",de:"FISCH",it:"PESCE",jp:"魚",kr:"물고기",cn:"鱼",ar:"سمكة"},
+            {i:"🦜",en:"PARROT",id:"BEO",es:"LORO",fr:"PERROQUET",de:"PAPAGEI",it:"PAPPAGALLO",jp:"オウム",kr:"앵무새",cn:"鹦鹉",ar:"ببغاء"},
+            {i:"🐝",en:"BEE",id:"LEBAH",es:"ABEJA",fr:"ABEILLE",de:"BIENE",it:"APE",jp:"蜂",kr:"벌",cn:"蜜蜂",ar:"نحلة"},
+            {i:"🦋",en:"BUTTERFLY",id:"KUPU-KUPU",es:"MARIPOSA",fr:"PAPILLON",de:"SCHMETTERLING",it:"FARFALLA",jp:"蝶",kr:"나비",cn:"蝴蝶",ar:"فراشة"},
+            {i:"🐛",en:"WORM",id:"CACING",es:"GUSANO",fr:"VER",de:"WURM",it:"VERME",jp:"虫",kr:"지렁이",cn:"虫",ar:"دودة"}
+        ],
+        animals_sea: [
+            {i:"🐠",en:"FISH",id:"IKAN",es:"PEZ",fr:"POISSON",de:"FISCH",it:"PESCE",jp:"魚",kr:"물고기",cn:"鱼",ar:"سمكة"},
+            {i:"🐋",en:"WHALE",id:"PAUS",es:"BALLENA",fr:"BALEINE",de:"WAL",it:"BALENA",jp:"クジラ",kr:"고래",cn:"鲸鱼",ar:"حوت"},
+            {i:"🐬",en:"DOLPHIN",id:"LUMBA-LUMBA",es:"DELFÍN",fr:"DAUPHIN",de:"DELFIN",it:"DELFINO",jp:"イルカ",kr:"돌고래",cn:"海豚",ar:"دلفين"},
+            {i:"🐙",en:"OCTOPUS",id:"GURITA",es:"PULPO",fr:"POULPE",de:"OKTOPUS",it:"POLPO",jp:"タコ",kr:"문어",cn:"章鱼",ar:"أخطبوط"},
+            {i:"🦈",en:"SHARK",id:"HIU",es:"TIBURÓN",fr:"REQUIN",de:"HAI",it:"SQUALO",jp:"サメ",kr:"상어",cn:"鲨鱼",ar:"قرش"},
+            {i:"🦀",en:"CRAB",id:"KEPITING",es:"CANGREJO",fr:"CRABE",de:"KRABBE",it:"GRANCHIO",jp:"カニ",kr:"게",cn:"螃蟹",ar:"سرطان"},
+            {i:"🦞",en:"LOBSTER",id:"LOBSTER",es:"LANGOSTA",fr:"HOMARD",de:"HUMMER",it:"ARAGOSTA",jp:"ロブスター",kr:"바닷가재",cn:"龙虾",ar:"كركند"},
+            {i:"🐡",en:"PUFFER",id:"IKAN BUNTAL",es:"PEZ GLOBO",fr:"POISSON GLOBE",de:"KUGELLFISCH",it:"PESCE PALLA",jp:"フグ",kr:"복어",cn:"河豚",ar:"سمكة منتفخة"},
+            {i:"🐧",en:"PENGUIN",id:"PENGUIN",es:"PINGÜINO",fr:"PINGOUIN",de:"PINGUIN",it:"PINGUINO",jp:"ペンギン",kr:"펭귄",cn:"企鹅",ar:"بطريق"},
+            {i:"🦐",en:"SHRIMP",id:"UDANG",es:"CAMARÓN",fr:"CREVETTE",de:"GARNELE",it:"GAMBERO",jp:"エビ",kr:"새우",cn:"虾",ar:"جمبري"},
+            {i:"🦑",en:"SQUID",id:"CUMI-CUMI",es:"CALAMAR",fr:"CALAMAR",de:"TINTENFISCH",it:"CALAMARO",jp:"イカ",kr:"오징어",cn:"鱿鱼",ar:"حبار"},
+            {i:"🪼",en:"JELLYFISH",id:"UBUR-UBUR",es:"MEDUSA",fr:"MÉDUSE",de:"QUALLE",it:"MEDUSA",jp:"クラゲ",kr:"해파리",cn:"水母",ar:"قنديل البحر"},
+            {i:"⭐",en:"STARFISH",id:"BINTANG LAUT",es:"ESTRELLA DE MAR",fr:"ÉTOILE DE MER",de:"SEESTERN",it:"STELLA MARINA",jp:"ヒトデ",kr:"불가사리",cn:"海星",ar:"نجم البحر"},
+            {i:"🦭",en:"SEAL",id:"ANJING LAUT",es:"FOCA",fr:"PHOQUE",de:"ROBBE",it:"FOCA",jp:"アザラシ",kr:"물개",cn:"海豹",ar:"فقمة"},
+            {i:"🐚",en:"SHELL",id:"KERANG",es:"CONCHA",fr:"COQUILLE",de:"MUSCHEL",it:"CONCHIGLIA",jp:"貝殻",kr:"조개",cn:"贝壳",ar:"صدفة"},
+            {i:"🐊",en:"ALLIGATOR",id:"ALIGATOR",es:"CAIMÁN",fr:"ALLIGATOR",de:"ALLIGATOR",it:"ALLIGATORE",jp:"ワニ",kr:"악어",cn:"短吻鳄",ar:"تمساح"},
+            {i:"⚓️",en:"ANCHOR",id:"JANGKAR",es:"ANCLA",fr:"ANCRE",de:"ANKER",it:"ANCORA",jp:"錨",kr:"닻",cn:"锚",ar:"مرساة"},
+            {i:"🚢",en:"SHIP",id:"KAPAL",es:"BARCO",fr:"NAVIRE",de:"SCHIFF",it:"NAVE",jp:"船",kr:"배",cn:"船",ar:"سفينة"},
+            {i:"🏝️",en:"ISLAND",id:"PULAU",es:"ISLA",fr:"ÎLE",de:"INSEL",it:"ISOLA",jp:"島",kr:"섬",cn:"岛",ar:"جزيرة"},
+            {i:"🌊",en:"WAVE",id:"OMBAK",es:"OLA",fr:"VAGUE",de:"WELLE",it:"ONDA",jp:"波",kr:"파도",cn:"海浪",ar:"موجة"},
+            {i:"🏖️",en:"BEACH",id:"PANTAI",es:"PLAYA",fr:"PLAGE",de:"STRAND",it:"SPIAGGIA",jp:"ビーチ",kr:"해변",cn:"海滩",ar:"شاطئ"},
+            {i:"🎣",en:"FISHING",id:"MEMANCING",es:"PESCA",fr:"PÊCHE",de:"ANGELN",it:"PESCA",jp:"釣り",kr:"낚시",cn:"钓鱼",ar:"صيد"},
+            {i:"🛶",en:"CANOE",id:"SAMPAN",es:"CANOA",fr:"CANOË",de:"KANU",it:"CANOA",jp:"カヌー",kr:"카누",cn:"独木舟",ar:"زورق"},
+            {i:"🚤",en:"BOAT",id:"PERAHU",es:"BOTE",fr:"BATEAU",de:"BOOT",it:"BARCA",jp:"ボート",kr:"보트",cn:"小船",ar:"قارب"},
+            {i:"🪸",en:"CORAL",id:"TERUMBU",es:"CORAL",fr:"CORAIL",de:"KORALLE",it:"CORALLO",jp:"サンゴ",kr:"산호",cn:"珊瑚",ar:"مرجان"}
+        ],
+        fruits: [
+            {i:"🍎",en:"APPLE",id:"APEL",es:"MANZANA",fr:"POMME",de:"APFEL",it:"MELA",jp:"リンゴ",kr:"사과",cn:"苹果",ar:"تفاحة"},
+            {i:"🍌",en:"BANANA",id:"PISANG",es:"PLÁTANO",fr:"BANANE",de:"BANANE",it:"BANANA",jp:"バナナ",kr:"바나나",cn:"香蕉",ar:"موز"},
+            {i:"🍇",en:"GRAPE",id:"ANGGUR",es:"UVA",fr:"RAISIN",de:"TRAUBE",it:"UVA",jp:"ブドウ",kr:"포도",cn:"葡萄",ar:"عنب"},
+            {i:"🍉",en:"MELON",id:"SEMANGKA",es:"SANDÍA",fr:"PASTÈQUE",de:"MELONE",it:"ANGURIA",jp:"スイカ",kr:"수박",cn:"西瓜",ar:"بطيخ"},
+            {i:"🍓",en:"BERRY",id:"STROBERI",es:"FRESA",fr:"FRAISE",de:"ERDBEERE",it:"FRAGOLA",jp:"イチゴ",kr:"딸기",cn:"草莓",ar:"فراولة"},
+            {i:"🍍",en:"PINEAPPLE",id:"NANAS",es:"PIÑA",fr:"ANANAS",de:"ANANAS",it:"ANANAS",jp:"パイナップル",kr:"파인애플",cn:"菠萝",ar:"أناناس"},
+            {i:"🍊",en:"ORANGE",id:"JERUK",es:"NARANJA",fr:"ORANGE",de:"ORANGE",it:"ARANCIA",jp:"ミカン",kr:"오렌지",cn:"橘子",ar:"برتقال"},
+            {i:"🥭",en:"MANGO",id:"MANGGA",es:"MANGO",fr:"MANGUE",de:"MANGO",it:"MANGO",jp:"マンゴー",kr:"망고",cn:"芒果",ar:"مانجو"},
+            {i:"🍒",en:"CHERRY",id:"CERI",es:"CEREZA",fr:"CERISE",de:"KIRSCHE",it:"CILIEGIA",jp:"サクランボ",kr:"체리",cn:"樱桃",ar:"كرز"},
+            {i:"🥑",en:"AVOCADO",id:"ALPUKAT",es:"AGUACATE",fr:"AVOCAT",de:"AVOCADO",it:"AVOCADO",jp:"アボカド",kr:"아보카도",cn:"牛油果",ar:"أفوكادو"},
+            {i:"🍐",en:"PEAR",id:"PIR",es:"PERA",fr:"POIRE",de:"BIRNE",it:"PERA",jp:"ナシ",kr:"배",cn:"梨",ar:"كمثرى"},
+            {i:"🍋",en:"LEMON",id:"LEMON",es:"LIMÓN",fr:"CITRON",de:"ZITRONE",it:"LIMONE",jp:"レモン",kr:"레몬",cn:"柠檬",ar:"ليمون"},
+            {i:"🥝",en:"KIWI",id:"KIWI",es:"KIWI",fr:"KIWI",de:"KIWI",it:"KIWI",jp:"キウイ",kr:"키위",cn:"奇异果",ar:"كيوي"},
+            {i:"🥥",en:"COCONUT",id:"KELAPA",es:"COCO",fr:"COCO",de:"KOKOS",it:"COCCO",jp:"ココナッツ",kr:"코코넛",cn:"椰子",ar:"جوز الهند"},
+            {i:"🫐",en:"BLUEBERRY",id:"BLUBERI",es:"ARÁNDANO",fr:"MYRTILLE",de:"BLAUBEERE",it:"MIRTILLO",jp:"ブルーベリー",kr:"블루베리",cn:"蓝莓",ar:"توت"},
+            {i:"🍑",en:"PEACH",id:"PERSIK",es:"DURAZNO",fr:"PÊCHE",de:"PFIRSICH",it:"PESCA",jp:"桃",kr:"복숭아",cn:"桃子",ar:"خوخ"},
+            {i:"🍈",en:"HONEYDEW",id:"MELON",es:"MELÓN",fr:"MELON",de:"HONIGMELONE",it:"MELONE",jp:"メロン",kr:"멜론",cn:"哈密瓜",ar:"شمام"},
+            {i:"🍏",en:"GREEN APPLE",id:"APEL HIJAU",es:"MANZANA VERDE",fr:"POMME VERTE",de:"GRÜNER APFEL",it:"MELA VERDE",jp:"青リンゴ",kr:"풋사과",cn:"青苹果",ar:"تفاح أخضر"},
+            {i:"🍅",en:"TOMATO",id:"TOMAT",es:"TOMATE",fr:"TOMATE",de:"TOMATE",it:"POMODORO",jp:"トマト",kr:"토마토",cn:"番茄",ar:"طماطم"},
+            {i:"🫒",en:"OLIVE",id:"ZAITUN",es:"ACEITUNA",fr:"OLIVE",de:"OLIVE",it:"OLIVA",jp:"オリーブ",kr:"올리브",cn:"橄榄",ar:"زيتون"},
+            {i:"🫚",en:"GINGER",id:"JAHE",es:"JENGIBRE",fr:"GINGEMBRE",de:"INGWER",it:"ZENZERO",jp:"生姜",kr:"생강",cn:"生姜",ar:"زنجبيل"},
+            {i:"🌰",en:"CHESTNUT",id:"KASTANYE",es:"CASTAÑA",fr:"CHÂTAIGNE",de:"KASTANIE",it:"CASTAGNA",jp:"栗",kr:"밤",cn:"栗子",ar:"كستناء"},
+            {i:"🥜",en:"PEANUT",id:"KACANG",es:"MANÍ",fr:"ARACHIDE",de:"ERDNUSS",it:"ARACHIDE",jp:"ピーナッツ",kr:"땅콩",cn:"花生",ar:"فول سوداني"},
+            {i:"🫘",en:"BEAN",id:"KACANG MERAH",es:"FRIJOL",fr:"HARICOT",de:"BOHNE",it:"FAGIOLO",jp:"豆",kr:"콩",cn:"豆",ar:"فاصوليا"},
+            {i:"🌶️",en:"CHILI",id:"CABAI",es:"CHILE",fr:"PIMENT",de:"CHILI",it:"PEPERONCINO",jp:"唐辛子",kr:"고추",cn:"辣椒",ar:"فلفل"}
+        ],
+        veg: [
+            {i:"🥕",en:"CARROT",id:"WORTEL",es:"ZANAHORIA",fr:"CAROTTE",de:"KAROTTE",it:"CAROTA",jp:"ニンジン",kr:"당근",cn:"胡萝卜",ar:"جزر"},
+            {i:"🌽",en:"CORN",id:"JAGUNG",es:"MAÍZ",fr:"MAÏS",de:"MAIS",it:"MAIS",jp:"トウモロコシ",kr:"옥수수",cn:"玉米",ar:"ذرة"},
+            {i:"🥒",en:"CUCUMBER",id:"TIMUN",es:"PEPINO",fr:"CONCOMBRE",de:"GURKE",it:"CETRIOLO",jp:"キュウリ",kr:"오이",cn:"黄瓜",ar:"خيار"},
+            {i:"🥦",en:"BROCCOLI",id:"BROKOLI",es:"BRÓCOLI",fr:"BROCOLI",de:"BROKKOLI",it:"BROCCOLI",jp:"ブロッコリー",kr:"브로콜리",cn:"西兰花",ar:"بروكلي"},
+            {i:"🍆",en:"EGGPLANT",id:"TERONG",es:"BERENJENA",fr:"AUBERGINE",de:"AUBERGINE",it:"MELANZANA",jp:"ナス",kr:"가지",cn:"茄子",ar:"باذنجان"},
+            {i:"🥔",en:"POTATO",id:"KENTANG",es:"PAPA",fr:"POMME DE TERRE",de:"KARTOFFEL",it:"PATATA",jp:"ジャガイモ",kr:"감자",cn:"土豆",ar:"بطاطس"},
+            {i:"🧅",en:"ONION",id:"BAWANG",es:"CEBOLLA",fr:"OIGNON",de:"ZWIEBEL",it:"CIPOLLA",jp:"玉ねぎ",kr:"양파",cn:"洋葱",ar:"بصل"},
+            {i:"🧄",en:"GARLIC",id:"BAWANG PUTIH",es:"AJO",fr:"AIL",de:"KNOBLAUCH",it:"AGLIO",jp:"ニンニク",kr:"마늘",cn:"大蒜",ar:"ثوم"},
+            {i:"🌶️",en:"CHILI",id:"CABAI",es:"CHILE",fr:"PIMENT",de:"CHILI",it:"PEPERONCINO",jp:"唐辛子",kr:"고추",cn:"辣椒",ar:"فلفل"},
+            {i:"🥬",en:"LETTUCE",id:"SELADA",es:"LECHUGA",fr:"LAITUE",de:"SALAT",it:"LATTUGA",jp:"レタス",kr:"상추",cn:"生菜",ar:"خس"},
+            {i:"🍄",en:"MUSHROOM",id:"JAMUR",es:"HONGO",fr:"CHAMPIGNON",de:"PILZ",it:"FUNGO",jp:"キノコ",kr:"버섯",cn:"蘑菇",ar:"فطر"},
+            {i:"🍠",en:"YAM",id:"UBI",es:"ÑAME",fr:"IGNAME",de:"YAMS",it:"IGNAME",jp:"サツマイモ",kr:"고구마",cn:"山药",ar:"بطاطا"},
+            {i:"🫑",en:"PEPPER",id:"PAPRIKA",es:"PIMIENTO",fr:"POIVRON",de:"PAPRIKA",it:"PEPERONE",jp:"ピーマン",kr:"피망",cn:"青椒",ar:"فلفل حلو"},
+            {i:"🎃",en:"PUMPKIN",id:"LABU",es:"CALABAZA",fr:"CITROUILLE",de:"KÜRBIS",it:"ZUCCA",jp:"カボチャ",kr:"호박",cn:"南瓜",ar:"قرع"},
+            {i:"🥗",en:"SALAD",id:"SALAD",es:"ENSALADA",fr:"SALADE",de:"SALAT",it:"INSALATA",jp:"サラダ",kr:"샐러드",cn:"沙拉",ar:"سلطة"},
+            {i:"🎍",en:"BAMBOO",id:"BAMBU",es:"BAMBÚ",fr:"BAMBOU",de:"BAMBUS",it:"BAMBÙ",jp:"竹",kr:"대나무",cn:"竹子",ar:"خيزران"},
+            {i:"🌿",en:"HERB",id:"HERBA",es:"HIERBA",fr:"HERBE",de:"KRAUT",it:"ERBA",jp:"ハーブ",kr:"허브",cn:"香草",ar:"عشب"},
+            {i:"🌱",en:"SPROUT",id:"KECAMBAH",es:"BROTE",fr:"GERME",de:"SPROSSE",it:"GERMOGLIO",jp:"芽",kr:"새싹",cn:"芽",ar:"برعم"},
+            {i:"🫛",en:"PEAS",id:"KACANG POLONG",es:"ARVEJAS",fr:"POIS",de:"ERBSEN",it:"PISELLI",jp:"エンドウ豆",kr:"완두콩",cn:"豌豆",ar:"بازلاء"},
+            {i:"🥬",en:"CABBAGE",id:"KUBIS",es:"REPOLLO",fr:"CHOU",de:"KOHL",it:"CAVOLO",jp:"キャベツ",kr:"양배추",cn:"卷心菜",ar:"ملفوف"},
+            {i:"🥑",en:"AVOCADO",id:"ALPUKAT",es:"AGUACATE",fr:"AVOCAT",de:"AVOCADO",it:"AVOCADO",jp:"アボカド",kr:"아보카도",cn:"牛油果",ar:"أفوكادو"},
+            {i:"🌾",en:"WHEAT",id:"GANDUM",es:"TRIGO",fr:"BLÉ",de:"WEIZEN",it:"GRANO",jp:"小麦",kr:"밀",cn:"小麦",ar:"قمح"},
+            {i:"🥣",en:"SOUP",id:"SUP",es:"SOPA",fr:"SOUPE",de:"SUPPE",it:"ZUPPA",jp:"スープ",kr:"수프",cn:"汤",ar:"حساء"},
+            {i:"🥫",en:"CANNED",id:"KALENG",es:"ENLATADO",fr:"CONSERVE",de:"DOSE",it:"IN SCATOLA",jp:"缶詰",kr:"통조림",cn:"罐头",ar:"معلبات"},
+            {i:"🥪",en:"SANDWICH",id:"ROTI ISI",es:"SÁNDWICH",fr:"SANDWICH",de:"SANDWICH",it:"PANINO",jp:"サンド",kr:"샌드위치",cn:"三明治",ar:"شطيرة"},
+            {i:"🥢",en:"CHOPSTICKS",id:"SUMPIT",es:"PALILLOS",fr:"BAGUETTES",de:"STÄBCHEN",it:"BACCHETTE",jp:"箸",kr:"젓가락",cn:"筷子",ar:"عيدان أكل"}
+        ],
+        food: [
+            {i:"🍚",en:"RICE",id:"NASI",es:"ARROZ",fr:"RIZ",de:"REIS",it:"RISO",jp:"ご飯",kr:"밥",cn:"米饭",ar:"أرز"},
+            {i:"🍞",en:"BREAD",id:"ROTI",es:"PAN",fr:"PAIN",de:"BROT",it:"PANE",jp:"パン",kr:"빵",cn:"面包",ar:"خبز"},
+            {i:"🥚",en:"EGG",id:"TELUR",es:"HUEVO",fr:"OEUF",de:"EI",it:"UOVO",jp:"卵",kr:"계란",cn:"鸡蛋",ar:"بيض"},
+            {i:"🧀",en:"CHEESE",id:"KEJU",es:"QUESO",fr:"FROMAGE",de:"KÄSE",it:"FORMAGGIO",jp:"チーズ",kr:"치즈",cn:"奶酪",ar:"جبنة"},
+            {i:"🍔",en:"BURGER",id:"BURGER",es:"HAMBURGUESA",fr:"BURGER",de:"BURGER",it:"HAMBURGER",jp:"バーガー",kr:"버거",cn:"汉堡",ar:"برغر"},
+            {i:"🍕",en:"PIZZA",id:"PIZZA",es:"PIZZA",fr:"PIZZA",de:"PIZZA",it:"PIZZA",jp:"ピザ",kr:"피자",cn:"披萨",ar:"بيتزا"},
+            {i:"🍟",en:"FRIES",id:"KENTANG",es:"PAPAS",fr:"FRITES",de:"POMMES",it:"PATATINE",jp:"ポテト",kr:"감자튀김",cn:"薯条",ar:"بطاطس مقلية"},
+            {i:"🍗",en:"CHICKEN",id:"AYAM",es:"POLLO",fr:"POULET",de:"HÄHNCHEN",it:"POLLO",jp:"チキン",kr:"치킨",cn:"鸡肉",ar:"دجاج"},
+            {i:"🥪",en:"SANDWICH",id:"SANDWICH",es:"SÁNDWICH",fr:"SANDWICH",de:"SANDWICH",it:"PANINO",jp:"サンド",kr:"샌드위치",cn:"三明治",ar:"شطيرة"},
+            {i:"🌮",en:"TACO",id:"TACO",es:"TACO",fr:"TACO",de:"TACO",it:"TACO",jp:"タコス",kr:"타코",cn:"塔可",ar:"تاكو"},
+            {i:"🥩",en:"MEAT",id:"DAGING",es:"CARNE",fr:"VIANDE",de:"FLEISCH",it:"CARNE",jp:"肉",kr:"고기",cn:"肉",ar:"لحم"},
+            {i:"🥞",en:"PANCAKE",id:"PANCAKE",es:"PANQUEQUE",fr:"CRÊPE",de:"PFANNKUCHEN",it:"FRITTELLA",jp:"パンケーキ",kr:"팬케이크",cn:"煎饼",ar:"فطيرة"},
+            {i:"🍩",en:"DONUT",id:"DONAT",es:"DONA",fr:"DONUT",de:"DONUT",it:"CIAMBELLA",jp:"ドーナツ",kr:"도넛",cn:"甜甜圈",ar:"دونات"},
+            {i:"🍪",en:"COOKIE",id:"KUE",es:"GALLETA",fr:"BISCUIT",de:"KEKS",it:"BISCOTTO",jp:"クッキー",kr:"쿠키",cn:"饼干",ar:"بسكويت"},
+            {i:"🍫",en:"CHOCO",id:"COKELAT",es:"CHOCOLATE",fr:"CHOCOLAT",de:"SCHOKO",it:"CIOCCOLATO",jp:"チョコ",kr:"초콜릿",cn:"巧克力",ar:"شوكولاتة"},
+            {i:"🍦",en:"ICECREAM",id:"ES KRIM",es:"HELADO",fr:"GLACE",de:"EIS",it:"GELATO",jp:"アイス",kr:"아이스크림",cn:"冰淇淋",ar:"مثلجات"},
+            {i:"🍰",en:"CAKE",id:"BOLU",es:"PASTEL",fr:"GÂTEAU",de:"KUCHEN",it:"TORTA",jp:"ケーキ",kr:"케이크",cn:"蛋糕",ar:"كعكة"},
+            {i:"🥛",en:"MILK",id:"SUSU",es:"LECHE",fr:"LAIT",de:"MILCH",it:"LATTE",jp:"牛乳",kr:"우유",cn:"牛奶",ar:"حليب"},
+            {i:"☕",en:"COFFEE",id:"KOPI",es:"CAFÉ",fr:"CAFÉ",de:"KAFFEE",it:"CAFFÈ",jp:"コーヒー",kr:"커피",cn:"咖啡",ar:"قهوة"},
+            {i:"🍵",en:"TEA",id:"TEH",es:"TÉ",fr:"THÉ",de:"TEE",it:"TÈ",jp:"お茶",kr:"차",cn:"茶",ar:"شاي"},
+            {i:"🥤",en:"SODA",id:"SODA",es:"REFRESCO",fr:"SODA",de:"LIMO",it:"BIBITA",jp:"ソーダ",kr:"탄산",cn:"苏打水",ar:"مشروب غازي"},
+            {i:"🧃",en:"JUICE",id:"JUS",es:"JUGO",fr:"JUS",de:"SAFT",it:"SUCCO",jp:"ジュース",kr:"주스",cn:"果汁",ar:"عصير"},
+            {i:"🍬",en:"CANDY",id:"PERMEN",es:"DULCE",fr:"BONBON",de:"BONBON",it:"CARAMELLA",jp:"キャンディ",kr:"사탕",cn:"糖果",ar:"حلوى"},
+            {i:"🍮",en:"PUDDING",id:"PUDING",es:"BUDÍN",fr:"FLAN",de:"PUDDING",it:"BUDINO",jp:"プリン",kr:"푸딩",cn:"布丁",ar:"بودنغ"},
+            {i:"🍜",en:"NOODLES",id:"MIE",es:"FIDEOS",fr:"NOUILLES",de:"NUDELN",it:"NOODLES",jp:"麺",kr:"면",cn:"面条",ar:"نودلز"},
+            {i:"🥣",en:"CEREAL",id:"SEREAL",es:"CEREAL",fr:"CÉRÉALES",de:"MÜSLI",it:"CEREALI",jp:"シリアル",kr:"시리얼",cn:"麦片",ar:"حبوب"},
+            {i:"🍯",en:"HONEY",id:"MADU",es:"MIEL",fr:"MIEL",de:"HONIG",it:"MIELE",jp:"ハチミツ",kr:"꿀",cn:"蜂蜜",ar:"عسل"},
+            {i:"🍙",en:"ONIGIRI",id:"NASI KEPAL",es:"ONIGIRI",fr:"ONIGIRI",de:"ONIGIRI",it:"ONIGIRI",jp:"おにぎり",kr:"오니기리",cn:"饭团",ar:"كرة أرز"},
+            {i:"🌭",en:"HOTDOG",id:"HOTDOG",es:"PERRITO",fr:"HOTDOG",de:"HOTDOG",it:"HOTDOG",jp:"ホットドッグ",kr:"핫도그",cn:"热狗",ar:"هوت دوج"},
+            {i:"🥨",en:"PRETZEL",id:"PRETZEL",es:"PRETZEL",fr:"BRETZEL",de:"BREZEL",it:"PRETZEL",jp:"プレッツェル",kr:"프레첼",cn:"椒盐卷饼",ar:"بريتزل"},
+            {i:"🥐",en:"CROISSANT",id:"KROISAN",es:"CROISSANT",fr:"CROISSANT",de:"CROISSANT",it:"CORNETTO",jp:"クロワッサン",kr:"크루아상",cn:"牛角包",ar:"كرواسون"}
+        ],
+        transport: [
+            {i:"🚗",en:"CAR",id:"MOBIL",es:"AUTO",fr:"VOITURE",de:"AUTO",it:"AUTO",jp:"車",kr:"자동차",cn:"汽车",ar:"سيارة"},
+            {i:"🚌",en:"BUS",id:"BIS",es:"AUTOBÚS",fr:"BUS",de:"BUS",it:"AUTOBUS",jp:"バス",kr:"버스",cn:"公交车",ar:"حافلة"},
+            {i:"🚲",en:"BIKE",id:"SEPEDA",es:"BICICLETA",fr:"VÉLO",de:"FAHRRAD",it:"BICI",jp:"自転車",kr:"자전거",cn:"自行车",ar:"دراجة"},
+            {i:"✈️",en:"PLANE",id:"PESAWAT",es:"AVIÓN",fr:"AVION",de:"FLUGZEUG",it:"AEREO",jp:"飛行機",kr:"비행기",cn:"飞机",ar:"طائرة"},
+            {i:"🚂",en:"TRAIN",id:"KERETA",es:"TREN",fr:"TRAIN",de:"ZUG",it:"TRENO",jp:"電車",kr:"기차",cn:"火车",ar:"قطار"},
+            {i:"🚤",en:"BOAT",id:"PERAHU",es:"BARCO",fr:"BATEAU",de:"BOOT",it:"BARCA",jp:"ボート",kr:"보트",cn:"船",ar:"قارب"},
+            {i:"🚁",en:"COPTER",id:"HELIKOPTER",es:"HELICÓPTERO",fr:"HÉLICOPTÈRE",de:"HELIKOPTER",it:"ELICOTTERO",jp:"ヘリ",kr:"헬기",cn:"直升机",ar:"هليكوبتر"},
+            {i:"🚀",en:"ROCKET",id:"ROKET",es:"COHETE",fr:"FUSÉE",de:"RAKETE",it:"RAZZO",jp:"ロケット",kr:"로켓",cn:"火箭",ar:"صاروخ"},
+            {i:"🚚",en:"TRUCK",id:"TRUK",es:"CAMIÓN",fr:"CAMION",de:"LKW",it:"CAMION",jp:"トラック",kr:"트럭",cn:"卡车",ar:"شاحنة"},
+            {i:"🚑",en:"AMBULANCE",id:"AMBULANS",es:"AMBULANCIA",fr:"AMBULANCE",de:"KRANKENWAGEN",it:"AMBULANZA",jp:"救急車",kr:"구급차",cn:"救护车",ar:"إسعاف"},
+            {i:"🚒",en:"FIRETRUCK",id:"DAMKAR",es:"BOMBEROS",fr:"POMPIERS",de:"FEUERWEHR",it:"POMPIERI",jp:"消防車",kr:"소방차",cn:"消防车",ar:"إطفاء"},
+            {i:"🚓",en:"POLICE",id:"POLISI",es:"POLICÍA",fr:"POLICE",de:"POLIZEI",it:"POLIZIA",jp:"パトカー",kr:"경찰차",cn:"警车",ar:"شرطة"},
+            {i:"🚕",en:"TAXI",id:"TAKSI",es:"TAXI",fr:"TAXI",de:"TAXI",it:"TAXI",jp:"タクシー",kr:"택시",cn:"出租车",ar:"تاكسي"},
+            {i:"🏎️",en:"RACECAR",id:"MOBIL BALAP",es:"AUTO DE CARRERAS",fr:"VOITURE DE COURSE",de:"RENNWAGEN",it:"AUTO DA CORSA",jp:"レースカー",kr:"경주차",cn:"赛车",ar:"سيارة سباق"},
+            {i:"🚜",en:"TRACTOR",id:"TRAKTOR",es:"TRACTOR",fr:"TRACTEUR",de:"TRAKTOR",it:"TRATTORE",jp:"トラクター",kr:"트랙터",cn:"拖拉机",ar:"جرار"},
+            {i:"🛵",en:"SCOOTER",id:"SKUTER",es:"SCOOTER",fr:"SCOOTER",de:"ROLLER",it:"SCOOTER",jp:"スクーター",kr:"스쿠터",cn:"踏板车",ar:"سكوتر"},
+            {i:"🏍️",en:"MOTOR",id:"MOTOR",es:"MOTO",fr:"MOTO",de:"MOTORRAD",it:"MOTO",jp:"バイク",kr:"오토바이",cn:"摩托车",ar:"دراجة نارية"},
+            {i:"🚃",en:"TRAM",id:"TREM",es:"TRANVÍA",fr:"TRAMWAY",de:"STRASSENBAHN",it:"TRAM",jp:"路面電車",kr:"트램",cn:"电车",ar:"ترام"},
+            {i:"🚟",en:"MONORAIL",id:"MONOREL",es:"MONORRAÍL",fr:"MONORAIL",de:"EINSCHIENENBAHN",it:"MONOROTAIA",jp:"モノレール",kr:"모노레일",cn:"单轨",ar:"قطار أحادي"},
+            {i:"🚠",en:"CABLECAR",id:"KERETA GANTUNG",es:"TELEFÉRICO",fr:"TÉLÉPHÉRIQUE",de:"SEILBAHN",it:"FUNIVIA",jp:"ロープウェイ",kr:"케이블카",cn:"缆车",ar:"تلفريك"},
+            {i:"🛳️",en:"CRUISE",id:"PESIAR",es:"CRUCERO",fr:"CROISIÈRE",de:"KREUZFAHRT",it:"CROCIERA",jp:"クルーズ",kr:"유람선",cn:"游轮",ar:"سفينة سياحية"},
+            {i:"🛶",en:"CANOE",id:"SAMPAN",es:"CANOA",fr:"CANOË",de:"KANU",it:"CANOA",jp:"カヌー",kr:"카누",cn:"独木舟",ar:"زورق"},
+            {i:"🛸",en:"UFO",id:"UFO",es:"OVNI",fr:"OVNI",de:"UFO",it:"UFO",jp:"UFO",kr:"UFO",cn:"飞碟",ar:"صحن طائر"},
+            {i:"🚲",en:"TRICYCLE",id:"BECAK",es:"TRICICLO",fr:"TRICYCLE",de:"DREIRAD",it:"TRICICLO",jp:"三輪車",kr:"세발자전거",cn:"三轮车",ar:"دراجة ثلاثية"},
+            {i:"🛴",en:"KICK SCOOTER",id:"OTOPED",es:"PATINETA",fr:"TROTTINETTE",de:"ROLLER",it:"MONOPATTINO",jp:"キックボード",kr:"킥보드",cn:"滑板车",ar:"سكوتر دفع"},
+            {i:"🛻",en:"PICKUP",id:"PIKAP",es:"CAMIONETA",fr:"CAMIONNETTE",de:"PICKUP",it:"PICKUP",jp:"ピックアップ",kr:"픽업트럭",cn:"皮卡",ar:"شاحنة صغيرة"},
+            {i:"🚐",en:"VAN",id:"VAN",es:"FURGÓN",fr:"FOURGONNETTE",de:"LIEFERWAGEN",it:"FURGONE",jp:"バン",kr:"밴",cn:"货车",ar:"سيارة نقل"},
+            {i:"🚇",en:"METRO",id:"MRT",es:"METRO",fr:"MÉTRO",de:"U-BAHN",it:"METRO",jp:"地下鉄",kr:"지하철",cn:"地铁",ar:"مترو"},
+            {i:"🛞",en:"WHEEL",id:"RODA",es:"RUEDA",fr:"ROUE",de:"RAD",it:"RUOTA",jp:"車輪",kr:"바퀴",cn:"轮子",ar:"عجلة"},
+            {i:"🛑",en:"STOP",id:"BERHENTI",es:"PARE",fr:"STOP",de:"STOPP",it:"ALT",jp:"止まれ",kr:"정지",cn:"停",ar:"قف"}
+        ],
+        school: [
+            {i:"🎒",en:"BAG",id:"TAS",es:"MOCHILA",fr:"SAC",de:"TASCHE",it:"ZAINO",jp:"カバン",kr:"가방",cn:"书包",ar:"حقيبة"},
+            {i:"📚",en:"BOOK",id:"BUKU",es:"LIBRO",fr:"LIVRE",de:"BUCH",it:"LIBRO",jp:"本",kr:"책",cn:"书",ar:"كتاب"},
+            {i:"✏️",en:"PENCIL",id:"PENSIL",es:"LÁPIZ",fr:"CRAYON",de:"BLEISTIFT",it:"MATITA",jp:"鉛筆",kr:"연필",cn:"铅笔",ar:"قلم رصاص"},
+            {i:"✂️",en:"SCISSORS",id:"GUNTING",es:"TIJERAS",fr:"CISEAUX",de:"SCHERE",it:"FORBICI",jp:"ハサミ",kr:"가위",cn:"剪刀",ar:"مقص"},
+            {i:"📏",en:"RULER",id:"PENGGARIS",es:"REGLA",fr:"RÈGLE",de:"LINEAL",it:"RIGHELLO",jp:"定規",kr:"자",cn:"尺子",ar:"مسطرة"},
+            {i:"🖊️",en:"PEN",id:"PEN",es:"BOLÍGRAFO",fr:"STYLO",de:"STIFT",it:"PENNA",jp:"ペン",kr:"펜",cn:"钢笔",ar:"قلم"},
+            {i:"🖍️",en:"CRAYON",id:"KRAYON",es:"CRAYÓN",fr:"CRAYON",de:"BUNTSTIFT",it:"PASTELLO",jp:"クレヨン",kr:"크레용",cn:"蜡笔",ar:"قلم تلوين"},
+            {i:"📝",en:"NOTE",id:"CATATAN",es:"NOTA",fr:"NOTE",de:"NOTE",it:"NOTA",jp:"メモ",kr:"노트",cn:"笔记",ar:"مذكرة"},
+            {i:"📎",en:"CLIP",id:"KLIP",es:"CLIP",fr:"TROMBONE",de:"KLAMMER",it:"FERMAGLIO",jp:"クリップ",kr:"클립",cn:"夹子",ar:"مشبك"},
+            {i:"🖌️",en:"BRUSH",id:"KUAS",es:"PINCEL",fr:"PINCEAU",de:"PINSEL",it:"PENNELLO",jp:"筆",kr:"붓",cn:"画笔",ar:"فرشاة"},
+            {i:"🏫",en:"SCHOOL",id:"SEKOLAH",es:"ESCUELA",fr:"ÉCOLE",de:"SCHULE",it:"SCUOLA",jp:"学校",kr:"학교",cn:"学校",ar:"مدرسة"},
+            {i:"🔔",en:"BELL",id:"LONCENG",es:"CAMPANA",fr:"CLOCHE",de:"GLOCKE",it:"CAMPANA",jp:"ベル",kr:"종",cn:"铃",ar:"جرس"},
+            {i:"🧮",en:"ABACUS",id:"SEMPOA",es:"ÁBACO",fr:"ABAQUE",de:"ABAKUS",it:"ABACO",jp:"そろばん",kr:"주판",cn:"算盘",ar:"عداد"},
+            {i:"🏆",en:"TROPHY",id:"PIALA",es:"TROFEO",fr:"TROPHÉE",de:"POKAL",it:"TROFEO",jp:"トロフィー",kr:"트로피",cn:"奖杯",ar:"كأس"},
+            {i:"💻",en:"LAPTOP",id:"LAPTOP",es:"LAPTOP",fr:"ORDINATEUR",de:"LAPTOP",it:"PORTATILE",jp:"PC",kr:"노트북",cn:"笔记本",ar:"لابتوب"},
+            {i:"🗑️",en:"TRASH",id:"SAMPAH",es:"BASURA",fr:"POUBELLE",de:"MÜLL",it:"SPAZZATURA",jp:"ゴミ",kr:"쓰레기",cn:"垃圾",ar:"قمامة"},
+            {i:"📌",en:"PIN",id:"PIN",es:"ALFILER",fr:"ÉPINGLE",de:"NADEL",it:"SPILLO",jp:"ピン",kr:"핀",cn:"大头针",ar:"دبوس"},
+            {i:"📖",en:"READ",id:"BACA",es:"LEER",fr:"LIRE",de:"LESEN",it:"LEGGERE",jp:"読む",kr:"읽기",cn:"阅读",ar:"قراءة"},
+            {i:"🧲",en:"MAGNET",id:"MAGNET",es:"IMÁN",fr:"AIMANT",de:"MAGNET",it:"MAGNETE",jp:"磁石",kr:"자석",cn:"磁铁",ar:"مغناطيس"},
+            {i:"🔬",en:"MICROSCOPE",id:"MIKROSKOP",es:"MICROSCOPIO",fr:"MICROSCOPE",de:"MIKROSKOP",it:"MICROSCOPIO",jp:"顕微鏡",kr:"현미경",cn:"显微镜",ar:"مجهر"},
+            {i:"🔭",en:"TELESCOPE",id:"TELESKOP",es:"TELESCOPIO",fr:"TÉLESCOPE",de:"TELESKOP",it:"TELESCOPIO",jp:"望遠鏡",kr:"망원경",cn:"望远镜",ar:"تلسكوب"},
+            {i:"🎨",en:"PALETTE",id:"PALET",es:"PALETA",fr:"PALETTE",de:"PALETTE",it:"TAVOLOZZA",jp:"パレット",kr:"팔레트",cn:"调色板",ar:"لوحة ألوان"},
+            {i:"🧪",en:"POTION",id:"RAMUAN",es:"POCIÓN",fr:"POTION",de:"TRANK",it:"POZIONE",jp:"ポーション",kr:"물약",cn:"药水",ar:"جرعة"},
+            {i:"🧴",en:"GLUE",id:"LEM",es:"PEGAMENTO",fr:"COLLE",de:"KLEBER",it:"COLLA",jp:"糊",kr:"풀",cn:"胶水",ar:"غراء"},
+            {i:"🪑",en:"DESK",id:"MEJA",es:"ESCRITORIO",fr:"BUREAU",de:"SCHREIBTISCH",it:"SCRIVANIA",jp:"机",kr:"책상",cn:"桌子",ar:"مكتب"}
+        ],
+        clothes: [
+            {i:"👕",en:"SHIRT",id:"BAJU",es:"CAMISA",fr:"CHEMISE",de:"HEMD",it:"CAMICIA",jp:"シャツ",kr:"셔츠",cn:"衬衫",ar:"قميص"},
+            {i:"👖",en:"PANTS",id:"CELANA",es:"PANTALONES",fr:"PANTALON",de:"HOSE",it:"PANTALONI",jp:"ズボン",kr:"바지",cn:"裤子",ar:"بنطلون"},
+            {i:"👟",en:"SHOE",id:"SEPATU",es:"ZAPATO",fr:"CHAUSSURE",de:"SCHUH",it:"SCARPA",jp:"靴",kr:"신발",cn:"鞋子",ar:"حذاء"},
+            {i:"🎩",en:"HAT",id:"TOPI",es:"SOMBRERO",fr:"CHAPEAU",de:"HUT",it:"CAPPELLO",jp:"帽子",kr:"모자",cn:"帽子",ar:"قبعة"},
+            {i:"🧤",en:"GLOVE",id:"SARUNG TANGAN",es:"GUANTE",fr:"GANT",de:"HANDSCHUH",it:"GUANTO",jp:"手袋",kr:"장갑",cn:"手套",ar:"قفاز"},
+            {i:"🧦",en:"SOCK",id:"KAOS KAKI",es:"CALCETÍN",fr:"CHAUSSETTE",de:"SOCKE",it:"CALZINO",jp:"靴下",kr:"양말",cn:"袜子",ar:"جورب"},
+            {i:"🧥",en:"COAT",id:"JAKET",es:"ABRIGO",fr:"MANTEAU",de:"MANTEL",it:"CAPPOTTO",jp:"コート",kr:"코트",cn:"外套",ar:"معطف"},
+            {i:"🧣",en:"SCARF",id:"SYAL",es:"BUFANDA",fr:"ÉCHARPE",de:"SCHAL",it:"SCIARPA",jp:"マフラー",kr:"목도리",cn:"围巾",ar:"وشاح"},
+            {i:"👑",en:"CROWN",id:"MAHKOTA",es:"CORONA",fr:"COURONNE",de:"KRONE",it:"CORONA",jp:"王冠",kr:"왕관",cn:"皇冠",ar:"تاج"},
+            {i:"🕶️",en:"GLASSES",id:"KACAMATA",es:"LENTES",fr:"LUNETTES",de:"BRILLE",it:"OCCHIALI",jp:"眼鏡",kr:"안경",cn:"眼镜",ar:"نظارات"},
+            {i:"🎒",en:"BACKPACK",id:"RANSEL",es:"MOCHILA",fr:"SAC À DOS",de:"RUCKSACK",it:"ZAINO",jp:"リュック",kr:"배낭",cn:"背包",ar:"حقيبة ظهر"},
+            {i:"👢",en:"BOOT",id:"BOOT",es:"BOTA",fr:"BOTTE",de:"STIEFEL",it:"STIVALE",jp:"ブーツ",kr:"부츠",cn:"靴子",ar:"حذاء طويل"},
+            {i:"👡",en:"SANDAL",id:"SANDAL",es:"SANDALIA",fr:"SANDALE",de:"SANDALE",it:"SANDALO",jp:"サンダル",kr:"샌들",cn:"凉鞋",ar:"صندل"},
+            {i:"👔",en:"TIE",id:"DASI",es:"CORBATA",fr:"CRAVATE",de:"KRAWATTE",it:"CRAVATTA",jp:"ネクタイ",kr:"넥타이",cn:"领带",ar:"ربطة عنق"},
+            {i:"🩳",en:"SHORTS",id:"CELANA PENDEK",es:"PANTALONES CORTOS",fr:"SHORT",de:"SHORTS",it:"PANTALONCINI",jp:"半ズボン",kr:"반바지",cn:"短裤",ar:"سروال قصير"},
+            {i:"🦺",en:"VEST",id:"ROMPI",es:"CHALECO",fr:"GILET",de:"WESTE",it:"GILET",jp:"ベスト",kr:"조끼",cn:"背心",ar:"سترة"},
+            {i:"💍",en:"RING",id:"CINCIN",es:"ANILLO",fr:"BAGUE",de:"RING",it:"ANELLO",jp:"指輪",kr:"반지",cn:"戒指",ar:"خاتم"},
+            {i:"👜",en:"HANDBAG",id:"TAS TANGAN",es:"BOLSO",fr:"SAC À MAIN",de:"HANDTASCHE",it:"BORSA",jp:"ハンドバッグ",kr:"핸드백",cn:"手提包",ar:"حقيبة يد"},
+            {i:"⛑️",en:"HELMET",id:"HELM",es:"CASCO",fr:"CASQUE",de:"HELM",it:"CASCO",jp:"ヘルメット",kr:"헬멧",cn:"头盔",ar:"خوذة"},
+            {i:"🧢",en:"CAP",id:"TOPI",es:"GORRA",fr:"CASQUETTE",de:"KAPPE",it:"BERRETTO",jp:"キャップ",kr:"모자",cn:"鸭舌帽",ar:"قبعة رياضية"},
+            {i:"⌚",en:"WATCH",id:"JAM TANGAN",es:"RELOJ",fr:"MONTRE",de:"ARMBANDUHR",it:"OROLOGIO",jp:"腕時計",kr:"시계",cn:"手表",ar:"ساعة يد"},
+            {i:"☂️",en:"UMBRELLA",id:"PAYUNG",es:"PARAGUAS",fr:"PARAPLUIE",de:"REGENSCHIRM",it:"OMBRELLO",jp:"傘",kr:"우산",cn:"雨伞",ar:"مظلة"},
+            {i:"🎀",en:"RIBBON",id:"PITA",es:"CINTA",fr:"RUBAN",de:"BAND",it:"NASTRO",jp:"リボン",kr:"리본",cn:"丝带",ar:"شريط"},
+            {i:"👛",en:"WALLET",id:"DOMPET",es:"CARTERA",fr:"PORTEFEUILLE",de:"GELDBÖRSE",it:"PORTAFOGLIO",jp:"財布",kr:"지갑",cn:"钱包",ar:"محفظة"}
+        ],
+        home: [
+            {i:"🪑",en:"CHAIR",id:"KURSI",es:"SILLA",fr:"CHAISE",de:"STUHL",it:"SEDIA",jp:"椅子",kr:"의자",cn:"椅子",ar:"كرسي"},
+            {i:"🚪",en:"DOOR",id:"PINTU",es:"PUERTA",fr:"PORTE",de:"TÜR",it:"PORTA",jp:"ドア",kr:"문",cn:"门",ar:"باب"},
+            {i:"🛏️",en:"BED",id:"KASUR",es:"CAMA",fr:"LIT",de:"BETT",it:"LETTO",jp:"ベッド",kr:"침대",cn:"床",ar:"سرير"},
+            {i:"🛋️",en:"SOFA",id:"SOFA",es:"SOFÁ",fr:"CANAPÉ",de:"SOFA",it:"DIVANO",jp:"ソファ",kr:"소파",cn:"沙发",ar:"أريكة"},
+            {i:"🕰️",en:"CLOCK",id:"JAM",es:"RELOJ",fr:"HORLOGE",de:"UHR",it:"OROLOGIO",jp:"時計",kr:"시계",cn:"钟",ar:"ساعة"},
+            {i:"🚿",en:"SHOWER",id:"SHOWER",es:"DUCHA",fr:"DOUCHE",de:"DUSCHE",it:"DOCCIA",jp:"シャワー",kr:"샤워",cn:"淋浴",ar:"دش"},
+            {i:"🛁",en:"TUB",id:"BAK MANDI",es:"BAÑERA",fr:"BAIGNOIRE",de:"WANNE",it:"VASCA",jp:"浴槽",kr:"욕조",cn:"浴缸",ar:"حوض"},
+            {i:"🧼",en:"SOAP",id:"SABUN",es:"JABÓN",fr:"SAVON",de:"SEIFE",it:"SAPONE",jp:"石鹸",kr:"비누",cn:"肥皂",ar:"صابون"},
+            {i:"🔑",en:"KEY",id:"KUNCI",es:"LLAVE",fr:"CLÉ",de:"SCHLÜSSEL",it:"CHIAVE",jp:"鍵",kr:"열쇠",cn:"钥匙",ar:"مفتاح"},
+            {i:"📦",en:"BOX",id:"KOTAK",es:"CAJA",fr:"BOÎTE",de:"KISTE",it:"SCATOLA",jp:"箱",kr:"상자",cn:"盒子",ar:"صندوق"},
+            {i:"🧹",en:"BROOM",id:"SAPU",es:"ESCOBA",fr:"BALAI",de:"BESEN",it:"SCOPA",jp:"ほうき",kr:"빗자루",cn:"扫帚",ar:"مكنسة"},
+            {i:"📺",en:"TV",id:"TV",es:"TV",fr:"TÉLÉ",de:"FERNSEHER",it:"TV",jp:"テレビ",kr:"티비",cn:"电视",ar:"تلفاز"},
+            {i:"☎️",en:"PHONE",id:"TELEPON",es:"TELÉFONO",fr:"TÉLÉPHONE",de:"TELEFON",it:"TELEFONO",jp:"電話",kr:"전화",cn:"电话",ar:"هاتف"},
+            {i:"💡",en:"LAMP",id:"LAMPU",es:"LÁMPARA",fr:"LAMPE",de:"LAMPE",it:"LAMPADA",jp:"ランプ",kr:"램프",cn:"灯",ar:"مصباح"},
+            {i:"🪞",en:"MIRROR",id:"CERMIN",es:"ESPEJO",fr:"MIROIR",de:"SPIEGEL",it:"SPECCHIO",jp:"鏡",kr:"거울",cn:"镜子",ar:"مرآة"},
+            {i:"🧺",en:"BASKET",id:"KERANJANG",es:"CESTA",fr:"PANIER",de:"KORB",it:"CESTO",jp:"カゴ",kr:"바구니",cn:"篮子",ar:"سلة"},
+            {i:"🕯️",en:"CANDLE",id:"LILIN",es:"VELA",fr:"BOUGIE",de:"KERZE",it:"CANDELA",jp:"ロウソク",kr:"양초",cn:"蜡烛",ar:"شمعة"},
+            {i:"🖼️",en:"FRAME",id:"BINGKAI",es:"MARCO",fr:"CADRE",de:"RAHMEN",it:"CORNICE",jp:"額縁",kr:"액자",cn:"相框",ar:"إطار"},
+            {i:"🧻",en:"TISSUE",id:"TISU",es:"PAÑUELO",fr:"MOUCHOIR",de:"TUCH",it:"FAZZOLETTO",jp:"ティッシュ",kr:"휴지",cn:"纸巾",ar:"منديل"},
+            {i:"🪥",en:"TOOTHBRUSH",id:"SIKAT GIGI",es:"CEPILLO",fr:"BROSSE",de:"ZAHNBÜRSTE",it:"SPAZZOLINO",jp:"歯ブラシ",kr:"칫솔",cn:"牙刷",ar:"فرشاة أسنان"},
+            {i:"🧸",en:"TOY",id:"MAINAN",es:"JUGUETE",fr:"JOUET",de:"SPIELZEUG",it:"GIOCATTOLO",jp:"おもちゃ",kr:"장난감",cn:"玩具",ar:"لعبة"},
+            {i:"🧩",en:"PUZZLE",id:"PUZZLE",es:"ROMPECABEZAS",fr:"PUZZLE",de:"PUZZLE",it:"PUZZLE",jp:"パズル",kr:"퍼즐",cn:"拼图",ar:"لغز"},
+            {i:"🧽",en:"SPONGE",id:"SPONS",es:"ESPONJA",fr:"ÉPONGE",de:"SCHWAMM",it:"SPUGNA",jp:"スポンジ",kr:"스펀지",cn:"海绵",ar:"إسفنجة"},
+            {i:"🚽",en:"TOILET",id:"TOILET",es:"INODORO",fr:"TOILETTES",de:"TOILETTE",it:"GABINETTO",jp:"トイレ",kr:"화장실",cn:"厕所",ar:"مرحاض"},
+            {i:"🪟",en:"WINDOW",id:"JENDELA",es:"VENTANA",fr:"FENÊTRE",de:"FENSTER",it:"FINESTRA",jp:"窓",kr:"창문",cn:"窗户",ar:"نافذة"},
+            {i:"🏠",en:"HOUSE",id:"RUMAH",es:"CASA",fr:"MAISON",de:"HAUS",it:"CASA",jp:"家",kr:"집",cn:"房子",ar:"منزل"},
+            {i:"🍽️",en:"PLATE",id:"PIRING",es:"PLATO",fr:"ASSIETTE",de:"TELLER",it:"PIATTO",jp:"皿",kr:"접시",cn:"盘子",ar:"طبق"},
+            {i:"🥄",en:"SPOON",id:"SENDOK",es:"CUCHARA",fr:"CUILLÈRE",de:"LÖFFEL",it:"CUCCHIAIO",jp:"スプーン",kr:"숟가락",cn:"勺子",ar:"ملعقة"},
+            {i:"🍴",en:"FORK",id:"GARPU",es:"TENEDOR",fr:"FOURCHETTE",de:"GABEL",it:"FORCHETTA",jp:"フォーク",kr:"포크",cn:"叉子",ar:"شوكة"},
+            {i:"🔪",en:"KNIFE",id:"PISAU",es:"CUCHILLO",fr:"COUTEAU",de:"MESSER",it:"COLTELLO",jp:"ナイフ",kr:"칼",cn:"刀",ar:"سكين"}
+        ],
+        nature: [
+            {i:"☀️",en:"SUN",id:"MATAHARI",es:"SOL",fr:"SOLEIL",de:"SONNE",it:"SOLE",jp:"太陽",kr:"해",cn:"太阳",ar:"شمس"},
+            {i:"🌙",en:"MOON",id:"BULAN",es:"LUNA",fr:"LUNE",de:"MOND",it:"LUNA",jp:"月",kr:"달",cn:"月亮",ar:"قمر"},
+            {i:"☁️",en:"CLOUD",id:"AWAN",es:"NUBE",fr:"NUAGE",de:"WOLKE",it:"NUVOLA",jp:"雲",kr:"구름",cn:"云",ar:"سحابة"},
+            {i:"🌧️",en:"RAIN",id:"HUJAN",es:"LLUVIA",fr:"PLUIE",de:"REGEN",it:"PIOGGIA",jp:"雨",kr:"비",cn:"雨",ar:"مطر"},
+            {i:"❄️",en:"SNOW",id:"SALJU",es:"NIEVE",fr:"NEIGE",de:"SCHNEE",it:"NEVE",jp:"雪",kr:"눈",cn:"雪",ar:"ثلج"},
+            {i:"🌳",en:"TREE",id:"POHON",es:"ÁRBOL",fr:"ARBRE",de:"BAUM",it:"ALBERO",jp:"木",kr:"나무",cn:"树",ar:"شجرة"},
+            {i:"🌸",en:"FLOWER",id:"BUNGA",es:"FLOR",fr:"FLEUR",de:"BLUME",it:"FIORE",jp:"花",kr:"꽃",cn:"花",ar:"زهرة"},
+            {i:"🔥",en:"FIRE",id:"API",es:"FUEGO",fr:"FEU",de:"FEUER",it:"FUOCO",jp:"火",kr:"불",cn:"火",ar:"نار"},
+            {i:"⭐️",en:"STAR",id:"BINTANG",es:"ESTRELLA",fr:"ÉTOILE",de:"STERN",it:"STELLA",jp:"星",kr:"별",cn:"星星",ar:"نجمة"},
+            {i:"🌍",en:"EARTH",id:"BUMI",es:"TIERRA",fr:"TERRE",de:"ERDE",it:"TERRA",jp:"地球",kr:"지구",cn:"地球",ar:"أرض"},
+            {i:"🌈",en:"RAINBOW",id:"PELANGI",es:"ARCOÍRIS",fr:"ARC-EN-CIEL",de:"REGENBOGEN",it:"ARCOBALENO",jp:"虹",kr:"무지개",cn:"彩虹",ar:"قوس قزح"},
+            {i:"🌵",en:"CACTUS",id:"KAKTUS",es:"CACTUS",fr:"CACTUS",de:"KAKTUS",it:"CACTUS",jp:"サボテン",kr:"선인장",cn:"仙人掌",ar:"صبار"},
+            {i:"🌴",en:"PALM",id:"PALEM",es:"PALMA",fr:"PALME",de:"PALME",it:"PALMA",jp:"ヤシ",kr:"야자수",cn:"棕榈",ar:"نخلة"},
+            {i:"🏔️",en:"MOUNTAIN",id:"GUNUNG",es:"MONTAÑA",fr:"MONTAGNE",de:"BERG",it:"MONTAGNA",jp:"山",kr:"산",cn:"山",ar:"جبل"},
+            {i:"🌊",en:"OCEAN",id:"LAUT",es:"OCÉANO",fr:"OCÉAN",de:"OZEAN",it:"OCEANO",jp:"海",kr:"바다",cn:"海洋",ar:"محيط"},
+            {i:"🪨",en:"ROCK",id:"BATU",es:"ROCA",fr:"ROCHE",de:"STEIN",it:"ROCCIA",jp:"岩",kr:"바위",cn:"岩石",ar:"صخرة"},
+            {i:"🪵",en:"WOOD",id:"KAYU",es:"MADERA",fr:"BOIS",de:"HOLZ",it:"LEGNO",jp:"木材",kr:"나무",cn:"木头",ar:"خشب"},
+            {i:"🍂",en:"LEAF",id:"DAUN",es:"HOJA",fr:"FEUILLE",de:"BLATT",it:"FOGLIA",jp:"葉",kr:"나뭇잎",cn:"叶子",ar:"ورقة شجر"},
+            {i:"🌋",en:"VOLCANO",id:"GUNUNG API",es:"VOLCÁN",fr:"VOLCAN",de:"VULKAN",it:"VULCANO",jp:"火山",kr:"화산",cn:"火山",ar:"بركان"},
+            {i:"🪐",en:"PLANET",id:"PLANET",es:"PLANETA",fr:"PLANÈTE",de:"PLANET",it:"PIANETA",jp:"惑星",kr:"행성",cn:"行星",ar:"كوكب"},
+            {i:"☄️",en:"COMET",id:"KOMET",es:"COMETA",fr:"COMÈTE",de:"KOMET",it:"COMETA",jp:"彗星",kr:"혜성",cn:"彗星",ar:"مذنب"},
+            {i:"⚡",en:"LIGHTNING",id:"PETIR",es:"RAYO",fr:"ÉCLAIR",de:"BLITZ",it:"FULMINE",jp:"雷",kr:"번개",cn:"闪电",ar:"برق"},
+            {i:"💧",en:"WATER",id:"AIR",es:"AGUA",fr:"EAU",de:"WASSER",it:"ACQUA",jp:"水",kr:"물",cn:"水",ar:"ماء"},
+            {i:"🌪️",en:"TORNADO",id:"TOPAN",es:"TORNADO",fr:"TORNADE",de:"TORNADO",it:"TORNADO",jp:"竜巻",kr:"토네이도",cn:"龙卷风",ar:"إعصار"},
+            {i:"🍄",en:"MUSHROOM",id:"JAMUR",es:"HONGO",fr:"CHAMPIGNON",de:"PILZ",it:"FUNGO",jp:"キノコ",kr:"버섯",cn:"蘑菇",ar:"فطر"}
+        ],
+        colors: [
+            {i:"🔴",en:"RED",id:"MERAH",es:"ROJO",fr:"ROUGE",de:"ROT",it:"ROSSO",jp:"赤",kr:"빨강",cn:"红",ar:"أحمر"},
+            {i:"🔵",en:"BLUE",id:"BIRU",es:"AZUL",fr:"BLEU",de:"BLAU",it:"BLU",jp:"青",kr:"파랑",cn:"蓝",ar:"أزرق"},
+            {i:"🟢",en:"GREEN",id:"HIJAU",es:"VERDE",fr:"VERT",de:"GRÜN",it:"VERDE",jp:"緑",kr:"초록",cn:"绿",ar:"أخضر"},
+            {i:"🟡",en:"YELLOW",id:"KUNING",es:"AMARILLO",fr:"JAUNE",de:"GELB",it:"GIALLO",jp:"黄色",kr:"노랑",cn:"黄",ar:"أصفر"},
+            {i:"⚫",en:"BLACK",id:"HITAM",es:"NEGRO",fr:"NOIR",de:"SCHWARZ",it:"NERO",jp:"黒",kr:"검정",cn:"黑",ar:"أسود"},
+            {i:"⚪",en:"WHITE",id:"PUTIH",es:"BLANCO",fr:"BLANC",de:"WEISS",it:"BIANCO",jp:"白",kr:"하양",cn:"白",ar:"أبيض"},
+            {i:"🟠",en:"ORANGE",id:"ORANYE",es:"NARANJA",fr:"ORANGE",de:"ORANGE",it:"ARANCIONE",jp:"オレンジ",kr:"주황",cn:"橙",ar:"برتقالي"},
+            {i:"🟣",en:"PURPLE",id:"UNGU",es:"MORADO",fr:"VIOLET",de:"LILA",it:"VIOLA",jp:"紫",kr:"보라",cn:"紫",ar:"أرجواني"},
+            {i:"🟤",en:"BROWN",id:"COKLAT",es:"MARRÓN",fr:"MARRON",de:"BRAUN",it:"MARRONE",jp:"茶色",kr:"갈색",cn:"棕",ar:"بني"},
+            {i:"🩷",en:"PINK",id:"MERAH MUDA",es:"ROSA",fr:"ROSE",de:"ROSA",it:"ROSA",jp:"ピンク",kr:"분홍",cn:"粉",ar:"زهري"},
+            {i:"🩶",en:"GRAY",id:"ABU-ABU",es:"GRIS",fr:"GRIS",de:"GRAU",it:"GRIGIO",jp:"灰色",kr:"회색",cn:"灰",ar:"رمادي"},
+            {i:"⚜️",en:"GOLD",id:"EMAS",es:"ORO",fr:"OR",de:"GOLD",it:"ORO",jp:"金",kr:"금색",cn:"金",ar:"ذهبي"}
+        ],
+        shapes: [
+            {i:"🔴",en:"CIRCLE",id:"LINGKARAN",es:"CÍRCULO",fr:"CERCLE",de:"KREIS",it:"CERCHIO",jp:"円",kr:"원",cn:"圆",ar:"دائرة"},
+            {i:"🟦",en:"SQUARE",id:"KOTAK",es:"CUADRADO",fr:"CARRÉ",de:"QUADRAT",it:"QUADRATO",jp:"四角",kr:"정사각형",cn:"方形",ar:"مربع"},
+            {i:"🔺",en:"TRIANGLE",id:"SEGITIGA",es:"TRIÁNGULO",fr:"TRIANGLE",de:"DREIECK",it:"TRIANGOLO",jp:"三角",kr:"삼각형",cn:"三角",ar:"مثلث"},
+            {i:"⭐",en:"STAR",id:"BINTANG",es:"ESTRELLA",fr:"ÉTOILE",de:"STERN",it:"STELLA",jp:"星",kr:"별",cn:"星",ar:"نجمة"},
+            {i:"♥️",en:"HEART",id:"HATI",es:"CORAZÓN",fr:"COEUR",de:"HERZ",it:"CUORE",jp:"ハート",kr:"하트",cn:"心",ar:"قلب"},
+            {i:"🔷",en:"DIAMOND",id:"WAJIK",es:"DIAMANTE",fr:"LOSANGE",de:"RAUTE",it:"ROMBO",jp:"ダイヤ",kr:"다이아",cn:"菱形",ar:"ماسي"},
+            {i:"🌙",en:"CRESCENT",id:"SABIT",es:"CRECIENTE",fr:"CROISSANT",de:"HALBMOND",it:"MEZZALUNA",jp:"三日月",kr:"초승달",cn:"新月",ar:"هلال"},
+            {i:"🥚",en:"OVAL",id:"LONJONG",es:"ÓVALO",fr:"OVALE",de:"OVAL",it:"OVALE",jp:"楕円",kr:"타원",cn:"椭圆",ar:"بيضاوي"},
+            {i:"🛑",en:"HEXAGON",id:"SEGIENAM",es:"HEXÁGONO",fr:"HEXAGONE",de:"SECHSECK",it:"ESAGONO",jp:"六角形",kr:"육각형",cn:"六边形",ar:"سداسي"},
+            {i:"📦",en:"CUBE",id:"KUBUS",es:"CUBO",fr:"CUBE",de:"WÜRFEL",it:"CUBO",jp:"立方体",kr:"큐브",cn:"立方体",ar:"مكعب"},
+            {i:"🍦",en:"CONE",id:"KERUCUT",es:"CONO",fr:"CÔNE",de:"KEGEL",it:"CONO",jp:"円錐",kr:"원뿔",cn:"圆锥",ar:"مخروط"},
+            {i:"⛛",en:"PYRAMID",id:"PIRAMIDA",es:"PIRÁMIDE",fr:"PYRAMIDE",de:"PYRAMIDE",it:"PIRAMIDE",jp:"ピラミッド",kr:"피라미드",cn:"金字塔",ar:"هرم"}
+        ],
+        sports: [
+            {i:"⚽️",en:"SOCCER",id:"SEPAK BOLA",es:"FÚTBOL",fr:"FOOTBALL",de:"FUSSBALL",it:"CALCIO",jp:"サッカー",kr:"축구",cn:"足球",ar:"كرة القدم"},
+            {i:"🏀",en:"BASKET",id:"BASKET",es:"BALONCESTO",fr:"BASKET",de:"BASKETBALL",it:"BASKET",jp:"バスケ",kr:"농구",cn:"篮球",ar:"كرة السلة"},
+            {i:"🏈",en:"RUGBY",id:"RUGBY",es:"RUGBY",fr:"RUGBY",de:"RUGBY",it:"RUGBY",jp:"ラグビー",kr:"럭비",cn:"橄榄球",ar:"رجبي"},
+            {i:"🎾",en:"TENNIS",id:"TENIS",es:"TENIS",fr:"TENNIS",de:"TENNIS",it:"TENNIS",jp:"テニス",kr:"테니스",cn:"网球",ar:"تنس"},
+            {i:"🏐",en:"VOLLEY",id:"VOLI",es:"VOLEIBOL",fr:"VOLLEY",de:"VOLLEYBALL",it:"PALLAVOLO",jp:"バレー",kr:"배구",cn:"排球",ar:"كرة الطائرة"},
+            {i:"🏓",en:"PINGPONG",id:"PINGPONG",es:"PING PONG",fr:"PING PONG",de:"TISCHTENNIS",it:"PING PONG",jp:"卓球",kr:"탁구",cn:"乒乓球",ar:"تنس الطاولة"},
+            {i:"🏸",en:"BADMINTON",id:"BULUTANGKIS",es:"BÁDMINTON",fr:"BADMINTON",de:"BADMINTON",it:"BADMINTON",jp:"バドミントン",kr:"배드민턴",cn:"羽毛球",ar:"ريشة"},
+            {i:"🥊",en:"BOXING",id:"TINJU",es:"BOXEO",fr:"BOXE",de:"BOXEN",it:"PUGILATO",jp:"ボクシング",kr:"복싱",cn:"拳击",ar:"ملاكمة"},
+            {i:"🥋",en:"KARATE",id:"KARATE",es:"KARATE",fr:"KARATÉ",de:"KARATE",it:"KARATE",jp:"空手",kr:"가라테",cn:"空手道",ar:"كاراتيه"},
+            {i:"🏊",en:"SWIM",id:"RENANG",es:"NATACIÓN",fr:"NATATION",de:"SCHWIMMEN",it:"NUOTO",jp:"水泳",kr:"수영",cn:"游泳",ar:"سباحة"},
+            {i:"🏃",en:"RUN",id:"LARI",es:"CORRER",fr:"COURSE",de:"LAUFEN",it:"CORSA",jp:"ランニング",kr:"달리기",cn:"跑步",ar:"جري"},
+            {i:"🚴",en:"CYCLING",id:"BERSEPEDA",es:"CICLISMO",fr:"CYCLISME",de:"RADFAHREN",it:"CICLISMO",jp:"サイクリング",kr:"사이클링",cn:"骑行",ar:"ركوب الدراجات"},
+            {i:"⛳",en:"GOLF",id:"GOLF",es:"GOLF",fr:"GOLF",de:"GOLF",it:"GOLF",jp:"ゴルフ",kr:"골프",cn:"高尔夫",ar:"جولف"},
+            {i:"⚾",en:"BASEBALL",id:"BASEBALL",es:"BÉISBOL",fr:"BASEBALL",de:"BASEBALL",it:"BASEBALL",jp:"野球",kr:"야구",cn:"棒球",ar:"بيسبول"},
+            {i:"🎳",en:"BOWLING",id:"BOWLING",es:"BOLOS",fr:"BOWLING",de:"BOWLING",it:"BOWLING",jp:"ボウリング",kr:"볼링",cn:"保龄球",ar:"بولينج"},
+            {i:"🎱",en:"BILLIARD",id:"BILIAR",es:"BILLAR",fr:"BILLARD",de:"BILLARD",it:"BILIARDO",jp:"ビリヤード",kr:"당구",cn:"台球",ar:"بلياردو"},
+            {i:"🎿",en:"SKI",id:"SKI",es:"ESQUÍ",fr:"SKI",de:"SKI",it:"SCI",jp:"スキー",kr:"스키",cn:"滑雪",ar:"تزلج"},
+            {i:"⛸️",en:"SKATE",id:"SEPATU RODA",es:"PATINAJE",fr:"PATINAGE",de:"SCHLITTSCHUH",it:"PATTINAGGIO",jp:"スケート",kr:"스케이트",cn:"滑冰",ar:"تزلج"},
+            {i:"🤿", en:"DIVING", id:"MENYELAM", es:"BUCEO", fr:"PLONGÉE", de:"TAUCHEN", it:"IMMERSIONE", jp:"ダイビング", kr:"다이빙", cn:"潜水", ar:"الغوص"},
+            {i:"🏹",en:"ARCHERY",id:"PANAHAN",es:"TIRO CON ARCO",fr:"TIR À L'ARC",de:"BOGENSCHIESSEN",it:"TIRO CON L'ARCO",jp:"アーチェリー",kr:"양궁",cn:"射箭",ar:"رماية"}
+        ]
+    };
+
+    const ui = {
+        en: { title: "Word Match", miss: "Missing Letter", trace: "Tracing", name: "Name", date: "Date", gen: "GENERATE" },
+        id: { title: "Mencocokkan", miss: "Huruf Hilang", trace: "Menulis", name: "Nama", date: "Tanggal", gen: "BUAT SOAL" },
+        es: { title: "Unir Palabras", miss: "Letra Faltante", trace: "Trazado", name: "Nombre", date: "Fecha", gen: "¡GENERAR!" },
+        fr: { title: "Relier", miss: "Lettre Manquante", trace: "Tracer", name: "Nom", date: "Date", gen: "GÉNÉRER" },
+        de: { title: "Verbinden", miss: "Fehlender", trace: "Nachspuren", name: "Name", date: "Datum", gen: "ERSTELLEN" },
+        it: { title: "Collegare", miss: "Mancante", trace: "Tracciare", name: "Nome", date: "Data", gen: "GENERARE" },
+        jp: { title: "言葉合わせ", miss: "文字埋め", trace: "なぞり書き", name: "名前", date: "日付", gen: "作成する" },
+        kr: { title: "단어 연결", miss: "빈칸 채우기", trace: "따라 쓰기", name: "이름", date: "날짜", gen: "생성하다" },
+        cn: { title: "连词游戏", miss: "填空", trace: "描红", name: "姓名", date: "日期", gen: "生成" },
+        ar: { title: "توصيل", miss: "حروف", trace: "تتبع", name: "الاسم", date: "التاريخ", gen: "إنشاء" }
+    };
+
+    function updateUI() {
+        const lang = document.getElementById('langSelect').value;
+        const t = ui[lang] || ui.en;
+        document.getElementById('lblDate').innerText = t.date + ":";
+        document.getElementById('lblName').innerText = t.name + ":";
+        document.querySelector('.btn-gen').innerText = t.gen;
+        document.body.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+        
+        updateBranding(); // Ensure branding applies on UI update
+        generate();
+    }
+    
+    function updateBranding() {
+        const lang = document.getElementById('langSelect').value;
+        const customTitle = document.getElementById('customTitle').value;
+        const customFooter = document.getElementById('customFooter').value;
+        
+        // Title Logic: Custom > Mode Default
+        const mode = document.getElementById('modeSelect').value;
+        let defaultTitle = ui[lang].title;
+        if (mode === 'missing') defaultTitle = ui[lang].miss;
+        if (mode === 'trace') defaultTitle = ui[lang].trace;
+        
+        document.getElementById('sheetTitle').innerText = customTitle ? customTitle : defaultTitle;
+        document.getElementById('sheetFooter').innerText = customFooter ? customFooter : "Creado con Plumkids";
+    }
+
+    function generate() {
+        const lang = document.getElementById('langSelect').value;
+        const mode = document.getElementById('modeSelect').value;
+        const cat = document.getElementById('catSelect').value;
+        const count = parseInt(document.getElementById('countRange').value);
+        const grid = document.getElementById('contentGrid');
+        
+        // Refresh Branding to ensure title is correct based on mode
+        updateBranding();
+
+        grid.innerHTML = ''; 
+
+        const source = db[cat] || db['animals_wild'];
+        
+        let data = source.map(item => ({
+            i: item.i,
+            target: item[lang] || item['en']
+        }));
+
+        // Shuffle & limit to selected count (max 10)
+        data = data.sort(() => 0.5 - Math.random()).slice(0, count);
+
+        if (mode === 'match') {
+            let answers = data.map(d => d.target).sort(() => 0.5 - Math.random());
+            data.forEach((item, idx) => {
+                grid.innerHTML += `
+                <div class="match-row">
+                    <div class="match-icon">${item.i}</div>
+                    <div class="match-dots"><div class="dot"></div><div class="dot"></div></div>
+                    <div class="match-word">${answers[idx]}</div>
+                </div>`;
+            });
+        } else if (mode === 'missing') {
+            grid.className = 'grid-container miss-list';
+            data.forEach(item => {
+                const word = item.target.toUpperCase();
+                const hiddenIndex = Math.floor(Math.random() * word.length);
+                let boxes = "";
+                for(let i=0; i<word.length; i++) {
+                    if(word[i] === ' ') {
+                        boxes += `<div style="width:20px"></div>`;
+                    } else if(i === hiddenIndex && word[i] !== ' ') {
+                        boxes += `<div class="char-box empty">?</div>`;
+                    } else {
+                        boxes += `<div class="char-box">${word[i]}</div>`;
+                    }
+                }
+                grid.innerHTML += `
+                <div class="miss-card">
+                    <div class="miss-icon">${item.i}</div>
+                    <div class="word-boxes">${boxes}</div>
+                </div>`;
+            });
+        } else if (mode === 'trace') {
+            grid.className = 'grid-container trace-grid';
+            data.forEach(item => {
+                grid.innerHTML += `
+                <div class="trace-card">
+                    <div class="trace-icon">${item.i}</div>
+                    <div class="solid-word">${item.target}</div>
+                    <div class="trace-word">${item.target.toUpperCase()}</div>
+                </div>`;
+            });
+        }
+    }
+
+    // Init
+    updateUI();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+function saveAsImage() {
+    const paper = document.getElementById("paper");
+
+    html2canvas(paper, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff"
+    }).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "worksheet.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    });
+}
+</script>
+
+</body>
+</html>

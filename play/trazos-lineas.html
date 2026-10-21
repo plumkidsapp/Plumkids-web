@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plumkids | Generador de Trazos de Líneas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00E5FF;
+            --primary-dark: #00B8D4;
+            --sidebar-bg: #1E293B;
+            --sidebar-text: #F1F5F9;
+            --input-bg: #334155;
+            --worksheet-bg: #FFFFFF;
+            --text-dark: #1E293B;
+        }
+
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
+        
+        body {
+            margin: 0;
+            font-family: 'Quicksand', sans-serif;
+            background-color: #0F172A;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            color: var(--sidebar-text);
+        }
+
+        .bg-decor {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.15;
+        }
+
+        /* Sidebar UI */
+        .sidebar {
+            width: 420px;
+            background: var(--sidebar-bg);
+            padding: 25px;
+            box-shadow: -20px 0 50px rgba(0,0,0,0.5);
+            z-index: 100;
+            overflow-y: auto;
+            border-left: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar h1 {
+            font-family: 'Fredoka One', cursive;
+            color: #FFFFFF;
+            font-size: 2rem;
+            line-height: 1.2;
+            text-align: center;
+            margin-bottom: 25px;
+            text-shadow: 0 1px 0 #ccc, 0 2px 0 #bbb, 0 6px 1px rgba(0,0,0,0.2);
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            margin: 20px 0 10px 0;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--input-bg);
+            padding-bottom: 5px;
+        }
+
+        .control-group { margin-bottom: 15px; }
+        .control-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 6px;
+            font-size: 12px;
+            color: #94A3B8;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            background: var(--input-bg);
+            color: white;
+            font-family: inherit;
+            font-weight: 600;
+            outline: none;
+        }
+
+        .flex-row { display: flex; gap: 10px; align-items: center; }
+        .flex-row input[type="color"] { width: 50px; height: 40px; padding: 2px; background: none; border: none; cursor: pointer; }
+
+        .btn-note {
+            display: block;
+            font-size: 10px;
+            color: #94A3B8;
+            text-align: center;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: white;
+            background: var(--primary);
+            box-shadow: 0 6px 0 #00ACC1;
+        }
+
+        .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #00ACC1; }
+        .btn-print { background: #FF4081; box-shadow: 0 6px 0 #D81B60; }
+
+        /* Preview Area */
+        .preview-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .worksheet-a4 {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            padding: 15mm 15mm;
+            box-shadow: 0 0 60px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            color: var(--text-dark);
+            position: relative;
+        }
+
+        .ws-header { text-align: center; margin-bottom: 10px; flex-shrink: 0; }
+        .ws-title { font-family: 'Fredoka One', cursive; font-size: 42px; margin: 0; line-height: 1.2; }
+
+        .ws-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            font-weight: 700;
+            border-bottom: 3px dotted #E2E8F0;
+            padding-bottom: 10px;
+        }
+
+        .tracing-container { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 0; 
+            flex-grow: 1; 
+            margin-top: 15px;
+        }
+
+        .tracing-row {
+            width: 100%;
+            height: 75px;
+            display: flex;
+            align-items: center;
+            position: relative;
+            padding: 0;
+        }
+
+        .q-num {
+            font-family: 'Fredoka One', cursive;
+            font-size: 14px;
+            color: #94A3B8;
+            margin-right: 10px;
+            flex-shrink: 0;
+            display: none;
+        }
+
+        .svg-container { flex: 1; height: 100%; position: relative; }
+        .trace-svg { width: 100%; height: 100%; display: block; overflow: visible; }
+
+        .ws-footer {
+            text-align: center;
+            padding: 25px 0 10px 0;
+            font-weight: 800;
+            font-size: 11px;
+            letter-spacing: 1.2px;
+            flex-shrink: 0;
+            margin-top: auto; 
+            border-top: 1px solid #F1F5F9;
+        }
+
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { background: white; height: auto; overflow: visible; }
+            .sidebar, .bg-decor { display: none !important; }
+            .preview-area { padding: 0; overflow: visible; display: block; }
+            .worksheet-a4 { 
+                box-shadow: none !important; 
+                width: 210mm; 
+                height: auto; 
+                min-height: 297mm;
+                padding: 15mm; 
+                margin: 0 auto; 
+                overflow: visible; 
+            }
+            .tracing-row { page-break-inside: avoid; height: 65px; }
+            .ws-footer { 
+                margin-top: 40px; 
+                page-break-inside: avoid;
+            }
+        }
+
+        .rtl { direction: rtl; }
+    </style>
+
+<style id="plumkids-integration">
+.plumkids-return{
+  position:fixed;right:14px;bottom:14px;z-index:99999;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:42px;padding:0 14px;border-radius:999px;
+  background:#7136d4;color:#fff;text-decoration:none;
+  font:800 13px Arial,Helvetica,sans-serif;
+  box-shadow:0 8px 24px rgba(49,25,87,.25);
+  border:2px solid rgba(255,255,255,.75);
+}
+.plumkids-return:hover{background:#5f28bd}
+@media(max-width:640px){
+  .plumkids-return{right:10px;bottom:10px;font-size:12px;min-height:38px;padding:0 12px}
+}
+@media print{.plumkids-return{display:none!important}}
+</style>
+
+</head>
+<body>
+<a class="plumkids-return" href="../mi-plumkids.html" aria-label="Volver a Mi Plumkids">← Mi Plumkids</a>
+
+    <svg class="bg-decor" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10%" cy="20%" r="80" fill="var(--primary)" fill-opacity="0.1" />
+        <rect x="85%" y="15%" width="100" height="100" rx="20" fill="#FF4081" fill-opacity="0.1" transform="rotate(25)" />
+    </svg>
+
+    <aside class="sidebar">
+        <h1>Plumkids<br>Generador de Trazos de Líneas</h1>
+
+        <div class="section-title">Localización</div>
+        <div class="control-group">
+            <label>Idioma de la Interfaz</label>
+            <select id="langSelect" onchange="changeLanguage()">
+                <option value="en">English</option>
+                <option value="id">Bahasa Indonesia</option>
+                <option value="es" selected>🌎 Español (Latinoamérica)</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="pt">Português</option>
+                <option value="it">Italiano</option>
+                <option value="nl">Nederlands</option>
+                <option value="ru">Русский</option>
+                <option value="ja">日本語</option>
+                <option value="ko">한국어</option>
+                <option value="zh">中文</option>
+                <option value="ar">العربية</option>
+                <option value="tr">Türkçe</option>
+                <option value="vi">Tiếng Việt</option>
+            </select>
+        </div>
+
+        <div class="section-title">Configuración de Trazos</div>
+        <div class="control-group">
+            <label>Tipo de Línea</label>
+            <select id="lineStyle" onchange="generate()">
+                <option value="random">--- MEZCLA ALEATORIA ---</option>
+                <option value="straight">Líneas Rectas</option>
+                <option value="zigzag">Picos en Zig-Zag</option>
+                <option value="curved">Ondas Suaves</option>
+                <option value="bumps">Jorobas de Camello</option>
+                <option value="steps">Escalones de Castillo</option>
+                <option value="mountain">Montañas Altas</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Cantidad de Líneas</label>
+            <input type="range" id="lineCount" min="1" max="25" value="10" oninput="generate()">
+        </div>
+
+        <div class="control-group">
+            <label>Números de Pregunta</label>
+            <select id="numToggle" onchange="generate()">
+                <option value="hide">Ocultar Números</option>
+                <option value="show">Mostrar Números</option>
+            </select>
+        </div>
+
+        <div class="section-title">Colores Personalizados</div>
+        <div class="control-group"><label>Color del Título</label><input type="color" id="colorTitle" value="#00E5FF" oninput="applyColors()"></div>
+        <div class="control-group"><label>Color de Etiquetas</label><input type="color" id="colorMeta" value="#64748B" oninput="applyColors()"></div>
+        <div class="control-group"><label>Color del Pie de Página</label><input type="color" id="colorFooter" value="#CBD5E1" oninput="applyColors()"></div>
+
+        <div class="section-title">Editor de Texto</div>
+        <div class="control-group">
+            <label>Título de la Hoja</label>
+            <input type="text" id="inTitle" value="Práctica de Trazos de Líneas">
+        </div>
+        <div class="flex-row">
+            <div class="control-group"><label>Campo 1</label><input type="text" id="inName" value="NOMBRE:"></div>
+            <div class="control-group"><label>Campo 2</label><input type="text" id="inDate" value="FECHA:"></div>
+        </div>
+        <div class="control-group">
+            <label>Texto del Pie de Página</label>
+            <input type="text" id="inFooter" value="Creado con Plumkids">
+        </div>
+
+        <div class="section-title">Operaciones</div>
+        <button class="btn" onclick="generate()">✨ ¡GENERAR NUEVAS LÍNEAS!</button>
+        <div class="btn-note">(solo aplica a la mezcla aleatoria)</div>
+        <button class="btn btn-print" onclick="window.print()">🖨️ IMPRIMIR HOJA</button>
+    </aside>
+
+    <main class="preview-area">
+        <div class="worksheet-a4" id="ws">
+            <div class="ws-header">
+                <h1 class="ws-title" id="outTitle">Práctica de Trazos de Líneas</h1>
+                <div class="ws-meta" id="outMeta">
+                    <span id="outName">NOMBRE: _________________</span>
+                    <span id="outDate">FECHA: _________________</span>
+                </div>
+            </div>
+
+            <div class="tracing-container" id="lineGrid"></div>
+
+            <div class="ws-footer" id="outFooter">
+                Creado con Plumkids
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const translations = {
+            en: { t: "Line Tracing Practice", n: "NAME:", d: "DATE:", f: "PREMIUM PRE-WRITING SKILLS • FUTURISTIC PLAYGROUND LAB" },
+            id: { t: "Latihan Menarik Garis", n: "NAMA:", d: "TANGGAL:", f: "KETERAMPILAN PRA-MENULIS • LABORATORIUM MASA DEPAN" },
+            es: { t: "Práctica de Trazos de Líneas", n: "NOMBRE:", d: "FECHA:", f: "Creado con Plumkids" },
+            fr: { t: "Pratique du Tracé", n: "NOM:", d: "DATE:", f: "COMPÉTENCES DE PRÉ-ÉCRITURE • LABO FUTURISTE" },
+            de: { t: "Linien Nachzeichnen", n: "NAME:", d: "DATUM:", f: "SCHREIBVORBEREITUNG • FUTURISTISCHES LABOR" },
+            pt: { t: "Prática de Traçado", n: "NOME:", d: "DATA:", f: "HABILIDADES DE PRÉ-ESCRITA • LABORATÓRIO" },
+            it: { t: "Pratica di Tracciamento", n: "NOME:", d: "DATA:", f: "ABILITÀ DI PRE-SCRITTURA • LABORATORIO" },
+            nl: { t: "Lijnen Overschrijven", n: "NAAM:", d: "DATUM:", f: "VOORSCHRIFTELIJKE VAARDIGHEDEN • LAB" },
+            ru: { t: "Практика проведения линий", n: "ИМЯ:", d: "ДАТА:", f: "ПОДГОТОВКА К ПИСЬМУ • ЛАБОРАТОРИЯ" },
+            ja: { t: "運筆練習ドリル", n: "なまえ:", d: "ひづけ:", f: "プレライティング・スキル • 未来の遊び場" },
+            ko: { t: "선 긋기 연습", n: "이름:", d: "날짜:", f: "쓰기 전 기술 • 미래형 놀이터" },
+            zh: { t: "线条描红练习", n: "姓名:", d: "日期:", f: "书写前技能练习 • 未来派实验室" },
+            ar: { t: "تمرين تتبع الخطوط", n: "الاسم:", d: "التاريخ:", f: "مهارات ما قبل الكتابة • مختبر المستقبل" },
+            tr: { t: "Çizgi Çalışması", n: "İSİM:", d: "TARİH:", f: "YAZMA ÖNCESİ BECERİLER • GELECEK LAB" },
+            vi: { t: "Luyện Tập Vẽ Đường", n: "TÊN:", d: "NGÀY:", f: "KỸ NĂNG TIỀN VIẾT • PHÒNG THÍ NGHIỆM" }
+        };
+
+        const linePaths = {
+            straight: (w) => `M 0 40 L ${w} 40`,
+            zigzag: (w) => { let d = "M 0 50"; for(let x=25; x<w; x+=50) d+=` L ${x} 10 L ${x+25} 50`; return d; },
+            curved: (w) => { let d = "M 0 40"; for(let x=0; x<w; x+=80) d+=` Q ${x+20} 10 ${x+40} 40 Q ${x+60} 70 ${x+80} 40`; return d; },
+            bumps: (w) => { let d = "M 0 55"; for(let x=0; x<w; x+=60) d+=` Q ${x+30} 15 ${x+60} 55`; return d; },
+            steps: (w) => { let d = "M 0 50"; for(let x=0; x<w; x+=60) d+=` L ${x} 15 L ${x+30} 15 L ${x+30} 50 L ${x+60} 50`; return d; },
+            mountain: (w) => { let d = "M 0 60"; for(let x=0; x<w; x+=100) d+=` L ${x+30} 35 L ${x+50} 15 L ${x+70} 35 L ${x+100} 60`; return d; }
+        };
+
+        function changeLanguage() {
+            const l = document.getElementById('langSelect').value;
+            const d = translations[l];
+            document.getElementById('inTitle').value = d.t;
+            document.getElementById('inName').value = d.n;
+            document.getElementById('inDate').value = d.d;
+            document.getElementById('inFooter').value = d.f;
+            const ws = document.getElementById('ws');
+            l === 'ar' ? ws.classList.add('rtl') : ws.classList.remove('rtl');
+            sync();
+        }
+
+        const sync = () => {
+            document.getElementById('outTitle').innerText = document.getElementById('inTitle').value;
+            document.getElementById('outName').innerText = document.getElementById('inName').value + " _________________";
+            document.getElementById('outDate').innerText = document.getElementById('inDate').value + " _________________";
+            document.getElementById('outFooter').innerText = document.getElementById('inFooter').value;
+        };
+
+        function applyColors() {
+            document.getElementById('outTitle').style.color = document.getElementById('colorTitle').value;
+            document.getElementById('outMeta').style.color = document.getElementById('colorMeta').value;
+            document.getElementById('outFooter').style.color = document.getElementById('colorFooter').value;
+        }
+
+        function generate() {
+            const container = document.getElementById('lineGrid');
+            const count = document.getElementById('lineCount').value;
+            const style = document.getElementById('lineStyle').value;
+            const showNum = document.getElementById('numToggle').value === 'show';
+            
+            container.innerHTML = '';
+            const keys = Object.keys(linePaths);
+
+            for(let i=1; i<=count; i++) {
+                const row = document.createElement('div');
+                row.className = 'tracing-row';
+                
+                const currentStyle = style === 'random' ? keys[Math.floor(Math.random()*keys.length)] : style;
+                const pathFunc = linePaths[currentStyle];
+                
+                row.innerHTML = `
+                    <div class="q-num" style="display: ${showNum ? 'block' : 'none'}">${i}.</div>
+                    <div class="svg-container">
+                        <svg class="trace-svg" viewBox="0 0 700 80">
+                            <path d="${pathFunc(700)}" fill="none" stroke="#CBD5E1" stroke-width="4" stroke-dasharray="10,10" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                `;
+                container.appendChild(row);
+            }
+        }
+
+        ['inTitle', 'inName', 'inDate', 'inFooter'].forEach(id => {
+            document.getElementById(id).oninput = sync;
+        });
+
+        window.onload = () => {
+            changeLanguage();
+            generate();
+            applyColors();
+        };
+    </script>
+</body>
+</html>

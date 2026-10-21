@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plumkids | Generador de Matemáticas con Emojis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6C5CE7; 
+            --primary-dark: #4834D4;
+            --accent: #55EFC4; 
+            --accent-dark: #00B894;
+            --bg-dark: #0F172A;
+            --sidebar-bg: #1E293B;
+            --sidebar-text: #F1F5F9;
+            --input-bg: #334155;
+            --card-bg: #FFFFFF;
+            --text-main: #1E293B;
+            --emoji-size: 30px; 
+        }
+
+        [data-theme="sunset"] { --primary: #FD9644; --primary-dark: #FA8231; --accent: #26DEAD; }
+        [data-theme="neon"] { --primary: #A29BFE; --primary-dark: #6C5CE7; --accent: #FD79A8; }
+        [data-theme="berry"] { --primary: #EF5777; --primary-dark: #D4145A; --accent: #70A1FF; }
+
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
+        
+        body {
+            margin: 0;
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--bg-dark);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            color: var(--sidebar-text);
+        }
+
+        .bg-decor {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.1;
+        }
+
+        /* Sidebar - Fixed Right */
+        .sidebar {
+            width: 420px;
+            background: var(--sidebar-bg);
+            padding: 25px;
+            box-shadow: -20px 0 50px rgba(0,0,0,0.5);
+            z-index: 100;
+            overflow-y: auto;
+            border-left: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar h1 {
+            font-family: 'Fredoka One', cursive;
+            color: #FFFFFF;
+            font-size: 2rem;
+            line-height: 1.2;
+            text-align: center;
+            margin-bottom: 25px;
+            text-shadow: 
+                0 1px 0 #ccc, 0 2px 0 #bbb, 0 3px 0 #aaa,
+                0 6px 1px rgba(0,0,0,0.2), 0 0 5px rgba(255,255,255,0.3);
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin: 20px 0 10px 0;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--input-bg);
+            padding-bottom: 5px;
+        }
+
+        .control-group { margin-bottom: 15px; }
+        .control-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 6px;
+            font-size: 12px;
+            color: #94A3B8;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            background: var(--input-bg);
+            color: white;
+            font-family: inherit;
+            font-weight: 600;
+            outline: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: white;
+            background: var(--primary);
+            box-shadow: 0 6px 0 var(--primary-dark);
+        }
+
+        .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--primary-dark); }
+        .btn-print { background: var(--accent); color: #0F172A; box-shadow: 0 6px 0 #00B894; }
+
+        /* Preview Area */
+        .preview-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .worksheet-a4 {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            padding: 15mm 20mm;
+            box-shadow: 0 0 60px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            color: #1E293B;
+            position: relative;
+        }
+
+        .ws-header { text-align: center; margin-bottom: 15px; flex-shrink: 0; }
+        .ws-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 40px;
+            color: var(--primary);
+            margin: 0;
+            filter: drop-shadow(4px 4px 0 rgba(0,0,0,0.1));
+        }
+
+        .ws-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-weight: 700;
+            color: #64748B;
+            border-bottom: 3px dotted #E2E8F0;
+            padding-bottom: 8px;
+        }
+
+        .questions-container { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+            flex-grow: 1; 
+            margin-top: 15px;
+        }
+
+        .q-card {
+            background: #F8FAFC;
+            border-radius: 18px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            border: 2px solid #F1F5F9;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.02), inset 0 -3px 0 rgba(0,0,0,0.05);
+            page-break-inside: avoid; /* Essential for printing */
+        }
+
+        .q-num {
+            font-family: 'Fredoka One', cursive;
+            background: var(--primary);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 13px;
+            box-shadow: 0 3px 0 var(--primary-dark);
+            flex-shrink: 0;
+        }
+
+        .math-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .emoji-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+            padding: 6px;
+            border-radius: 12px;
+            background: white;
+            min-width: 140px;
+            max-width: 220px;
+            justify-content: center;
+            align-content: center;
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.04);
+            min-height: 50px;
+            font-size: var(--emoji-size);
+            line-height: 1.1;
+            text-align: center;
+        }
+
+        .emoji-item {
+            display: inline-block;
+            margin: 1px;
+            vertical-align: middle;
+        }
+
+        .op-text {
+            font-family: 'Fredoka One', cursive;
+            font-size: 28px;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .ans-box {
+            width: 60px;
+            height: 60px;
+            border: 3px solid var(--primary);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fredoka One', cursive;
+            font-size: 24px;
+            color: var(--primary-dark);
+            background: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+            flex-shrink: 0;
+        }
+
+        .ans-val { visibility: hidden; }
+        .show-sol .ans-val { visibility: visible; }
+
+        .ws-footer {
+            text-align: center;
+            padding: 20px 0;
+            font-weight: 800;
+            color: #CBD5E1;
+            font-size: 11px;
+            letter-spacing: 1.2px;
+            flex-shrink: 0;
+            margin-top: auto; /* Pushes to bottom */
+        }
+
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { background: white; height: auto; overflow: visible; }
+            .sidebar, .bg-decor { display: none !important; }
+            .preview-area { padding: 0; overflow: visible; display: block; }
+            .worksheet-a4 { 
+                box-shadow: none !important; 
+                width: 210mm; 
+                height: auto; 
+                min-height: 297mm;
+                padding: 15mm; 
+                margin: 0 auto;
+                display: block; /* Allows natural content flow */
+                overflow: visible;
+            }
+            .ws-header, .ws-meta, .questions-container, .ws-footer { display: block; }
+            .questions-container { gap: 10px; margin-bottom: 20px; }
+            .ws-footer { margin-top: 40px; page-break-after: avoid; }
+        }
+
+        .rtl { direction: rtl; }
+    </style>
+
+<style id="plumkids-integration">
+.plumkids-return{
+  position:fixed;right:14px;bottom:14px;z-index:99999;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:42px;padding:0 14px;border-radius:999px;
+  background:#7136d4;color:#fff;text-decoration:none;
+  font:800 13px Arial,Helvetica,sans-serif;
+  box-shadow:0 8px 24px rgba(49,25,87,.25);
+  border:2px solid rgba(255,255,255,.75);
+}
+.plumkids-return:hover{background:#5f28bd}
+@media(max-width:640px){
+  .plumkids-return{right:10px;bottom:10px;font-size:12px;min-height:38px;padding:0 12px}
+}
+@media print{.plumkids-return{display:none!important}}
+</style>
+
+</head>
+<body>
+<a class="plumkids-return" href="../mi-plumkids.html" aria-label="Volver a Mi Plumkids">← Mi Plumkids</a>
+
+    <svg class="bg-decor" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10%" cy="20%" r="80" fill="var(--primary)" />
+        <rect x="85%" y="15%" width="100" height="100" rx="20" fill="var(--accent)" transform="rotate(25)" />
+        <circle cx="50%" cy="85%" r="100" fill="var(--primary)" />
+    </svg>
+
+    <main class="preview-area">
+        <div class="worksheet-a4" id="ws">
+            <div class="ws-header">
+                <h2 class="ws-title" id="outTitle">Matemáticas con Emojis</h2>
+                <div class="ws-meta">
+                    <span id="outName">NOMBRE: _________________</span>
+                    <span id="outClass">FECHA: _________________</span>
+                </div>
+            </div>
+
+            <div class="questions-container" id="qList"></div>
+
+            <div class="ws-footer" id="outFooter">
+                Creado con Plumkids
+            </div>
+        </div>
+    </main>
+
+    <aside class="sidebar">
+        <h1>Plumkids<br>Generador de Matemáticas con Emojis</h1>
+
+        <div class="section-title">Idioma e interfaz</div>
+        <div class="control-group">
+            <label>Idioma</label>
+            <select id="langSelect" onchange="applyLang()">
+                <option value="en">Inglés</option>
+                <option value="es" selected>🌎 Español (Latinoamérica)</option>
+                <option value="fr">Francés</option>
+                <option value="de">Alemán</option>
+                <option value="it">Italiano</option>
+                <option value="pt">Portugués</option>
+                <option value="ru">Ruso</option>
+                <option value="zh">Chino</option>
+                <option value="ja">Japonés</option>
+                <option value="ko">Coreano</option>
+                <option value="ar">Árabe</option>
+                <option value="hi">Hindi</option>
+                <option value="id">Bahasa Indonesia</option>
+                <option value="tr">Turco</option>
+                <option value="vi">Vietnamita</option>
+                <option value="nl">Neerlandés</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Tamaño de los emojis (zoom)</label>
+            <select id="emojiZoom" onchange="applyZoom()">
+                <option value="18px">Muy pequeño</option>
+                <option value="24px">Pequeño</option>
+                <option value="30px" selected>Mediano</option>
+                <option value="38px">Grande</option>
+                <option value="46px">Muy grande</option>
+            </select>
+        </div>
+
+        <div class="section-title">Configuración de preguntas</div>
+        <div class="control-group">
+            <label>Modo matemático</label>
+            <select id="mathMode" onchange="generate()">
+                <option value="add">Solo sumas (+)</option>
+                <option value="sub">Solo restas (-)</option>
+                <option value="mixed">Desafío mixto (+ y -)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>Cantidad de preguntas: <span id="qCountVal">8</span></label>
+            <input type="range" id="qCount" min="1" max="25" value="8" oninput="document.getElementById('qCountVal').innerText=this.value; generate();">
+        </div>
+        <div class="control-group">
+            <label>Rango (número máximo)</label>
+            <select id="numRange" onchange="generate()">
+                <option value="5">Fácil (1-5)</option>
+                <option value="10" selected>Intermedio (1-10)</option>
+                <option value="20">Experto (1-20)</option>
+            </select>
+        </div>
+
+        <div class="section-title">Temas y emojis</div>
+        <div class="control-group">
+            <label>Tema de objetos</label>
+            <select id="themeSelect" onchange="generate()">
+                <option value="sports">Deportes ⚽🏀🎾</option>
+                <option value="school">Escuela 🎨✏️📚</option>
+                <option value="home">Casa 🏠🛋️🧸</option>
+                <option value="plants">Plantas y flores 🌵🌸🌻</option>
+                <option value="wild">Animales salvajes 🦁🐯🐘</option>
+                <option value="space">Espacio 🚀🪐⭐</option>
+                <option value="food">Comida deliciosa 🍕🍦🍓</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>Emoji personalizado (reemplaza el tema)</label>
+            <input type="text" id="customEmoji" placeholder="Ej.: 🦄" maxlength="2" oninput="generate()">
+        </div>
+
+        <div class="section-title">Estilo visual</div>
+        <div class="control-group">
+            <label>Paleta de colores</label>
+            <select onchange="document.body.setAttribute('data-theme', this.value)">
+                <option value="default">Uva galáctica (estándar)</option>
+                <option value="sunset">Brillo del atardecer</option>
+                <option value="neon">Dulce neón</option>
+                <option value="berry">Explosión de frutos rojos</option>
+            </select>
+        </div>
+
+        <div class="section-title">Editor de textos</div>
+        <div class="control-group">
+            <label>Título</label>
+            <input type="text" id="inTitle" value="Matemáticas con Emojis">
+        </div>
+        <div class="flex-row" style="display:flex; gap:10px;">
+            <div class="control-group"><label>Etiqueta de nombre</label><input type="text" id="inName" value="NOMBRE:"></div>
+            <div class="control-group"><label>Etiqueta de fecha</label><input type="text" id="inClass" value="FECHA:"></div>
+        </div>
+        <div class="control-group">
+            <label>Texto del pie de página</label>
+            <input type="text" id="inFooter" value="Creado con Plumkids">
+        </div>
+
+        <div class="section-title">Acciones</div>
+        <button class="btn" onclick="generate()">✨ ¡GENERAR!</button>
+        <button class="btn" style="background:#475569; box-shadow:0 6px 0 #1e293b;" onclick="document.getElementById('ws').classList.toggle('show-sol')">💡 MOSTRAR/OCULTAR RESPUESTAS</button>
+        <button class="btn btn-print" onclick="window.print()">🖨️ IMPRIMIR</button>
+		<button class="btn btn-print" onclick="saveAsImage()">💾 GUARDAR COMO IMAGEN</button>
+
+    </aside>
+
+    <script>
+        const langs = {
+            en: { t: "Emoji Math Practice", n: "NAME:", c: "DATE:", f: "Created with Plumkids" },
+            es: { t: "Matemáticas con Emojis", n: "NOMBRE:", c: "FECHA:", f: "Creado con Plumkids" },
+            fr: { t: "Pratique des Mathématiques", n: "NOM:", c: "CLASSE:", f: "© 2026 CONTENU PREMIUM • TOUS DROITS RÉSERVÉS" },
+            de: { t: "Mathe-Übung mit Emojis", n: "NAME:", c: "KLASSE:", f: "© 2026 PREMIUM-INHALTE • ALLE RECHTE VORBEHALTEN" },
+            it: { t: "Esercitazione di Matematica", n: "NOME:", c: "CLASSE:", f: "© 2026 CONTENUTI PREMIUM • TUTTI I DIRITTI RISERVATI" },
+            pt: { t: "Prática de Matemática", n: "NOME:", c: "TURMA:", f: "© 2026 CONTEÚDO PREMIUM • TODOS OS DIREITOS RESERVADOS" },
+            ru: { t: "Математическая практика", n: "ИМЯ:", c: "КЛАСС:", f: "© 2026 ПРЕМИУМ КОНТЕНТ • ПРАВА ЗАЩИЩЕНЫ" },
+            zh: { t: "表情符号数学练习", n: "姓名:", c: "班级:", f: "© 2026 优质儿童内容 • 版权所有" },
+            ja: { t: "えもじ算数ドリル", n: "なまえ:", c: "くらす:", f: "© 2026 プレミアムキッズパズル" },
+            ko: { t: "이모지 수학 연습", n: "이름:", c: "반:", f: "© 2026 프리미엄 키즈 콘텐츠" },
+            ar: { t: "تمارين الرياضيات", n: "الاسم:", c: "الفصل:", f: "© 2026 محتوى متميز" },
+            hi: { t: "इमोजी गणित अभ्यास", n: "नाम:", c: "कक्षा:", f: "© 2026 प्रीमियम किड्स कंटेंट" },
+            id: { t: "Latihan Matematika Emoji", n: "NAMA:", c: "KELAS:", f: "© 2026 KONTEN PREMIUM • SIAP PLR" },
+            tr: { t: "Emoji Matematik Alıştırması", n: "İSİM:", c: "SINIF:", f: "© 2026 PREMİUM İÇERİK" },
+            vi: { t: "Luyện Tập Toán Emoji", n: "TÊN:", c: "LỚP:", f: "© 2026 NỘI DUNG CAO CẤP" },
+            nl: { t: "Emoji Rekenoefening", n: "NAAM:", c: "KLAS:", f: "© 2026 PREMIUM CONTENT" }
+        };
+
+        const themes = {
+            sports: ["⚽", "🏀", "🎾", "⚾", "🏐"],
+            school: ["🎨", "✏️", "📚", "📏", "🎒"],
+            home: ["🏠", "🛋️", "🧸", "📺", "🛌"],
+            plants: ["🌵", "🌸", "🌻", "🍄", "🌿"],
+            wild: ["🦁", "🐯", "🐘", "🦒", "🦓"],
+            space: ["🚀", "🪐", "⭐", "🛰️", "☄️"], 
+            food: ["🍎", "🍕", "🍦", "🍔", "🍓"]
+        };
+
+        function applyLang() {
+            const l = document.getElementById('langSelect').value;
+            const d = langs[l];
+            document.getElementById('inTitle').value = d.t;
+            document.getElementById('inName').value = d.n;
+            document.getElementById('inClass').value = d.c;
+            document.getElementById('inFooter').value = d.f;
+            sync();
+            const ws = document.getElementById('ws');
+            l === 'ar' ? ws.classList.add('rtl') : ws.classList.remove('rtl');
+        }
+
+        const sync = () => {
+            document.getElementById('outTitle').innerText = document.getElementById('inTitle').value;
+            document.getElementById('outName').innerText = document.getElementById('inName').value + " _________________";
+            document.getElementById('outClass').innerText = document.getElementById('inClass').value + " _________________";
+            document.getElementById('outFooter').innerText = document.getElementById('inFooter').value;
+        };
+
+        ['inTitle', 'inName', 'inClass', 'inFooter'].forEach(id => {
+            document.getElementById(id).oninput = sync;
+        });
+
+        function applyZoom() {
+            const val = document.getElementById('emojiZoom').value;
+            document.documentElement.style.setProperty('--emoji-size', val);
+        }
+
+        function generate() {
+            const count = parseInt(document.getElementById('qCount').value);
+            const range = parseInt(document.getElementById('numRange').value);
+            const mode = document.getElementById('mathMode').value;
+            const theme = themes[document.getElementById('themeSelect').value];
+            const custom = document.getElementById('customEmoji').value.trim();
+            const list = document.getElementById('qList');
+            list.innerHTML = '';
+
+            for (let i = 1; i <= count; i++) {
+                let n1 = Math.floor(Math.random() * range) + 1;
+                let n2 = Math.floor(Math.random() * range) + 1;
+                let op = mode;
+                
+                if (mode === 'mixed') op = Math.random() > 0.5 ? 'add' : 'sub';
+                if (op === 'sub' && n1 < n2) [n1, n2] = [n2, n1]; 
+
+                const emoji = custom || theme[Math.floor(Math.random() * theme.length)];
+                const result = op === 'add' ? n1 + n2 : n1 - n2;
+
+                const card = document.createElement('div');
+                card.className = 'q-card';
+                card.innerHTML = `
+                    <div class="q-num">${i}</div>
+                    <div class="math-row">
+                        <div class="emoji-group">${Array(n1).fill(`<span class="emoji-item">${emoji}</span>`).join('')}</div>
+                        <div class="op-text">${op === 'add' ? '+' : '-'}</div>
+                        <div class="emoji-group">${Array(n2).fill(`<span class="emoji-item">${emoji}</span>`).join('')}</div>
+                        <div class="op-text">=</div>
+                        <div class="ans-box"><span class="ans-val">${result}</span></div>
+                    </div>
+                `;
+                list.appendChild(card);
+            }
+        }
+
+        window.onload = () => {
+            applyLang();
+            applyZoom();
+            generate();
+        };
+    </script>
+	<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+function saveAsImage() {
+    const target = document.getElementById("ws");
+
+    html2canvas(target, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff"
+    }).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "matematicas-con-emojis.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    });
+}
+</script>
+
+</body>
+</html>

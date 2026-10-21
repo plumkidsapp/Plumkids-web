@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+
+<html lang="es"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Plumkids | Generador de Trazado de Formas</title> <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Quicksand:wght@500;700&display=swap" rel="stylesheet"> <style> :root { --primary: #9b59b6; --primary-light: #af7ac5; --primary-dark: #884ea0; --secondary: #f1c40f; --accent: #e74c3c; --bg-ui: #ced6e0; --paper-bg: #ffffff; --text-main: #2c3e50; --tracing-color: #f1f2f6; --dot-color: #a4b0be; --border-radius: 24px; --shadow-3d: 0 8px 0px rgba(0,0,0,0.12); }
+
+    /* Themes */
+    [data-theme="Magic Purple"] { --primary: #9b59b6; --primary-light: #af7ac5; --primary-dark: #884ea0; --accent: #e74c3c; }
+    [data-theme="Ocean Blue"] { --primary: #3498db; --primary-light: #5dade2; --primary-dark: #2e86c1; --accent: #1abc9c; }
+    [data-theme="Dino Green"] { --primary: #27ae60; --primary-light: #58d68d; --primary-dark: #1e8449; --accent: #f39c12; }
+    [data-theme="Candy Rainbow"] { --primary: #ff6b6b; --primary-light: #ff8787; --primary-dark: #ee5253; --accent: #48dbfb; }
+    [data-theme="Sunshine Yellow"] { --primary: #f39c12; --primary-light: #f5b041; --primary-dark: #d35400; --accent: #2980b9; }
+    [data-theme="Berry Pink"] { --primary: #e84393; --primary-light: #fd79a8; --primary-dark: #d63031; --accent: #6c5ce7; }
+
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Quicksand', sans-serif;
+        background-color: var(--bg-ui);
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    /* Sidebar Control Panel */
+    aside {
+        width: 420px;
+        background: #ffffff;
+        padding: 25px;
+        overflow-y: auto;
+        box-shadow: 12px 0 40px rgba(0,0,0,0.15);
+        z-index: 100;
+        border-right: 6px solid #f1f2f6;
+    }
+
+    h1 {
+        font-family: 'Fredoka', sans-serif;
+        font-size: 2rem;
+        line-height: 1.2;
+        color: var(--primary);
+        text-align: center;
+        margin-bottom: 25px;
+        padding: 15px;
+        background: #fff;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-3d);
+        border: 4px solid var(--primary);
+        letter-spacing: 1px;
+    }
+
+    .control-block {
+        background: #f8f9fa;
+        padding: 18px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+        border: 2px solid #edeff2;
+    }
+
+    .label-tag {
+        font-weight: 700;
+        font-size: 0.8rem;
+        color: #a4b0be;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+        display: block;
+    }
+
+    label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--primary-dark);
+        font-size: 0.95rem;
+    }
+
+    select, input[type="text"] {
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+        border: 2px solid #dfe4ea;
+        background: #fff;
+        font-family: inherit;
+        margin-bottom: 12px;
+        font-size: 1rem;
+        transition: 0.3s;
+    }
+
+    select:focus, input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(155, 89, 182, 0.1); }
+
+    .flex-row { display: flex; gap: 10px; align-items: center; }
+
+    .btn-action {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s;
+        font-family: 'Fredoka', sans-serif;
+    }
+
+    .btn-shuffle { background: var(--accent); color: white; box-shadow: 0 4px 0 #c0392b; flex-shrink: 0; }
+    .btn-shuffle:active { transform: translateY(2px); box-shadow: 0 2px 0 #c0392b; }
+
+    .btn-print {
+        width: 100%;
+        padding: 20px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: var(--border-radius);
+        font-family: 'Fredoka', sans-serif;
+        font-size: 1.4rem;
+        cursor: pointer;
+        box-shadow: 0 8px 0 var(--primary-dark);
+        margin-top: 10px;
+    }
+
+    .btn-print:active { transform: translateY(4px); box-shadow: 0 4px 0 var(--primary-dark); }
+
+    .theme-selector {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .theme-dot {
+        height: 35px;
+        border-radius: 50%;
+        border: 3px solid #fff;
+        cursor: pointer;
+        box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+    }
+
+    /* Preview Area */
+    main {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        padding: 30px;
+        overflow-y: auto;
+        background: #ced6e0;
+    }
+
+    .a4-container {
+        width: 210mm;
+        height: 297mm;
+        background: white;
+        box-shadow: 0 0 50px rgba(0,0,0,0.2);
+        padding: 12mm;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+    }
+
+    /* Worksheet Styles */
+    .ws-header {
+        border-bottom: 8px solid var(--primary);
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .ws-title {
+        font-family: 'Fredoka', sans-serif;
+        font-size: 36pt;
+        color: var(--primary);
+        margin: 0;
+        line-height: 1;
+    }
+
+    .ws-desc {
+        font-size: 16pt;
+        color: #57606f;
+        margin: 8px 0;
+        font-weight: 600;
+    }
+
+    .ws-user-box {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        font-size: 12pt;
+    }
+
+    .line-input {
+        border-bottom: 2px dashed #dcdde1;
+        flex: 1;
+        margin: 0 15px;
+    }
+
+    .ws-grid {
+        flex: 1;
+        display: grid;
+        gap: 15px;
+        align-content: center;
+        justify-content: center;
+        padding: 5px 0;
+    }
+
+    /* Layout Density Control */
+    .layout-1 { grid-template-columns: 1fr; }
+    .layout-2 { grid-template-columns: 1fr 1fr; }
+    .layout-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    .layout-6 { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, 1fr); }
+    .layout-8 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, 1fr); gap: 10px; }
+    .layout-10 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(5, 1fr); gap: 8px; }
+    .layout-12 { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr); gap: 8px; }
+
+    .shape-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 5px;
+        background: #fff;
+        position: relative;
+    }
+
+    /* SVG Sizing based on Density */
+    .svg-box { width: 85%; height: auto; max-height: 240px; }
+    .layout-6 .svg-box { max-height: 160px; }
+    .layout-8 .svg-box { max-height: 130px; }
+    .layout-10 .svg-box { max-height: 110px; }
+    .layout-12 .svg-box { max-height: 100px; }
+
+    .path-back { fill: none; stroke: var(--tracing-color); stroke-width: 4; }
+    .path-front { fill: none; stroke: var(--dot-color); stroke-width: 4; stroke-linecap: round; }
+    .anchor-dot { fill: var(--accent); }
+
+    .label-text {
+        margin-top: 8px;
+        font-size: 20pt;
+        font-weight: 700;
+        color: #2f3542;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .layout-6 .label-text { font-size: 16pt; }
+    .layout-8 .label-text { font-size: 14pt; }
+    .layout-10 .label-text { font-size: 12pt; }
+    .layout-12 .label-text { font-size: 11pt; }
+
+    .ws-footer {
+        margin-top: auto;
+        text-align: center;
+        padding-top: 10px;
+        border-top: 2px solid #f1f2f6;
+        font-size: 10pt;
+        color: #a4b0be;
+    }
+
+    @media print {
+        @page { size: A4; margin: 0; }
+        body { background: white; }
+        aside { display: none; }
+        main { padding: 0; display: block; }
+        .a4-container { box-shadow: none; margin: 0; width: 210mm; height: 297mm; }
+    }
+</style>
+
+<style id="plumkids-integration">
+.plumkids-return{
+  position:fixed;right:14px;bottom:14px;z-index:99999;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:42px;padding:0 14px;border-radius:999px;
+  background:#7136d4;color:#fff;text-decoration:none;
+  font:800 13px Arial,Helvetica,sans-serif;
+  box-shadow:0 8px 24px rgba(49,25,87,.25);
+  border:2px solid rgba(255,255,255,.75);
+}
+.plumkids-return:hover{background:#5f28bd}
+@media(max-width:640px){
+  .plumkids-return{right:10px;bottom:10px;font-size:12px;min-height:38px;padding:0 12px}
+}
+@media print{.plumkids-return{display:none!important}}
+</style>
+
+</head> <body data-theme="Magic Purple">
+<a class="plumkids-return" href="../mi-plumkids.html" aria-label="Volver a Mi Plumkids">← Mi Plumkids</a>
+
+<aside>
+    <h1>Plumkids<br>Generador de Trazado de Formas</h1>
+
+    <div class="control-block">
+        <span class="label-tag">Apariencia</span>
+        <div class="theme-selector">
+            <div class="theme-dot" style="background:#9b59b6" onclick="setTheme('Magic Purple')"></div>
+            <div class="theme-dot" style="background:#3498db" onclick="setTheme('Ocean Blue')"></div>
+            <div class="theme-dot" style="background:#27ae60" onclick="setTheme('Dino Green')"></div>
+            <div class="theme-dot" style="background:#ff6b6b" onclick="setTheme('Candy Rainbow')"></div>
+            <div class="theme-dot" style="background:#f39c12" onclick="setTheme('Sunshine Yellow')"></div>
+            <div class="theme-dot" style="background:#e84393" onclick="setTheme('Berry Pink')"></div>
+        </div>
+        
+        <label>Idioma</label>
+        <select id="langChoice" onchange="changeLang()">
+            <option value="en">Inglés (EE. UU.)</option>
+            <option value="id">Indonesio (ID)</option>
+            <option value="es" selected>🌎 Español (Latinoamérica)</option>
+            <option value="fr">Francés (FR)</option>
+            <option value="de">Alemán (DE)</option>
+            <option value="pt">Portugués (PT)</option>
+            <option value="ja">Japonés (JP)</option>
+            <option value="ko">Coreano (KR)</option>
+            <option value="zh">Chino (CN)</option>
+            <option value="ar">Árabe (SA)</option>
+            <option value="vi">Vietnamita (VN)</option>
+        </select>
+    </div>
+
+    <div class="control-block">
+        <span class="label-tag">Editor de Texto</span>
+        <label>Título de la Hoja</label>
+        <input type="text" id="inTitle" oninput="liveUpdate()" value="Trazado de Formas">
+        <label>Instrucción</label>
+        <input type="text" id="inInstr" oninput="liveUpdate()" value="¡Traza las formas con cuidado!">
+        <label>Crédito del Pie de Página</label>
+        <input type="text" id="inFooter" oninput="liveUpdate()" value="Creado con Plumkids">
+    </div>
+
+    <div class="control-block">
+        <span class="label-tag">Lógica de Figuras</span>
+        <label>Selección</label>
+        <div class="flex-row">
+            <select id="shapeVal" onchange="render()">
+                <option value="mixed">✨ MEZCLADO (ALEATORIO)</option>
+                <option value="circle">Círculo</option>
+                <option value="square">Cuadrado</option>
+                <option value="triangle">Triángulo</option>
+                <option value="rectangle">Rectángulo</option>
+                <option value="star">Estrella</option>
+                <option value="heart">Corazón</option>
+                <option value="pentagon">Pentágono</option>
+                <option value="hexagon">Hexágono</option>
+                <option value="octagon">Octógono</option>
+                <option value="oval">Óvalo</option>
+                <option value="diamond">Diamante</option>
+                <option value="crescent">Creciente</option>
+                <option value="trapezoid">Trapecio</option>
+            </select>
+            <button class="btn-action btn-shuffle" onclick="render()" title="Regenerar/Mezclar">♻️</button>
+        </div>
+
+        <label>Cantidad (Diseños)</label>
+        <select id="shapeQty" onchange="render()">
+            <option value="1">1 Figura</option>
+            <option value="2">2 Figuras</option>
+            <option value="4" selected>4 Figuras</option>
+            <option value="6">6 Figuras</option>
+            <option value="8">8 Figuras 🔥</option>
+            <option value="10">10 Figuras 🔥</option>
+            <option value="12">12 Figuras 🔥</option>
+        </select>
+
+        <label>Patrón</label>
+        <select id="lineVal" onchange="render()">
+            <option value="dotted">Puntos</option>
+            <option value="dashed">Guiones Largos</option>
+        </select>
+    </div>
+
+    <button class="btn-print" onclick="window.print()">IMPRIMIR</button>
+	<button class="btn-print" onclick="saveAsImage()">GUARDAR COMO IMAGEN</button>
+
+</aside>
+
+<main>
+    <div class="a4-container" id="printable">
+        <header class="ws-header">
+            <h2 class="ws-title" id="outTitle">Trazado de Formas</h2>
+            <p class="ws-desc" id="outInstr">¡Traza las formas con cuidado!</p>
+            <div class="ws-user-box">
+                <span id="txtLabelName">NOMBRE:</span> <div class="line-input"></div>
+                <span id="txtLabelDate">FECHA:</span> <div class="line-input"></div>
+            </div>
+        </header>
+
+        <div class="ws-grid layout-4" id="wsGrid"></div>
+
+        <footer class="ws-footer">
+            <span id="outFooter">Creado con Plumkids</span>
+        </footer>
+    </div>
+</main>
+
+<script>
+    const shapes = {
+        circle: "M 50,10 A 40,40 0 1,1 49.9,10 Z",
+        square: "M 15,15 L 85,15 L 85,85 L 15,85 Z",
+        triangle: "M 50,10 L 90,85 L 10,85 Z",
+        rectangle: "M 10,25 L 90,25 L 90,75 L 10,75 Z",
+        star: "M 50,10 L 63,38 L 93,38 L 69,56 L 78,85 L 50,67 L 22,85 L 31,56 L 7,38 L 37,38 Z",
+        heart: "M 50,30 C 50,10 10,10 10,40 C 10,70 50,90 50,90 C 50,90 90,70 90,40 C 90,10 50,10 50,30",
+        pentagon: "M 50,10 L 90,40 L 75,85 L 25,85 L 10,40 Z",
+        hexagon: "M 50,10 L 85,30 L 85,70 L 50,90 L 15,70 L 15,30 Z",
+        octagon: "M 30,10 L 70,10 L 90,30 L 90,70 L 70,90 L 30,90 L 10,70 L 10,30 Z",
+        oval: "M 50,20 A 40,30 0 1,1 49.9,20 Z",
+        diamond: "M 50,10 L 85,50 L 50,90 L 15,50 Z",
+        crescent: "M 50,10 A 40,40 0 1,0 50,90 A 30,30 0 1,1 50,10",
+        trapezoid: "M 25,20 L 75,20 L 90,80 L 10,80 Z"
+    };
+
+    const translations = {
+        en: { title: "Shape Tracing", instr: "Trace the shapes carefully!", footer: "Learning is Fun!", name: "Name:", date: "Date:", names: { circle: "Circle", square: "Square", triangle: "Triangle", rectangle: "Rectangle", star: "Star", heart: "Heart", pentagon: "Pentagon", hexagon: "Hexagon", octagon: "Octagon", oval: "Oval", diamond: "Diamond", crescent: "Crescent", trapezoid: "Trapezoid" } },
+        id: { title: "Menebalkan Bentuk", instr: "Ayo tebalkan garisnya dengan rapi!", footer: "Kopixel Premium Activity Bundle", name: "Nama:", date: "Tanggal:", names: { circle: "Lingkaran", square: "Persegi", triangle: "Segitiga", rectangle: "Persegi Panjang", star: "Bintang", heart: "Hati", pentagon: "Segi Lima", hexagon: "Segi Enam", octagon: "Segi Delapan", oval: "Oval", diamond: "Wajik", crescent: "Bulan Sabit", trapezoid: "Trapesium" } },
+        es: { title: "Trazado de Formas", instr: "¡Traza las formas con cuidado!", footer: "Creado con Plumkids", name: "NOMBRE:", date: "FECHA:", names: { circle: "Círculo", square: "Cuadrado", triangle: "Triángulo", rectangle: "Rectángulo", star: "Estrella", heart: "Corazón", pentagon: "Pentágono", hexagon: "Hexágono", octagon: "Octógono", oval: "Óvalo", diamond: "Diamante", crescent: "Creciente", trapezoid: "Trapecio" } },
+        fr: { title: "Tracer les Formes", instr: "Tracez les formes avec soin !", footer: "Apprendre est amusant", name: "Nom:", date: "Date:", names: { circle: "Cercle", square: "Carré", triangle: "Triangle", rectangle: "Rectangle", star: "Étoile", heart: "Cœur", pentagon: "Pentagone", hexagon: "Hexagone", octagon: "Octogone", oval: "Ovale", diamond: "Diamant", crescent: "Croissant", trapezoid: "Trapèze" } },
+        de: { title: "Formen Nachzeichnen", instr: "Zeichne die Formen sorgfältig nach!", footer: "Lernen macht Spaß", name: "Name:", date: "Datum:", names: { circle: "Kreis", square: "Quadrat", triangle: "Dreieck", rectangle: "Rechteck", star: "Stern", heart: "Herz", pentagon: "Fünfeck", hexagon: "Sechseck", octagon: "Achteck", oval: "Oval", diamond: "Raute", crescent: "Halbmond", trapezoid: "Trapez" } },
+        pt: { title: "Traçar Formas", instr: "Trace as formas com cuidado!", footer: "Aprender é divertido", name: "Nome:", date: "Data:", names: { circle: "Círculo", square: "Quadrado", triangle: "Triângulo", rectangle: "Retângulo", star: "Estrela", heart: "Coração", pentagon: "Pentágono", hexagon: "Hexágono", octagon: "Octógono", oval: "Óvalo", diamond: "Diamante", crescent: "Crescente", trapezoid: "Trapézio" } },
+        ja: { title: "かたち なぞり", instr: "きれいに線をなぞってみよう！", footer: "知育プリント", name: "なまえ:", date: "ひにち:", names: { circle: "まる", square: "しかく", triangle: "さんかく", rectangle: "ながしかく", star: "ほし", heart: "はーと", pentagon: "ごかくけい", hexagon: "ろっかくけい", octagon: "はっかくけい", oval: "だえん", diamond: "ひしがた", crescent: "みかづき", trapezoid: "だいけい" } },
+        ko: { title: "모양 따라 그리기", instr: "정성껏 따라 그려보세요!", footer: "즐거운 공부 시간", name: "이름:", date: "날짜:", names: { circle: "원", square: "정사각형", triangle: "삼각형", rectangle: "직사각형", star: "별", heart: "하트", pentagon: "오각형", hexagon: "육각형", octagon: "팔각형", oval: "타원형", diamond: "마름모", crescent: "초승달", trapezoid: "사다리꼴" } },
+        zh: { title: "形状描红", instr: "仔细描画这些形状！", footer: "学习很有趣", name: "姓名:", date: "日期:", names: { circle: "圆形", square: "正方形", triangle: "三角形", rectangle: "长方形", star: "星形", heart: "心形", pentagon: "五边形", hexagon: "六边形", octagon: "八边形", oval: "椭圆形", diamond: "菱形", crescent: "月牙形", trapezoid: "梯形" } },
+        ar: { title: "تتبع الأشكال", instr: "تتبع الأشكال بعناية!", footer: "التعلم ممتع", name: "الاسم:", date: "التاريخ:", dir: "rtl", names: { circle: "دائرة", square: "مربع", triangle: "مثلث", rectangle: "مستطيل", star: "نجمة", heart: "قلب", pentagon: "مخمس", hexagon: "مسدس", octagon: "مثمن", oval: "بيضاوي", diamond: "معين", crescent: "هلال", trapezoid: "شبه منحرف" } },
+        vi: { title: "Tập Tô Hình", instr: "Hãy tô theo các hình thật cẩn thận nhé!", footer: "Học mà chơi", name: "Tên:", date: "Ngày:", names: { circle: "Hình Tròn", square: "Hình Vuông", triangle: "Hình Tam Giác", rectangle: "Hình Chữ Nhật", star: "Hình Ngôi Sao", heart: "Hình Trái Tim", pentagon: "Hình Ngũ Giác", hexagon: "Hình Lục Giác", octagon: "Hình Bát Giác", oval: "Hình Bầu Dục", diamond: "Hình Kim Cương", crescent: "Hình Trăng Khuyết", trapezoid: "Hình Thang" } }
+    };
+
+    function setTheme(name) { document.body.setAttribute('data-theme', name); }
+
+    function liveUpdate() {
+        document.getElementById('outTitle').innerText = document.getElementById('inTitle').value;
+        document.getElementById('outInstr').innerText = document.getElementById('inInstr').value;
+        document.getElementById('outFooter').innerText = document.getElementById('inFooter').value;
+    }
+
+    function changeLang() {
+        const lang = document.getElementById('langChoice').value;
+        const t = translations[lang];
+        document.getElementById('inTitle').value = t.title;
+        document.getElementById('inInstr').value = t.instr;
+        document.getElementById('inFooter').value = t.footer;
+        document.getElementById('txtLabelName').innerText = t.name;
+        document.getElementById('txtLabelDate').innerText = t.date;
+        document.getElementById('printable').setAttribute('dir', t.dir || 'ltr');
+        liveUpdate();
+        render();
+    }
+
+    function render() {
+        const grid = document.getElementById('wsGrid');
+        const qty = parseInt(document.getElementById('shapeQty').value);
+        const type = document.getElementById('shapeVal').value;
+        const style = document.getElementById('lineVal').value;
+        const lang = document.getElementById('langChoice').value;
+        
+        grid.className = 'ws-grid layout-' + qty;
+        grid.innerHTML = '';
+
+        const dash = (style === 'dotted') ? '1, 15' : '15, 10';
+        const keys = Object.keys(shapes);
+        
+        let selectedKeys = [];
+        if (type === 'mixed') {
+            for (let i = 0; i < qty; i++) {
+                selectedKeys.push(keys[Math.floor(Math.random() * keys.length)]);
+            }
+        } else {
+            for (let i = 0; i < qty; i++) selectedKeys.push(type);
+        }
+
+        selectedKeys.forEach(k => {
+            const path = shapes[k];
+            const start = getStartPoint(path);
+            const name = translations[lang].names[k];
+
+            const div = document.createElement('div');
+            div.className = 'shape-item';
+            div.innerHTML = `
+                <svg viewBox="0 0 100 100" class="svg-box">
+                    <path class="path-back" d="${path}" stroke-dasharray="${dash}" />
+                    <path class="path-front" d="${path}" stroke-dasharray="${dash}" />
+                    <circle cx="${start.x}" cy="${start.y}" r="4" class="anchor-dot" />
+                </svg>
+                <div class="label-text">${name}</div>
+            `;
+            grid.appendChild(div);
+        });
+    }
+
+    function getStartPoint(p) {
+        const m = p.match(/M\s*([\d\.]+)[,\s]+([\d\.]+)/);
+        return m ? { x: m[1], y: m[2] } : { x: 50, y: 10 };
+    }
+
+    render();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+function saveAsImage() {
+    const target = document.getElementById("printable");
+
+    html2canvas(target, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff"
+    }).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "shape-tracing-worksheet.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    });
+}
+</script>
+
+
+</body> </html>

@@ -1,15 +1,31 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mi Plumkids</title><link rel="stylesheet" href="account.css"></head><body><header class="top"><div class="wrap top-in"><a class="logo" href="index.html"><span class="plum"></span>Plumkids</a><div class="top-actions"><a class="btn btn-light hide-mobile" href="index.html#apps">Explorar apps</a><button id="logoutBtn" class="btn btn-danger">Salir</button></div></div></header><main class="wrap dashboard"><div id="loading"><div class="spinner"></div></div><div id="dashboardContent" hidden><div id="accessNotice" class="notice"></div><section class="welcome"><div><span class="badge">MI PLUMKIDS</span><h1 id="welcomeName">Hola</h1><p>Administra tus apps, herramientas y perfiles familiares.</p></div><a class="btn btn-primary" href="index.html#apps">Explorar productos</a></section><div class="dashboard-grid"><section class="panel"><div class="panel-head"><h2>Mis apps y herramientas</h2><span id="appCount" class="badge">0 accesos</span></div><div id="appsContainer" class="apps-grid"></div></section><aside class="panel"><div class="panel-head"><h2>Niños/as</h2></div><div id="childrenContainer"></div><form id="childForm" class="inline-form"><strong>Agregar perfil</strong><div class="field"><label>Nombre</label><input name="name" maxlength="80" required></div><div class="field"><label>Edad</label><input name="age" type="number" min="2" max="17" required></div><button class="btn btn-outline full" type="submit">Agregar</button></form></aside></div>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mi Plumkids</title><link rel="stylesheet" href="account.css">
+<style>
+.tool-art{height:150px;padding:16px;background:linear-gradient(135deg,var(--g1),var(--g2));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#fff}
+.tool-mark{display:grid;place-items:center;min-width:84px;min-height:70px;padding:8px 12px;border-radius:20px;background:rgba(255,255,255,.92);color:#40206f;font-weight:900;font-size:26px;letter-spacing:-1px;box-shadow:0 8px 25px rgba(33,14,61,.14)}
+.tool-art small{font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,.18)}
+@media(max-width:760px){.tool-art{height:170px}}
+</style></head><body><header class="top"><div class="wrap top-in"><a class="logo" href="index.html"><span class="plum"></span>Plumkids</a><div class="top-actions"><a class="btn btn-light hide-mobile" href="index.html#apps">Explorar apps</a><button id="logoutBtn" class="btn btn-danger">Salir</button></div></div></header><main class="wrap dashboard"><div id="loading"><div class="spinner"></div></div><div id="dashboardContent" hidden><div id="accessNotice" class="notice"></div><section class="welcome"><div><span class="badge">MI PLUMKIDS</span><h1 id="welcomeName">Hola</h1><p>Administra tus aplicaciones y perfiles familiares.</p></div><a class="btn btn-primary" href="index.html#apps">Explorar productos</a></section><div class="dashboard-grid"><section class="panel"><div class="panel-head"><h2>Mis apps</h2><span id="appCount" class="badge">0 apps</span></div><div id="appsContainer" class="apps-grid"></div></section><aside class="panel"><div class="panel-head"><h2>Niños/as</h2></div><div id="childrenContainer"></div><form id="childForm" class="inline-form"><strong>Agregar perfil</strong><div class="field"><label>Nombre</label><input name="name" maxlength="80" required></div><div class="field"><label>Edad</label><input name="age" type="number" min="2" max="17" required></div><button class="btn btn-outline full" type="submit">Agregar</button></form></aside></div>
 <section id="progressPanel" class="panel" style="margin-top:20px">
   <div class="panel-head"><h2>Progreso de aprendizaje</h2><span class="badge">NUEVO</span></div>
   <div id="progressSummary"><p class="muted">Aún no hay actividad registrada.</p></div>
 </section>
 </div></main><footer class="footer">© 2026 Plumkids · Mi Plumkids.</footer><script>
 const appInfo={
-  'lectoaventura':{name:'LectoAventura',image:'assets/app-lecto.png',url:'play/lectoaventura.html'},
-  'mateaventura':{name:'MateAventura',image:'assets/app-mate.png',url:'play/mateaventura.html'},
-  'memoria-magica':{name:'Memoria Mágica',image:'assets/app-memoria.png',url:'play/memoria-magica.html'},
-  'emociones-en-juego':{name:'Emociones en Juego',image:'assets/app-emociones.png',url:'play/emociones-en-juego.html'},
-  'plumkids-builder':{name:'Plumkids Builder',image:'',emoji:'🧰',url:'builder/index.html'}
+  'lectoaventura':{name:'LectoAventura',image:'assets/app-lecto.png',url:'play/lectoaventura.html',desc:'Acceso habilitado para tu cuenta.'},
+  'mateaventura':{name:'MateAventura',image:'assets/app-mate.png',url:'play/mateaventura.html',desc:'Acceso habilitado para tu cuenta.'},
+  'memoria-magica':{name:'Memoria Mágica',image:'assets/app-memoria.png',url:'play/memoria-magica.html',desc:'Acceso habilitado para tu cuenta.'},
+  'emociones-en-juego':{name:'Emociones en Juego',image:'assets/app-emociones.png',url:'play/emociones-en-juego.html',desc:'Acceso habilitado para tu cuenta.'},
+  'crucigramas':{name:'Generador de Crucigramas',mark:'A↔B',g1:'#6f42d8',g2:'#a36df0',url:'play/crucigramas.html',desc:'Crea crucigramas personalizados.'},
+  'hojas-vocabulario':{name:'Generador de Hojas de Vocabulario',mark:'ABC',g1:'#3f75d8',g2:'#71a4f2',url:'play/hojas-vocabulario.html',desc:'Crea hojas de vocabulario listas para imprimir.'},
+  'laberintos':{name:'Generador de Laberintos',mark:'↝',g1:'#d26643',g2:'#eea85f',url:'play/laberintos.html',desc:'Genera laberintos infantiles personalizados.'},
+  'matematicas-emojis':{name:'Generador de Matemáticas con Emojis',mark:'2+🍎',g1:'#e6538f',g2:'#f38ab5',url:'play/matematicas-emojis.html',desc:'Crea matemáticas visuales con emojis.'},
+  'matematicas':{name:'Generador de Matemáticas',mark:'7+5',g1:'#438f4c',g2:'#73bd6e',url:'play/matematicas.html',desc:'Genera hojas de operaciones matemáticas.'},
+  'quiz-reloj':{name:'Generador de Quiz del Reloj',mark:'12:30',g1:'#4e79a7',g2:'#7fa8ce',url:'play/quiz-reloj.html',desc:'Crea ejercicios para aprender la hora.'},
+  'secuencias':{name:'Generador de Secuencias',mark:'1·2·?',g1:'#8d58bc',g2:'#c087de',url:'play/secuencias.html',desc:'Diseña actividades de secuencias y patrones.'},
+  'sopa-letras':{name:'Generador de Sopa de Letras',mark:'ABC',g1:'#347d88',g2:'#68b3b5',url:'play/sopa-letras.html',desc:'Crea sopas de letras personalizadas.'},
+  'trazado-formas':{name:'Generador de Trazado de Formas',mark:'○△□',g1:'#d37a3e',g2:'#f2b46f',url:'play/trazado-formas.html',desc:'Crea actividades de trazado de formas.'},
+  'trazos-lineas':{name:'Generador de Trazos de Líneas',mark:'〰〰',g1:'#6d67c7',g2:'#9b96e6',url:'play/trazos-lineas.html',desc:'Genera ejercicios de preescritura y trazos.'},
+  'plumkids-builder':{name:'Kids Builder',mark:'10',g1:'#6f42d8',g2:'#a36df0',url:'builder/index.html',desc:'Versión piloto anterior.'}
 };
 async function api(url,opts){
   const r=await fetch(url,{credentials:'same-origin',...(opts||{})});
@@ -22,20 +38,17 @@ function escapeHtml(v){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':
 function renderApps(entitlements){
   const c=document.getElementById('appsContainer');
   c.innerHTML='';
-  document.getElementById('appCount').textContent=`${entitlements.length} ${entitlements.length===1?'acceso':'accesos'}`;
+  document.getElementById('appCount').textContent=`${entitlements.length} ${entitlements.length===1?'app':'apps'}`;
   if(!entitlements.length){
-    c.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="emoji">🎮</div><h3>Aún no tienes productos activados</h3><p>Después de una compra aprobada, el producto aparecerá aquí.</p><a class="btn btn-primary" href="index.html#apps">Explorar productos</a></div>';
+    c.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="emoji">🎮</div><h3>Aún no tienes apps activadas</h3><p>Después de una compra aprobada, la app aparecerá aquí.</p><a class="btn btn-primary" href="index.html#apps">Explorar apps</a></div>';
     return;
   }
   entitlements.forEach(e=>{
-    const a=appInfo[e.app_slug]||{name:e.app_slug,image:'',emoji:'🎮',url:'#'};
+    const a=appInfo[e.app_slug]||{name:e.app_slug,image:'',mark:'APP',g1:'#6f42d8',g2:'#a36df0',url:'#',desc:'Acceso habilitado para tu cuenta.'};
     const art=a.image
-      ? `<div class="app-art app-art-image"><img src="${a.image}" alt="${a.name}"></div>`
-      : `<div class="app-art">${a.emoji||'🎮'}</div>`;
-    const desc=e.app_slug==='plumkids-builder'
-      ? '10 generadores de actividades infantiles.'
-      : 'Acceso habilitado para tu cuenta.';
-    c.insertAdjacentHTML('beforeend',`<article class="app-card">${art}<div class="app-body"><h3>${a.name}</h3><p>${desc}</p><a class="btn btn-primary full" href="${a.url}">Abrir</a></div></article>`);
+      ? `<div class="app-art app-art-image"><img src="${a.image}" alt="${escapeHtml(a.name)}"></div>`
+      : `<div class="tool-art" style="--g1:${a.g1};--g2:${a.g2}"><div class="tool-mark">${a.mark}</div><small>PLUMKIDS APP</small></div>`;
+    c.insertAdjacentHTML('beforeend',`<article class="app-card">${art}<div class="app-body"><h3>${escapeHtml(a.name)}</h3><p>${escapeHtml(a.desc)}</p><a class="btn btn-primary full" href="${a.url}">Abrir</a></div></article>`);
   });
 }
 function renderChildren(children){const c=document.getElementById('childrenContainer');c.innerHTML='';if(!children.length){c.innerHTML='<p class="muted">Aún no has agregado perfiles.</p>';return}children.forEach(ch=>c.insertAdjacentHTML('beforeend',`<div class="child-card"><strong>${escapeHtml(ch.name)}</strong><span>${ch.age} años</span></div>`))}
@@ -45,7 +58,7 @@ if(accessParams.get('access')==='required'){
   const slug=accessParams.get('app');
   const item=appInfo[slug];
   const n=document.getElementById('accessNotice');
-  n.textContent=`${item?.name||'Este producto'} no está habilitado en esta cuenta.`;
+  n.textContent=`${item?.name||'Esta aplicación'} no está habilitada en esta cuenta.`;
   n.className='notice show error';
 }
 
@@ -73,6 +86,17 @@ function renderLearningProgress(rows){
   });
 }
 
-async function load(){try{const [me,ent,children,learning]=await Promise.all([api('/api/auth/me'),api('/api/entitlements'),api('/api/children'),api('/api/learning/summary')]);document.getElementById('welcomeName').textContent=`Hola, ${me.user.first_name}`;renderApps(ent.entitlements||[]);renderChildren(children.children||[]);renderLearningProgress(learning.progress||[]);document.getElementById('loading').hidden=true;document.getElementById('dashboardContent').hidden=false}catch(e){console.error(e)}}
-document.getElementById('logoutBtn').addEventListener('click',async()=>{try{await fetch('/api/auth/logout',{method:'POST'})}finally{location.href='login.html'}});document.getElementById('childForm').addEventListener('submit',async(e)=>{e.preventDefault();const f=e.currentTarget;try{await api('/api/children',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:f.name.value.trim(),age:Number(f.age.value)})});f.reset();const d=await api('/api/children');renderChildren(d.children||[])}catch(err){alert(err.message)}});load();
+async function load(){try{
+  const [me,ent,children,learning]=await Promise.all([api('/api/auth/me'),api('/api/entitlements'),api('/api/children'),api('/api/learning/summary')]);
+  document.getElementById('welcomeName').textContent=`Hola, ${me.user.first_name}`;
+  const visible=(ent.entitlements||[]).filter(e=>e.app_slug!=='plumkids-builder');
+  renderApps(visible);
+  renderChildren(children.children||[]);
+  renderLearningProgress(learning.progress||[]);
+  document.getElementById('loading').hidden=true;
+  document.getElementById('dashboardContent').hidden=false
+}catch(e){console.error(e)}}
+document.getElementById('logoutBtn').addEventListener('click',async()=>{try{await fetch('/api/auth/logout',{method:'POST'})}finally{location.href='login.html'}});
+document.getElementById('childForm').addEventListener('submit',async(e)=>{e.preventDefault();const f=e.currentTarget;try{await api('/api/children',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:f.name.value.trim(),age:Number(f.age.value)})});f.reset();const d=await api('/api/children');renderChildren(d.children||[])}catch(err){alert(err.message)}});
+load();
 </script></body></html>

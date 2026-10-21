@@ -6,6 +6,16 @@ CREATE TABLE IF NOT EXISTS children (id TEXT PRIMARY KEY,user_id TEXT NOT NULL,n
 CREATE INDEX IF NOT EXISTS idx_children_user_id ON children(user_id);
 CREATE TABLE IF NOT EXISTS apps (slug TEXT PRIMARY KEY,name TEXT NOT NULL,price_cop INTEGER NOT NULL,price_usd_cents INTEGER NOT NULL,active INTEGER NOT NULL DEFAULT 1);
 INSERT OR IGNORE INTO apps(slug,name,price_cop,price_usd_cents) VALUES ('lectoaventura','LectoAventura',15900,499),('mateaventura','MateAventura',15900,499),('memoria-magica','Memoria Mágica',15900,499),('emociones-en-juego','Emociones en Juego',15900,499);
+INSERT OR IGNORE INTO apps(slug,name,price_cop,price_usd_cents,active) VALUES ('crucigramas','Generador de Crucigramas',0,0,0);
+INSERT OR IGNORE INTO apps(slug,name,price_cop,price_usd_cents,active) VALUES ('hojas-vocabulario','Generador de Hojas de Vocabulario',0,0,0);
+INSERT OR IGNORE INTO apps(slug,name,price_cop,price_usd_cents,active) VALUES ('laberintos','Generador de Laberintos',0,0,0);
+INSERT OR IGNORE INTO apps(slug,name,price_cop,price_usd_cents,active) VALUES ('matematicas-emojis','Generador de Matemáticas con Emojis',0,0,0);
+INSERT OR IGNORE INTO apps(slug,name,price_cop,price_usd_cents,active) VALUES ('matematicas','Generador de Matemáticas',0,0,0);
+INSERT OR IGNORE INTO apps(slug,name,price_cop,price_usd_cents,active) VALUES ('quiz-reloj','Generador de Quiz del Reloj',0,0,0);
+INSERT OR IGNORE INTO apps(slug,name,price_cop,price_usd_cents,active) VALUES ('secuencias','Generador de Secuencias',0,0,0);
+INSERT OR IGNORE INTO apps(slug,name,price_cop,price_usd_cents,active) VALUES ('sopa-letras','Generador de Sopa de Letras',0,0,0);
+INSERT OR IGNORE INTO apps(slug,name,price_cop,price_usd_cents,active) VALUES ('trazado-formas','Generador de Trazado de Formas',0,0,0);
+INSERT OR IGNORE INTO apps(slug,name,price_cop,price_usd_cents,active) VALUES ('trazos-lineas','Generador de Trazos de Líneas',0,0,0);
 CREATE TABLE IF NOT EXISTS entitlements (id TEXT PRIMARY KEY,user_id TEXT NOT NULL,app_slug TEXT NOT NULL,source TEXT NOT NULL DEFAULT 'purchase',source_reference TEXT,granted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,revoked_at TEXT,UNIQUE(user_id, app_slug),FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,FOREIGN KEY(app_slug) REFERENCES apps(slug));
 CREATE INDEX IF NOT EXISTS idx_entitlements_user_id ON entitlements(user_id);
 CREATE TABLE IF NOT EXISTS payments (id TEXT PRIMARY KEY,provider TEXT NOT NULL,provider_payment_id TEXT UNIQUE,user_id TEXT,app_slug TEXT,amount INTEGER,currency TEXT,status TEXT NOT NULL,payer_email TEXT,raw_payload TEXT,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(user_id) REFERENCES users(id),FOREIGN KEY(app_slug) REFERENCES apps(slug));

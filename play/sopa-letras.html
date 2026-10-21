@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plumkids | Generador de Sopa de Letras</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --radius-card: 24px;
+        }
+
+        /* --- THEMES --- */
+        body.theme-gem { --bg: #e0f2fe; --grad: linear-gradient(180deg, #38bdf8 0%, #2563eb 100%); --btn: #0ea5e9; --shadow: #0369a1; --accent: #facc15; --accent-dark: #b45309; --text: #1e3a8a; --cell: #f1f5f9; }
+        body.theme-candy { --bg: #fce7f3; --grad: linear-gradient(180deg, #f472b6 0%, #db2777 100%); --btn: #ec4899; --shadow: #be185d; --accent: #2dd4bf; --accent-dark: #0f766e; --text: #831843; --cell: #fdf2f8; }
+        body.theme-forest { --bg: #dcfce7; --grad: linear-gradient(180deg, #4ade80 0%, #16a34a 100%); --btn: #22c55e; --shadow: #15803d; --accent: #fb923c; --accent-dark: #c2410c; --text: #14532d; --cell: #f0fdf4; }
+        body.theme-fire { --bg: #ffedd5; --grad: linear-gradient(180deg, #fb923c 0%, #ea580c 100%); --btn: #f97316; --shadow: #c2410c; --accent: #818cf8; --accent-dark: #4338ca; --text: #7c2d12; --cell: #fff7ed; }
+
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+        body { font-family: 'Nunito', sans-serif; background-color: var(--bg); margin: 0; height: 100vh; display: flex; overflow: hidden; color: var(--text); }
+
+        /* --- SIDEBAR --- */
+        aside {
+            width: 380px; background: #fff; height: 100%; overflow-y: auto; padding: 2rem;
+            box-shadow: 5px 0 25px rgba(0,0,0,0.1); z-index: 50; display: flex; flex-direction: column; gap: 1.5rem; border-right: 1px solid #e2e8f0;
+        }
+        .brand {
+            font-family: 'Fredoka', sans-serif; font-size: 2rem; line-height: 1.2; text-align: center;
+            background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 0 rgba(0,0,0,0.1)); padding-bottom: 5px;
+        }
+        .panel { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; padding: 1.2rem; }
+        h3 { margin: 0 0 10px 0; font-family: 'Fredoka', sans-serif; color: var(--text); font-size: 1rem; text-transform: uppercase; }
+        
+        input, select, textarea {
+            width: 100%; padding: 10px; border: 2px solid #cbd5e1; border-radius: 12px;
+            font-family: 'Nunito', sans-serif; font-weight: 700; color: #475569; background: white; margin-bottom: 8px; outline: none;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--btn); }
+
+        .themes { display: flex; gap: 10px; justify-content: center; }
+        .dot {
+            width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 4px solid white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;
+        }
+        .dot:hover { transform: scale(1.1); }
+        .dot.active { transform: scale(1.15); border-color: #333; }
+
+        .btn-main {
+            display: block; width: 100%; padding: 14px; margin-bottom: 15px; border: none; border-radius: 50px;
+            background-color: var(--btn); color: white; font-family: 'Fredoka', sans-serif; font-size: 1.2rem; font-weight: 700;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.3); box-shadow: 0 5px 0 var(--shadow), 0 10px 10px rgba(0,0,0,0.1);
+            cursor: pointer; position: relative; transition: transform 0.1s;
+        }
+        .btn-main:active { transform: translateY(5px); box-shadow: 0 0 0 var(--shadow); }
+        .btn-sec { background-color: var(--accent); box-shadow: 0 5px 0 var(--accent-dark), 0 10px 10px rgba(0,0,0,0.1); }
+        .btn-sec:active { box-shadow: 0 0 0 var(--accent-dark); }
+
+        /* --- PREVIEW --- */
+        main {
+            flex: 1; padding: 2rem; display: flex; justify-content: center; align-items: flex-start;
+            overflow-y: auto; background-image: radial-gradient(rgba(0,0,0,0.05) 2px, transparent 2px); background-size: 20px 20px;
+        }
+
+        .sheet {
+            width: 210mm; min-height: 297mm; background: white; border-radius: var(--radius-card);
+            box-shadow: 0 20px 50px -10px rgba(0,0,0,0.2); display: flex; flex-direction: column;
+            position: relative; margin-bottom: 2rem; border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .ws-header {
+            background: var(--grad); margin: 15px; border-radius: 24px; text-align: center; color: white;
+            padding: 60px 20px 30px 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .ws-title { font-family: 'Fredoka', sans-serif; font-size: 3.5rem; line-height: 1; margin: 0; text-transform: uppercase; text-shadow: 0 3px 0 rgba(0,0,0,0.2); }
+        .ws-sub { font-size: 1.2rem; font-weight: 800; margin-top: 10px; opacity: 0.95; text-shadow: 0 1px 0 rgba(0,0,0,0.2); }
+
+        .ws-body { padding: 1rem 3rem 3rem 3rem; flex: 1; display: flex; flex-direction: column; }
+
+        .info-row { display: flex; gap: 2rem; margin-bottom: 2rem; }
+        .field {
+            flex: 1; background: #f8fafc; border: 2px solid #e2e8f0; padding: 10px 20px; border-radius: 50px;
+            display: flex; align-items: center; gap: 15px;
+        }
+        .field-lbl { font-family: 'Fredoka', sans-serif; font-size: 1.1rem; color: var(--text); font-weight: 700; white-space: nowrap; }
+        .field-line { flex: 1; border-bottom: 2px dashed #cbd5e1; }
+
+        .grid-box {
+            align-self: center; background: white; padding: 12px; border-radius: 20px; border: 4px solid #e2e8f0;
+            margin-bottom: 2rem; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.05);
+        }
+        .grid { display: grid; gap: 4px; }
+        .cell {
+            width: 42px; height: 42px; background: var(--cell); border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            font-family: 'Fredoka', sans-serif; font-size: 1.5rem; color: #334155; font-weight: 700;
+            border: 2px solid white; box-shadow: 0 2px 0 #cbd5e1; user-select: none;
+        }
+        .cell.found { background: var(--accent); color: white; border-color: var(--accent-dark); box-shadow: 0 2px 0 var(--accent-dark); transform: scale(1.05); }
+
+        .bank { background: #f8fafc; border: 3px solid #e2e8f0; border-radius: 24px; padding: 2.5rem 2rem 2rem 2rem; position: relative; margin-top: auto; }
+        .bank-pill {
+            position: absolute; top: -20px; left: 50%; transform: translateX(-50%); background: var(--accent); color: white;
+            font-family: 'Fredoka', sans-serif; font-size: 1.2rem; padding: 8px 30px; border-radius: 50px;
+            border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-shadow: 0 1px 0 rgba(0,0,0,0.2); white-space: nowrap;
+        }
+        .word-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+        .word-item { background: white; padding: 6px 16px; border-radius: 12px; font-weight: 800; color: #475569; border: 2px solid #e2e8f0; }
+        .footer { text-align: center; margin-top: 2rem; font-weight: 700; color: #94a3b8; font-size: 0.8rem; }
+
+        /* --- PRINT FIXES --- */
+        @media print {
+            @page { size: A4 portrait; margin: 0; }
+            body { background: white; margin: 0; padding: 0; width: 210mm; height: 297mm; display: block; overflow: hidden; }
+            aside { display: none !important; }
+            main { display: block; padding: 0; margin: 0; width: 100%; height: 100%; }
+            .sheet {
+                width: 100%; height: 100%; margin: 0; border-radius: 0; box-shadow: none; border: none;
+                zoom: 0.95;
+            }
+            .ws-header { margin: 0; border-radius: 0 0 30px 30px; padding-top: 40px; box-shadow: none; }
+            .ws-body { padding: 10px 30px 30px 30px; }
+            .grid-box { box-shadow: none; border: 4px solid #e2e8f0; }
+            .cell { box-shadow: none; border: 1px solid #cbd5e1; }
+            .cell.found { background: var(--accent) !important; color: white !important; box-shadow: none; border: 2px solid #333; }
+            .bank { box-shadow: none; }
+            .bank-pill { box-shadow: none; border: 3px solid white; }
+        }
+    </style>
+
+<style id="plumkids-integration">
+.plumkids-return{
+  position:fixed;right:14px;bottom:14px;z-index:99999;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:42px;padding:0 14px;border-radius:999px;
+  background:#7136d4;color:#fff;text-decoration:none;
+  font:800 13px Arial,Helvetica,sans-serif;
+  box-shadow:0 8px 24px rgba(49,25,87,.25);
+  border:2px solid rgba(255,255,255,.75);
+}
+.plumkids-return:hover{background:#5f28bd}
+@media(max-width:640px){
+  .plumkids-return{right:10px;bottom:10px;font-size:12px;min-height:38px;padding:0 12px}
+}
+@media print{.plumkids-return{display:none!important}}
+</style>
+
+</head>
+<body class="theme-gem">
+<a class="plumkids-return" href="../mi-plumkids.html" aria-label="Volver a Mi Plumkids">← Mi Plumkids</a>
+
+    <aside>
+        <div class="brand">Plumkids<br>Generador de Sopa de Letras</div>
+
+        <div class="panel">
+            <h3>🎨 Tema</h3>
+            <div class="themes">
+                <div class="dot active" style="background: linear-gradient(135deg, #0ea5e9, #2563eb)" onclick="setTheme('gem', this)"></div>
+                <div class="dot" style="background: linear-gradient(135deg, #ec4899, #be185d)" onclick="setTheme('candy', this)"></div>
+                <div class="dot" style="background: linear-gradient(135deg, #4ade80, #16a34a)" onclick="setTheme('forest', this)"></div>
+                <div class="dot" style="background: linear-gradient(135deg, #fb923c, #ea580c)" onclick="setTheme('fire', this)"></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>🌍 Idioma y Contenido</h3>
+            <select id="langSelect" onchange="updateLang()">
+                <option value="en">🇺🇸 English</option>
+                <option value="id">🇮🇩 Indonesia</option>
+                <option value="ms">🇲🇾 Malay</option>
+                <option value="es" selected>🌎 Español (Latinoamérica)</option>
+                <option value="fr">🇫🇷 French</option>
+                <option value="de">🇩🇪 German</option>
+                <option value="it">🇮🇹 Italian</option>
+                <option value="pt">🇵🇹 Portuguese</option>
+                <option value="nl">🇳🇱 Dutch</option>
+                <option value="tr">🇹🇷 Turkish</option>
+                <option value="pl">🇵🇱 Polish</option>
+                <option value="vi">🇻🇳 Vietnamese</option>
+            </select>
+            
+            <label style="font-size:0.8rem; font-weight:700; color:#64748b; margin-top:5px; display:block;">Seleccionar Categoría:</label>
+            <select id="wordPack" onchange="loadWords()">
+                <option value="animals">🦁 Animales</option>
+                <option value="food">🍕 Comida</option>
+                <option value="sports">⚽ Deportes</option>
+                <option value="colors">🎨 Colores</option>
+                <option value="school">🎒 Escuela</option>
+                <option value="nature">🌳 Naturaleza</option>
+                <option value="body">👀 Cuerpo</option>
+                <option value="home">🏠 Hogar</option>
+                <option value="custom">✍️ Personalizado</option>
+            </select>
+        </div>
+
+        <div class="panel">
+            <h3>⚙️ Ajustes</h3>
+            <select id="diffSelect">
+                <option value="easy">Fácil (8x8)</option>
+                <option value="medium" selected>Medio (10x10)</option>
+                <option value="hard">Difícil (12x12)</option>
+            </select>
+        </div>
+
+        <div class="panel">
+            <h3>📝 Edición Manual de Texto</h3>
+            <input type="text" id="inpTitle" placeholder="Título" oninput="liveEdit('title', this.value)">
+            <input type="text" id="inpSub" placeholder="Subtítulo" oninput="liveEdit('sub', this.value)">
+            <input type="text" id="inpBank" placeholder="Etiqueta del Banco" oninput="liveEdit('bank', this.value)">
+            <div style="display:flex; gap:10px">
+                <input type="text" id="inpName" placeholder="Nombre" oninput="liveEdit('name', this.value)">
+                <input type="text" id="inpClass" placeholder="Clase" oninput="liveEdit('class', this.value)">
+            </div>
+            <input type="text" id="inpFooter" placeholder="Pie de página" oninput="liveEdit('footer', this.value)">
+            
+            <label style="font-size:0.8rem; font-weight:700; color:#64748b; margin-top:5px; display:block;">Lista de Palabras Personalizada:</label>
+            <textarea id="wordInput" rows="3" placeholder="Escribe las palabras..."></textarea>
+        </div>
+
+        <button class="btn-main" onclick="generate()">🎲 ¡GENERAR!</button>
+        <button class="btn-main btn-sec" onclick="toggleSolution()">👁️ VER RESPUESTAS</button>
+        <button class="btn-main btn-sec" onclick="saveAsImage()">🖼️ GUARDAR COMO IMAGEN</button>
+        <button class="btn-main btn-sec" onclick="window.print()">🖨️ IMPRIMIR</button>
+    </aside>
+
+    <main>
+        <div class="sheet">
+            <div class="ws-header">
+                <h1 class="ws-title" id="outTitle">SOPA DE LETRAS</h1>
+                <div class="ws-sub" id="outSub">¡Encuentra las palabras!</div>
+            </div>
+
+            <div class="ws-body">
+                <div class="info-row">
+                    <div class="field">
+                        <span class="field-lbl" id="outName">Nombre:</span>
+                        <div class="field-line"></div>
+                    </div>
+                    <div class="field">
+                        <span class="field-lbl" id="outClass">Clase:</span>
+                        <div class="field-line"></div>
+                    </div>
+                </div>
+
+                <div class="grid-box">
+                    <div class="grid" id="gridContainer"></div>
+                </div>
+
+                <div class="bank">
+                    <div class="bank-pill" id="outBank">PALABRAS</div>
+                    <div class="word-list" id="wordList"></div>
+                </div>
+
+                <div class="footer" id="outFooter">Creado con Plumkids</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- 1. LANGUAGE LABELS ---
+        const UI_LABELS = {
+            en: { title: "WORD SEARCH", sub: "Find the hidden words!", bank: "WORD BANK", name: "Name:", class: "Class:", footer: "Created with Plumkids" },
+            id: { title: "CARI KATA", sub: "Temukan kata tersembunyi!", bank: "DAFTAR KATA", name: "Nama:", class: "Kelas:", footer: "Dibuat dengan Plumkids" },
+            ms: { title: "CARI KATA", sub: "Cari perkataan tersembunyi!", bank: "KOSA KATA", name: "Nama:", class: "Kelas:", footer: "Dicipta dengan Plumkids" },
+            es: { title: "SOPA DE LETRAS", sub: "¡Encuentra las palabras!", bank: "PALABRAS", name: "Nombre:", class: "Clase:", footer: "Creado con Plumkids" },
+            fr: { title: "MOTS MÊLÉS", sub: "Trouvez les mots cachés!", bank: "LISTE DE MOTS", name: "Nom:", class: "Classe:", footer: "Créé avec Plumkids" },
+            de: { title: "WORTGITTER", sub: "Finde die Wörter!", bank: "WÖRTER", name: "Name:", class: "Klasse:", footer: "Erstellt mit Plumkids" },
+            it: { title: "PAROLE INTRECCIATE", sub: "Trova le parole!", bank: "PAROLE", name: "Nome:", class: "Classe:", footer: "Creato con Plumkids" },
+            pt: { title: "CAÇA PALAVRAS", sub: "Encontre as palavras!", bank: "PALAVRAS", name: "Nome:", class: "Turma:", footer: "Criado com Plumkids" },
+            nl: { title: "WOORDZOEKER", sub: "Vind de woorden!", bank: "WOORDEN", name: "Naam:", class: "Groep:", footer: "Gemaakt met Plumkids" },
+            tr: { title: "KELİME BULMACA", sub: "Gizli kelimeleri bul!", bank: "KELİMELER", name: "İsim:", class: "Sınıf:", footer: "Plumkids ile yapıldı" },
+            pl: { title: "WYKREŚLANKA", sub: "Znajdź ukryte słowa!", bank: "SŁOWA", name: "Imię:", class: "Klasa:", footer: "Stworzono w Plumkids" },
+            vi: { title: "TÌM TỪ", sub: "Tìm các từ ẩn!", bank: "TỪ VỰNG", name: "Tên:", class: "Lớp:", footer: "Tạo bởi Plumkids" }
+        };
+
+        // --- 2. MULTI-LANGUAGE VOCABULARY DATABASE ---
+        const VOCAB = {
+            en: {
+                animals: ["LION", "TIGER", "BEAR", "ZEBRA", "WOLF", "FOX", "CAT", "DOG"],
+                food: ["PIZZA", "BURGER", "APPLE", "BREAD", "CAKE", "SOUP", "EGG", "RICE"],
+                sports: ["SOCCER", "TENNIS", "GOLF", "SWIM", "RUN", "JUMP", "SKI", "BOXING"],
+                colors: ["RED", "BLUE", "GREEN", "PINK", "BLACK", "WHITE", "GOLD", "GRAY"],
+                school: ["BOOK", "PEN", "DESK", "BAG", "RULER", "PAPER", "MATH", "ART"],
+                nature: ["TREE", "SUN", "MOON", "RIVER", "RAIN", "SNOW", "STAR", "SKY"],
+                body: ["HEAD", "HAND", "FOOT", "EYE", "NOSE", "EAR", "KNEE", "FACE"],
+                home: ["BED", "CHAIR", "TABLE", "DOOR", "ROOF", "WALL", "LAMP", "SOFA"]
+            },
+            id: {
+                animals: ["SINGA", "MACAN", "BERUANG", "ZEBRA", "KUDA", "KUCING", "ANJING", "IKAN"],
+                food: ["NASI", "ROTI", "AYAM", "TELUR", "SUSU", "KEJU", "BUAH", "MIE"],
+                sports: ["LARI", "RENANG", "BOLA", "TENNIS", "SILAT", "SENAM", "GOLF", "BASKET"],
+                colors: ["MERAH", "BIRU", "HIJAU", "KUNING", "UNGU", "HITAM", "PUTIH", "ABU"],
+                school: ["BUKU", "PENA", "MEJA", "TAS", "KELAS", "GURU", "PAPAN", "ILMU"],
+                nature: ["POHON", "AIR", "API", "BUMI", "LAUT", "GUNUNG", "AWAN", "HUJAN"],
+                body: ["KEPALA", "TANGAN", "KAKI", "MATA", "HIDUNG", "TELINGA", "GIGI", "MULUT"],
+                home: ["RUMAH", "PINTU", "JENDELA", "ATAP", "KASUR", "KURSI", "MEJA", "DAPUR"]
+            },
+            ms: {
+                animals: ["SINGA", "HARIMAU", "BERUANG", "KUDA", "KUCING", "ANJING", "IKAN", "GAJAH"],
+                food: ["NASI", "ROTI", "AYAM", "TELUR", "SUSU", "KEJU", "BUAH", "MI"],
+                sports: ["LARI", "RENANG", "BOLA", "TENIS", "GOLF", "BADMINTON", "HOKI", "RAGBI"],
+                colors: ["MERAH", "BIRU", "HIJAU", "KUNING", "UNGU", "HITAM", "PUTIH", "KELABU"],
+                school: ["BUKU", "PENA", "MEJA", "BEG", "KELAS", "GURU", "PAPAN", "ILMU"],
+                nature: ["POHON", "AIR", "API", "BUMI", "LAUT", "GUNUNG", "AWAN", "HUJAN"],
+                body: ["KEPALA", "TANGAN", "KAKI", "MATA", "HIDUNG", "TELINGA", "GIGI", "MULUT"],
+                home: ["RUMAH", "PINTU", "TINGKAP", "BUMBUNG", "KATIL", "KERUSI", "MEJA", "DAPUR"]
+            },
+            es: {
+                animals: ["LEON", "TIGRE", "OSO", "ZEBRA", "LOBO", "GATO", "PERRO", "PEZ"],
+                food: ["PIZZA", "PAN", "ARROZ", "SOPA", "HUEVO", "CARNE", "FRUTA", "AGUA"],
+                sports: ["FUTBOL", "TENIS", "GOLF", "NADAR", "CORRER", "BOXEO", "JUDO", "BAILE"],
+                colors: ["ROJO", "AZUL", "VERDE", "ROSA", "NEGRO", "BLANCO", "GRIS", "ORO"],
+                school: ["LIBRO", "LAPIZ", "MESA", "PAPEL", "CLASE", "GOMA", "MAPA", "ARTE"],
+                nature: ["ARBOL", "SOL", "LUNA", "RIO", "MAR", "FLOR", "LLUVIA", "NIEVE"],
+                body: ["CABEZA", "MANO", "PIE", "OJO", "NARIZ", "BOCA", "PELO", "CARA"],
+                home: ["CASA", "CAMA", "SILLA", "MESA", "PUERTA", "SOFA", "LUZ", "BAÑO"]
+            },
+            fr: {
+                animals: ["LION", "TIGRE", "OURS", "ZEBRE", "LOUP", "CHAT", "CHIEN", "POISSON"],
+                food: ["PAIN", "POMME", "OEUF", "LAIT", "EAU", "GATEAU", "RIZ", "FRUIT"],
+                sports: ["FOOT", "TENNIS", "GOLF", "NAGE", "JUDO", "SKI", "BOXE", "VELO"],
+                colors: ["ROUGE", "BLEU", "VERT", "ROSE", "NOIR", "BLANC", "GRIS", "JAUNE"],
+                school: ["LIVRE", "STYLO", "TABLE", "SAC", "ECOLE", "PAPIER", "ART", "MATH"],
+                nature: ["ARBRE", "EAU", "FEU", "MER", "FLEUR", "SOLEIL", "LUNE", "CIEL"],
+                body: ["TETE", "MAIN", "PIED", "OEIL", "NEZ", "BOUCHE", "BRAS", "DOS"],
+                home: ["LIT", "CHAISE", "TABLE", "PORTE", "TOIT", "MUR", "SALON", "BAIN"]
+            },
+            de: {
+                animals: ["LOWE", "TIGER", "BAR", "WOLF", "FUCHS", "KATZE", "HUND", "MAUS"],
+                food: ["BROT", "APFEL", "EI", "MILCH", "WASSER", "KUCHEN", "REIS", "OBST"],
+                sports: ["FUSSBALL", "TENNIS", "GOLF", "LAUFEN", "JUDO", "SKI", "BOXEN", "TANZEN"],
+                colors: ["ROT", "BLAU", "GRUN", "PINK", "SCHWARZ", "WEISS", "GRAU", "GELB"],
+                school: ["BUCH", "STIFT", "TISCH", "TASCHE", "SCHULE", "PAPIER", "KUNST", "MATHE"],
+                nature: ["BAUM", "WASSER", "FEUER", "MEER", "BLUME", "SONNE", "MOND", "LUFT"],
+                body: ["KOPF", "HAND", "FUSS", "AUGE", "NASE", "MUND", "ARM", "OHR"],
+                home: ["BETT", "STUHL", "TISCH", "TUR", "DACH", "WAND", "LAMPE", "BAD"]
+            },
+            it: {
+                animals: ["LEONE", "TIGRE", "ORSO", "LUPO", "GATTO", "CANE", "PESCE", "TOPO"],
+                food: ["PANE", "MELA", "UOVO", "LATTE", "ACQUA", "TORTA", "RISO", "FRUTTA"],
+                sports: ["CALCIO", "TENNIS", "GOLF", "NUOTO", "JUDO", "SCI", "BOXE", "BICI"],
+                colors: ["ROSSO", "BLU", "VERDE", "ROSA", "NERO", "BIANCO", "GRIGIO", "GIALLO"],
+                school: ["LIBRO", "PENNA", "TAVOLO", "BORSA", "SCUOLA", "CARTA", "ARTE", "MATITA"],
+                nature: ["ALBERO", "ACQUA", "FUOCO", "MARE", "FIORE", "SOLE", "LUNA", "CIELO"],
+                body: ["TESTA", "MANO", "PIEDE", "OCCHIO", "NASO", "BOCCA", "BRACCIO", "ORECCHIO"],
+                home: ["LETTO", "SEDIA", "TAVOLO", "PORTA", "TETTO", "MURO", "LAMPADA", "BAGNO"]
+            },
+            pt: {
+                animals: ["LEAO", "TIGRE", "URSO", "LOBO", "GATO", "CAO", "PEIXE", "RATO"],
+                food: ["PAO", "MACA", "OVO", "LEITE", "AGUA", "BOLO", "ARROZ", "FRUTA"],
+                sports: ["FUTEBOL", "TENIS", "GOLF", "NATACAO", "JUDO", "SKI", "BOXE", "DANCA"],
+                colors: ["VERMELHO", "AZUL", "VERDE", "ROSA", "PRETO", "BRANCO", "CINZA", "AMARELO"],
+                school: ["LIVRO", "CANETA", "MESA", "MALA", "ESCOLA", "PAPEL", "ARTE", "LAPIS"],
+                nature: ["ARVORE", "AGUA", "FOGO", "MAR", "FLOR", "SOL", "LUA", "CEU"],
+                body: ["CABECA", "MAO", "PE", "OLHO", "NARIZ", "BOCA", "BRACO", "ORELHA"],
+                home: ["CAMA", "CADEIRA", "MESA", "PORTA", "TELHADO", "PAREDE", "LUZ", "BANHO"]
+            },
+            nl: {
+                animals: ["LEEUW", "TIJGER", "BEER", "WOLF", "KAT", "HOND", "VIS", "MUIS"],
+                food: ["BROOD", "APPEL", "EI", "MELK", "WATER", "TAART", "RIJST", "FRUIT"],
+                sports: ["VOETBAL", "TENNIS", "GOLF", "ZWEMMEN", "JUDO", "SKI", "BOKSEN", "FIETSEN"],
+                colors: ["ROOD", "BLAUW", "GROEN", "ROZE", "ZWART", "WIT", "GRIJS", "GEEL"],
+                school: ["BOEK", "PEN", "TAFEL", "TAS", "SCHOOL", "PAPIER", "KUNST", "REKENEN"],
+                nature: ["BOOM", "WATER", "VUUR", "ZEE", "BLOEM", "ZON", "MAAN", "LUCHT"],
+                body: ["HOOFD", "HAND", "VOET", "OOG", "NEUS", "MOND", "ARM", "OOR"],
+                home: ["BED", "STOEL", "TAFEL", "DEUR", "DAK", "MUUR", "LAMP", "BAD"]
+            },
+            tr: {
+                animals: ["ASLAN", "KAPLAN", "AYI", "KURT", "KEDI", "KOPEK", "BALIK", "FARE"],
+                food: ["EKMEK", "ELMA", "YUMURTA", "SUT", "SU", "KEK", "PILAV", "MEYVE"],
+                sports: ["FUTBOL", "TENIS", "GOLF", "YUZME", "JUDO", "KAYAK", "BOKS", "DANS"],
+                colors: ["KIRMIZI", "MAVI", "YESIL", "PEMBE", "SIYAH", "BEYAZ", "GRI", "SARI"],
+                school: ["KITAP", "KALEM", "MASA", "CANTA", "OKUL", "KAGIT", "RESIM", "SINIF"],
+                nature: ["AGAC", "SU", "ATES", "DENIZ", "CICEK", "GUNES", "AY", "HAVA"],
+                body: ["BAS", "EL", "AYAK", "GOZ", "BURUN", "AGIZ", "KOL", "KULAK"],
+                home: ["YATAK", "SANDALYE", "MASA", "KAPI", "CATI", "DUVAR", "LAMBA", "BANYO"]
+            },
+            pl: {
+                animals: ["LEW", "TYGRYS", "NIEDZWIEDZ", "WILK", "KOT", "PIES", "RYBA", "MYSZ"],
+                food: ["CHLEB", "JABLKO", "JAJKO", "MLEKO", "WODA", "CIASTO", "RYZ", "OWOC"],
+                sports: ["PILKA", "TENIS", "GOLF", "PLYWANIE", "JUDO", "NARTY", "BOKS", "TANIEC"],
+                colors: ["CZERWONY", "NIEBIESKI", "ZIELONY", "ROZOWY", "CZARNY", "BIALY", "SZARY", "ZOLTY"],
+                school: ["KSIAZKA", "DLUGOPIS", "STOL", "TORBA", "SZKOLA", "PAPIER", "SZTUKA", "KLASA"],
+                nature: ["DRZEWO", "WODA", "OGIEN", "MORZE", "KWIAT", "SLONCE", "KSIEZYC", "NIEBO"],
+                body: ["GLOWA", "REKA", "STOPA", "OKO", "NOS", "USTA", "RAMIE", "UCHO"],
+                home: ["LOZKO", "KRZESLO", "STOL", "DRZWI", "DACH", "SCIANA", "LAMPA", "LAZIENKA"]
+            },
+            vi: {
+                animals: ["SU TU", "HO", "GAU", "CHO SOI", "MEO", "CHO", "CA", "CHUOT"],
+                food: ["BANH MI", "TAO", "TRUNG", "SUA", "NUOC", "BANH", "COM", "TRAI CAY"],
+                sports: ["BONG DA", "QUAN VOT", "GOLF", "BOI LOI", "JUDO", "TRUOT TUYET", "QUYEN ANH", "KHIÊU VU"],
+                colors: ["DO", "XANH", "LUC", "HONG", "DEN", "TRANG", "XAM", "VANG"],
+                school: ["SACH", "BUT", "BAN", "CAP", "TRUONG", "GIAY", "NGHE THUAT", "LOP"],
+                nature: ["CAY", "NUOC", "LUA", "BIEN", "HOA", "MAT TROI", "MAT TRANG", "BAU TROI"],
+                body: ["DAU", "TAY", "CHAN", "MAT", "MUI", "MIENG", "CANH TAY", "TAI"],
+                home: ["GIUONG", "GHE", "BAN", "CUA", "MAI", "TUONG", "DEN", "PHONG TAM"]
+            }
+        };
+
+        let solution = [];
+        let showSol = false;
+
+        window.onload = () => {
+            loadWords();
+            updateLang();
+            generate();
+        };
+
+        function setTheme(t, el) {
+            document.body.className = `theme-${t}`;
+            document.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        // --- CORE LOGIC UPDATE ---
+        function updateLang() {
+            const code = document.getElementById('langSelect').value;
+            const d = UI_LABELS[code];
+            
+            // 1. Update UI Text Labels in Inputs
+            document.getElementById('inpTitle').value = d.title;
+            document.getElementById('inpSub').value = d.sub;
+            document.getElementById('inpBank').value = d.bank;
+            document.getElementById('inpName').value = d.name;
+            document.getElementById('inpClass').value = d.class;
+            document.getElementById('inpFooter').value = d.footer;
+
+            // 2. Update Preview immediately
+            document.getElementById('outTitle').innerText = d.title;
+            document.getElementById('outSub').innerText = d.sub;
+            document.getElementById('outBank').innerText = d.bank;
+            document.getElementById('outName').innerText = d.name;
+            document.getElementById('outClass').innerText = d.class;
+            document.getElementById('outFooter').innerText = d.footer;
+
+            // 3. Reload Words
+            loadWords();
+        }
+
+        function loadWords() {
+            const lang = document.getElementById('langSelect').value;
+            const pack = document.getElementById('wordPack').value;
+            const box = document.getElementById('wordInput');
+            
+            if(pack === 'custom') {
+                box.value = ''; 
+                box.placeholder = "Escribe las palabras manualmente..."; 
+            } else {
+                const words = VOCAB[lang]?.[pack] || VOCAB['en'][pack] || [];
+                box.value = words.join('\n');
+            }
+        }
+
+        function liveEdit(k, v) { document.getElementById('out'+k.charAt(0).toUpperCase()+k.slice(1)).innerText = v; }
+
+        function generate() {
+            solution = []; showSol = false;
+            const diff = document.getElementById('diffSelect').value;
+            const size = diff === 'easy' ? 8 : (diff === 'medium' ? 10 : 12);
+            
+            let words = document.getElementById('wordInput').value
+                .toUpperCase().split('\n')
+                .map(w => w.trim().replace(/[^A-Z]/g, ''))
+                .filter(w => w.length > 1 && w.length <= size)
+                .slice(0, 15);
+
+            words.sort((a,b) => b.length - a.length);
+
+            let grid = Array(size).fill().map(() => Array(size).fill(''));
+            let dirs = [[0,1]];
+            if(diff !== 'easy') dirs.push([1,0]);
+            if(diff === 'hard') dirs.push([1,1]);
+
+            let placed = [];
+            words.forEach(w => {
+                let fit = false, tries = 0;
+                while(!fit && tries < 100) {
+                    const dir = dirs[Math.floor(Math.random()*dirs.length)];
+                    const r = Math.floor(Math.random()*size);
+                    const c = Math.floor(Math.random()*size);
+                    if(canPlace(grid, w, r, c, dir, size)) {
+                        place(grid, w, r, c, dir);
+                        placed.push(w);
+                        fit = true;
+                    }
+                    tries++;
+                }
+            });
+
+            const abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            for(let r=0; r<size; r++) {
+                for(let c=0; c<size; c++) {
+                    if(grid[r][c] === '') grid[r][c] = abc[Math.floor(Math.random()*abc.length)];
+                }
+            }
+            render(grid, size, placed);
+        }
+
+        function canPlace(g, w, r, c, d, s) {
+            if(r + d[0]*(w.length-1) < 0 || r + d[0]*(w.length-1) >= s) return false;
+            if(c + d[1]*(w.length-1) < 0 || c + d[1]*(w.length-1) >= s) return false;
+            for(let i=0; i<w.length; i++) {
+                const cell = g[r + d[0]*i][c + d[1]*i];
+                if(cell !== '' && cell !== w[i]) return false;
+            }
+            return true;
+        }
+
+        function place(g, w, r, c, d) {
+            for(let i=0; i<w.length; i++) {
+                g[r + d[0]*i][c + d[1]*i] = w[i];
+                solution.push(`${r + d[0]*i}-${c + d[1]*i}`);
+            }
+        }
+
+        function render(g, s, w) {
+            const gc = document.getElementById('gridContainer');
+            gc.style.gridTemplateColumns = `repeat(${s}, 1fr)`;
+            gc.innerHTML = '';
+            for(let r=0; r<s; r++) {
+                for(let c=0; c<s; c++) {
+                    const d = document.createElement('div');
+                    d.className = 'cell';
+                    d.innerText = g[r][c];
+                    d.dataset.pos = `${r}-${c}`;
+                    gc.appendChild(d);
+                }
+            }
+
+            const wl = document.getElementById('wordList');
+            wl.innerHTML = '';
+            w.sort().forEach(wd => {
+                const d = document.createElement('div');
+                d.className = 'word-item';
+                d.innerText = wd;
+                wl.appendChild(d);
+            });
+        }
+
+        function toggleSolution() {
+            showSol = !showSol;
+            document.querySelectorAll('.cell').forEach(c => {
+                if(solution.includes(c.dataset.pos)) c.classList.toggle('found', showSol);
+            });
+        }
+
+        /**
+         * FITUR BARU: Save as Image
+         * Mengambil elemen .sheet dan mengubahnya menjadi file gambar (PNG)
+         */
+        function saveAsImage() {
+            const target = document.querySelector('.sheet');
+            
+            // Konfigurasi html2canvas untuk kualitas tinggi
+            html2canvas(target, {
+                scale: 2, // Meningkatkan resolusi gambar
+                useCORS: true,
+                backgroundColor: "#ffffff",
+                logging: false
+            }).then(canvas => {
+                const link = document.createElement('a');
+                const title = document.getElementById('outTitle').innerText || 'sopa-de-letras';
+                link.download = `${title.toLowerCase().replace(/\s+/g, '-')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>

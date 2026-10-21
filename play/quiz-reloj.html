@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plumkids | Generador de Quiz del Reloj</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-hue: 200;
+            --primary-color: hsl(var(--primary-hue), 100%, 50%);
+            --deep-color: hsl(var(--primary-hue), 100%, 40%);
+            --bg-bright: hsl(var(--primary-hue), 100%, 95%);
+            --accent-glow: hsl(var(--primary-hue), 100%, 80%);
+            --text-navy: #0a2e4e;
+            --radius: 24px;
+        }
+
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
+
+        body {
+            margin: 0;
+            font-family: 'Fredoka', sans-serif;
+            background: var(--bg-bright);
+            color: var(--text-navy);
+        }
+
+        #app { display: flex; min-height: 100vh; padding: 20px; gap: 20px; }
+
+        /* --- WORKSHEET AREA --- */
+        #worksheet-container { flex: 1; display: flex; justify-content: center; }
+
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            padding: 12mm;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header { text-align: center; margin-bottom: 25px; border-bottom: 4px dashed var(--accent-glow); padding-bottom: 15px; }
+        .title-3d {
+            font-size: 36px; margin: 0; color: var(--deep-color);
+            text-transform: uppercase; text-shadow: 3px 3px 0px var(--bg-bright);
+            display: flex; align-items: center; justify-content: center; gap: 15px;
+        }
+
+        .student-info { display: flex; justify-content: center; gap: 30px; margin-top: 15px; font-size: 16px; }
+        .info-field { border-bottom: 2px solid var(--primary-color); min-width: 140px; display: inline-block; padding: 0 5px; }
+
+        .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; flex-grow: 1; align-content: start; }
+
+        .q-card {
+            background: var(--bg-bright);
+            border: 3px solid var(--accent-glow);
+            border-radius: var(--radius);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            box-shadow: 4px 4px 0px var(--accent-glow);
+            page-break-inside: avoid;
+        }
+
+        .q-number {
+            position: absolute; top: 10px; left: 15px;
+            background: var(--deep-color); color: white;
+            width: 28px; height: 28px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;
+        }
+
+        .clock-svg { width: 170px; height: 170px; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.1)); }
+        .answer-box { margin-top: 10px; width: 100%; text-align: center; }
+        .input-line { 
+            width: 140px; height: 38px; border: 3px solid var(--primary-color); 
+            background: white; border-radius: 10px; margin: 5px auto;
+            display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px;
+        }
+
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; margin-top: 5px; }
+        .option-btn { background: white; border: 2px solid var(--primary-color); border-radius: 8px; padding: 5px; font-size: 14px; }
+        .correct-ans { background: var(--primary-color) !important; color: white; }
+
+        .footer { margin-top: 20px; text-align: center; font-size: 12px; color: var(--primary-color); opacity: 0.7; }
+
+        /* --- SETTINGS PANEL --- */
+        #settings-panel {
+            width: 360px; background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px); border-radius: var(--radius);
+            padding: 20px; height: fit-content; position: sticky; top: 20px;
+            border: 2px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-height: 95vh; overflow-y: auto;
+        }
+
+        h3 { margin-top: 0; color: var(--deep-color); font-size: 18px; border-bottom: 2px solid var(--bg-bright); padding-bottom: 5px; }
+        .panel-logo {
+            margin-top: 0;
+            color: var(--deep-color);
+            font-size: 2rem;
+            line-height: 1.2;
+            font-weight: 700;
+            border-bottom: 2px solid var(--bg-bright);
+            padding-bottom: 10px;
+            text-align: center;
+        }
+        .setting-item { margin-bottom: 15px; }
+        label { display: block; font-weight: 700; font-size: 11px; margin-bottom: 4px; color: var(--text-navy); }
+        select, input {
+            width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #eee;
+            font-family: inherit; font-weight: 600; outline: none;
+        }
+
+        .color-presets { display: flex; gap: 8px; margin-top: 5px; }
+        .color-dot { width: 25px; height: 25px; border-radius: 50%; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+        .btn-stack { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .main-btn {
+            padding: 12px; border: none; border-radius: 12px; font-weight: 700;
+            cursor: pointer; transition: 0.2s; text-transform: uppercase;
+        }
+        .btn-gen { background: var(--deep-color); color: white; box-shadow: 0 4px 0 hsl(var(--primary-hue), 100%, 20%); }
+        .btn-print { background: #2ecc71; color: white; box-shadow: 0 4px 0 #27ae60; }
+        .btn-save { background: #f39c12; color: white; box-shadow: 0 4px 0 #d68910; }
+        .main-btn:active { transform: translateY(3px); box-shadow: none; }
+
+        .switch-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+
+        @media print {
+            body { background: white !important; }
+            #settings-panel { display: none !important; }
+            #app { padding: 0; display: block; }
+            .a4-page { box-shadow: none; border-radius: 0; width: 100%; margin: 0; padding: 10mm; }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style id="plumkids-integration">
+.plumkids-return{
+  position:fixed;right:14px;bottom:14px;z-index:99999;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:42px;padding:0 14px;border-radius:999px;
+  background:#7136d4;color:#fff;text-decoration:none;
+  font:800 13px Arial,Helvetica,sans-serif;
+  box-shadow:0 8px 24px rgba(49,25,87,.25);
+  border:2px solid rgba(255,255,255,.75);
+}
+.plumkids-return:hover{background:#5f28bd}
+@media(max-width:640px){
+  .plumkids-return{right:10px;bottom:10px;font-size:12px;min-height:38px;padding:0 12px}
+}
+@media print{.plumkids-return{display:none!important}}
+</style>
+
+</head>
+<body>
+<a class="plumkids-return" href="../mi-plumkids.html" aria-label="Volver a Mi Plumkids">← Mi Plumkids</a>
+
+<div id="app">
+    <div id="worksheet-container">
+        <div class="a4-page" id="printable">
+            <div class="header">
+                <h1 class="title-3d" id="view-title">¿QUÉ HORA ES?</h1>
+                <div class="student-info">
+                    <div><span id="view-label-name">NOMBRE</span>: <span class="info-field"></span></div>
+                    <div><span id="view-label-class">CLASE</span>: <span class="info-field"></span></div>
+                    <div><span id="view-label-date">FECHA</span>: <span class="info-field"></span></div>
+                </div>
+            </div>
+            <div class="grid-container" id="question-grid"></div>
+            <div class="footer" id="view-footer">Creado con Plumkids</div>
+        </div>
+    </div>
+
+    <aside id="settings-panel">
+        <h3 class="panel-logo">Plumkids<br>Generador de Quiz del Reloj</h3>
+        
+        <div class="setting-item">
+            <label>IDIOMA</label>
+            <select id="lang-select"></select>
+        </div>
+
+        <div class="setting-item">
+            <label>COLOR DEL TEMA</label>
+            <div class="color-presets">
+                <div class="color-dot" style="background:#00a8ff" onclick="setTheme(200)"></div>
+                <div class="color-dot" style="background:#9b59b6" onclick="setTheme(280)"></div>
+                <div class="color-dot" style="background:#2ecc71" onclick="setTheme(145)"></div>
+                <div class="color-dot" style="background:#e67e22" onclick="setTheme(30)"></div>
+                <div class="color-dot" style="background:#e74c3c" onclick="setTheme(0)"></div>
+            </div>
+        </div>
+
+        <div class="setting-item">
+            <label>TÍTULO</label>
+            <input type="text" id="input-title">
+        </div>
+
+        <div class="setting-item">
+            <label>ETIQUETA DE NOMBRE</label>
+            <input type="text" id="input-name-label">
+        </div>
+
+        <div class="setting-item">
+            <label>ETIQUETA DE CLASE</label>
+            <input type="text" id="input-class-label">
+        </div>
+
+        <div class="setting-item">
+            <label>ETIQUETA DE FECHA</label>
+            <input type="text" id="input-date-label">
+        </div>
+
+        <div class="setting-item">
+            <label>TEXTO DEL PIE DE PÁGINA</label>
+            <input type="text" id="input-footer">
+        </div>
+
+        <div class="setting-item">
+            <label>NÚMERO DE PREGUNTAS</label>
+            <input type="number" id="input-count" value="8" min="1" max="12">
+        </div>
+
+        <div class="setting-item">
+            <label>MODO DE PRÁCTICA</label>
+            <select id="mode-select">
+                <option value="hour">Horas exactas</option>
+                <option value="half">Medias horas</option>
+                <option value="quarter">Cuartos de hora</option>
+                <option value="five">Intervalos de 5 minutos</option>
+                <option value="mixed">Mixto</option>
+            </select>
+        </div>
+
+        <div class="setting-item">
+            <label>TIPO DE PREGUNTA</label>
+            <select id="type-select">
+                <option value="read">Leer el reloj</option>
+                <option value="choice">Opción múltiple</option>
+                <option value="draw">Dibujar manecillas</option>
+            </select>
+        </div>
+
+        <div class="switch-row">
+            <label>MOSTRAR RESPUESTAS</label>
+            <input type="checkbox" id="check-ans" style="width:20px">
+        </div>
+
+        <div class="btn-stack">
+            <button class="main-btn btn-gen" id="btn-generate">¡GENERAR!</button>
+            <button class="main-btn btn-print" onclick="window.print()">IMPRIMIR</button>
+            <button class="main-btn btn-save" id="btn-save-image">GUARDAR COMO IMAGEN</button>
+        </div>
+    </aside>
+</div>
+
+<script>
+    const LANGUAGES = {
+        en: { name: "Inglés", title: "WHAT TIME IS IT?", nameL: "Name", classL: "Class", dateL: "Date", instr: "Write time:", draw: "Draw:", footer: "FUTURISTIC TIME LAB • PREMIUM EDITION" },
+        id: { name: "Indonesio", title: "JAM BERAPA SEKARANG?", nameL: "Nama", classL: "Kelas", dateL: "Tanggal", instr: "Tulis jam:", draw: "Gambar:", footer: "LAB WAKTU FUTURISTIK • EDISI PREMIUM" },
+        es: { name: "🌎 Español (Latinoamérica)", title: "¿QUÉ HORA ES?", nameL: "NOMBRE", classL: "CLASE", dateL: "FECHA", instr: "Escribe la hora:", draw: "Dibuja:", footer: "Creado con Plumkids" },
+        fr: { name: "Francés", title: "QUELLE HEURE EST-IL?", nameL: "Nom", classL: "Classe", dateL: "Date", instr: "Écrire:", draw: "Dessiner:", footer: "LABORATOIRE DE TEMPS FUTURISTE" },
+        de: { name: "Alemán", title: "WIE SPÄT IST ES?", nameL: "Name", classL: "Klasse", dateL: "Datum", instr: "Schreiben:", draw: "Zeichnen:", footer: "FUTURISTISCHES ZEITLABOR" },
+        it: { name: "Italiano", title: "CHE ORE SONO?", nameL: "Nome", classL: "Classe", dateL: "Data", instr: "Scrivere:", draw: "Disegnare:", footer: "LABORATORIO TEMPORALE FUTURISTICO" },
+        pt: { name: "Portugués", title: "QUE HORAS SÃO?", nameL: "Nome", classL: "Classe", dateL: "Data", instr: "Escrever:", draw: "Desenhar:", footer: "LABORATÓRIO DE TEMPO FUTURISTA" },
+        nl: { name: "Neerlandés", title: "HOE LAAT IS HET?", nameL: "Naam", classL: "Klas", dateL: "Datum", instr: "Schrijf:", draw: "Teken:", footer: "FUTURISTISCH TIJDLABORATORIUM" },
+        ru: { name: "Ruso", title: "КОТОРЫЙ ЧАС?", nameL: "Имя", classL: "Класс", dateL: "Дата", instr: "Время:", draw: "Рисуй:", footer: "ФУТУРИСТИЧЕСКАЯ ЛАБОРАТОРИЯ ВРЕМЕНИ" },
+        zh: { name: "Chino", title: "现在几点？", nameL: "姓名", classL: "班级", dateL: "日期", instr: "写时间:", draw: "画指针:", footer: "未来时间实验室" },
+        ja: { name: "Japonés", title: "今何時ですか？", nameL: "名前", classL: "クラス", dateL: "日付", instr: "時間を書く:", draw: "針を描く:", footer: "未来の時間実験室" },
+        ko: { name: "Coreano", title: "몇 시입니까?", nameL: "이름", classL: "학급", dateL: "날짜", instr: "시간 쓰기:", draw: "바늘 그리기:", footer: "미래 시간 연구소" },
+        ar: { name: "Árabe", title: "كم الساعة؟", nameL: "الاسم", classL: "الفصل", dateL: "التاريخ", instr: "اكتب الوقت:", draw: "ارسم العقارب:", footer: "مختبر الوقت المستقبلي" },
+        hi: { name: "Hindi", title: "कितने बजे हैं?", nameL: "नाम", classL: "कक्षा", dateL: "दिनांक", instr: "समय लिखें:", draw: "सुई बनाएं:", footer: "भविष्यवादी समय प्रयोगशाला" },
+        tr: { name: "Turco", title: "SAAT KAÇ?", nameL: "İsim", classL: "Sınıf", dateL: "Tarih", instr: "Yazınız:", draw: "Çiziniz:", footer: "FÜTÜRİSTİK ZAMAN LABORATUVARI" }
+    };
+
+    let state = { questions: [], hue: 200, lang: 'en' };
+
+    const langSelect = document.getElementById('lang-select');
+    Object.keys(LANGUAGES).forEach(key => {
+        const opt = document.createElement('option');
+        opt.value = key; opt.textContent = LANGUAGES[key].name; if (key === 'es') opt.selected = true;
+        langSelect.appendChild(opt);
+    });
+
+    function setTheme(h) {
+        state.hue = h;
+        document.documentElement.style.setProperty('--primary-hue', h);
+    }
+
+    function formatTime(h, m) { return `${h}:${m.toString().padStart(2, '0')}`; }
+
+    function generateData() {
+        const mode = document.getElementById('mode-select').value;
+        const count = parseInt(document.getElementById('input-count').value) || 8;
+        state.questions = [];
+        for(let i=0; i<count; i++) {
+            let h = Math.floor(Math.random() * 12) + 1;
+            let m = 0;
+            if(mode === 'half') m = Math.random() < 0.5 ? 0 : 30;
+            else if(mode === 'quarter') m = [0, 15, 30, 45][Math.floor(Math.random()*4)];
+            else if(mode === 'five') m = Math.floor(Math.random()*12)*5;
+            else if(mode === 'mixed') m = Math.floor(Math.random()*60);
+            
+            let choices = [formatTime(h, m)];
+            while(choices.length < 4) {
+                let rf = formatTime(Math.floor(Math.random()*12)+1, Math.floor(Math.random()*12)*5);
+                if(!choices.includes(rf)) choices.push(rf);
+            }
+            choices.sort(() => Math.random() - 0.5);
+            state.questions.push({ h, m, choices });
+        }
+        renderApp();
+    }
+
+    function renderApp() {
+        const grid = document.getElementById('question-grid');
+        const showAns = document.getElementById('check-ans').checked;
+        const type = document.getElementById('type-select').value;
+        const lang = LANGUAGES[state.lang];
+
+        grid.innerHTML = '';
+        state.questions.forEach((q, idx) => {
+            const card = document.createElement('div');
+            card.className = 'q-card';
+            const hRot = (q.h * 30) + (q.m * 0.5);
+            const mRot = q.m * 6;
+            const isDraw = type === 'draw';
+
+            let clockHTML = `
+                <div class="q-number">${idx+1}</div>
+                <svg viewBox="0 0 100 100" class="clock-svg">
+                    <circle cx="50" cy="50" r="45" fill="white" stroke="var(--primary-color)" stroke-width="2"/>
+                    ${[...Array(12)].map((_,i) => {
+                        const a = (i+1)*30 * Math.PI/180;
+                        return `<text x="${50+35*Math.sin(a)}" y="${52-35*Math.cos(a)}" text-anchor="middle" font-size="7" font-weight="700" fill="var(--text-navy)">${i+1}</text>`;
+                    }).join('')}
+                    ${(!isDraw || (isDraw && showAns)) ? `
+                        <line x1="50" y1="50" x2="50" y2="28" stroke="${isDraw ? 'var(--primary-color)' : 'var(--text-navy)'}" stroke-width="3" stroke-linecap="round" transform="rotate(${hRot} 50 50)" style="${isDraw ? 'opacity:0.6' : ''}"/>
+                        <line x1="50" y1="50" x2="50" y2="18" stroke="var(--primary-color)" stroke-width="2" stroke-linecap="round" transform="rotate(${mRot} 50 50)" style="${isDraw ? 'opacity:0.6' : ''}"/>
+                    ` : ''}
+                    <circle cx="50" cy="50" r="2" fill="var(--text-navy)"/>
+                </svg>
+            `;
+
+            let footerHTML = `<div class="answer-box">`;
+            if(type === 'read') {
+                footerHTML += `<label>${lang.instr}</label><div class="input-line">${showAns ? formatTime(q.h, q.m) : ''}</div>`;
+            } else if(type === 'choice') {
+                footerHTML += `<div class="options-grid">`;
+                q.choices.forEach(c => {
+                    const correctClass = (showAns && c === formatTime(q.h, q.m)) ? 'correct-ans' : '';
+                    footerHTML += `<div class="option-btn ${correctClass}">${c}</div>`;
+                });
+                footerHTML += `</div>`;
+            } else {
+                footerHTML += `<label>${lang.draw}</label><div style="font-size:22px; font-weight:bold; color:var(--deep-color)">${formatTime(q.h, q.m)}</div>`;
+            }
+            footerHTML += `</div>`;
+            card.innerHTML = clockHTML + footerHTML;
+            grid.appendChild(card);
+        });
+    }
+
+    // Live Listeners
+    document.getElementById('input-title').addEventListener('input', e => document.getElementById('view-title').textContent = e.target.value);
+    document.getElementById('input-name-label').addEventListener('input', e => document.getElementById('view-label-name').textContent = e.target.value);
+    document.getElementById('input-class-label').addEventListener('input', e => document.getElementById('view-label-class').textContent = e.target.value);
+    document.getElementById('input-date-label').addEventListener('input', e => document.getElementById('view-label-date').textContent = e.target.value);
+    document.getElementById('input-footer').addEventListener('input', e => document.getElementById('view-footer').textContent = e.target.value);
+    
+    document.getElementById('check-ans').addEventListener('change', renderApp);
+    document.getElementById('type-select').addEventListener('change', renderApp);
+    document.getElementById('input-count').addEventListener('change', generateData);
+    document.getElementById('mode-select').addEventListener('change', generateData);
+    document.getElementById('btn-generate').addEventListener('click', generateData);
+    document.getElementById('btn-save-image').addEventListener('click', async () => {
+        const printable = document.getElementById('printable');
+        if (typeof html2canvas === 'undefined') {
+            alert('No se pudo cargar la función para guardar la imagen. Verifica tu conexión e inténtalo de nuevo.');
+            return;
+        }
+        const canvas = await html2canvas(printable, { scale: 2, backgroundColor: '#ffffff' });
+        const link = document.createElement('a');
+        link.download = 'quiz-del-reloj-plumkids.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    });
+
+    langSelect.addEventListener('change', e => {
+        state.lang = e.target.value;
+        const l = LANGUAGES[state.lang];
+        document.getElementById('input-title').value = l.title;
+        document.getElementById('view-title').textContent = l.title;
+        document.getElementById('input-name-label').value = l.nameL;
+        document.getElementById('view-label-name').textContent = l.nameL;
+        document.getElementById('input-class-label').value = l.classL;
+        document.getElementById('view-label-class').textContent = l.classL;
+        document.getElementById('input-date-label').value = l.dateL;
+        document.getElementById('view-label-date').textContent = l.dateL;
+        document.getElementById('input-footer').value = l.footer;
+        document.getElementById('view-footer').textContent = l.footer;
+        renderApp();
+    });
+
+    // Default Init
+    state.lang = 'es';
+    langSelect.value = 'es';
+    const def = LANGUAGES.es;
+    document.getElementById('input-title').value = def.title;
+    document.getElementById('input-name-label').value = def.nameL;
+    document.getElementById('input-class-label').value = def.classL;
+    document.getElementById('input-date-label').value = def.dateL;
+    document.getElementById('input-footer').value = def.footer;
+    generateData();
+</script>
+</body>
+</html>

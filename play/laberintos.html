@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plumkids | Generador de Laberintos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6C5CE7;
+            --primary-dark: #4834D4;
+            --accent: #FFD93D;
+            --bg-dark: #0F172A;
+            --sidebar-bg: #1E293B;
+            --sidebar-text: #F1F5F9;
+            --input-bg: #334155;
+            --maze-wall: #6C5CE7;
+            --path-bg: #FFFFFF;
+        }
+
+        [data-theme="candy"] { --primary: #FF477E; --primary-dark: #D4145A; --maze-wall: #FF477E; }
+        [data-theme="ocean"] { --primary: #00D2D3; --primary-dark: #01A3A4; --maze-wall: #00D2D3; }
+        [data-theme="sun"] { --primary: #F0932B; --primary-dark: #D35400; --maze-wall: #F0932B; }
+
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
+        
+        body {
+            margin: 0;
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--bg-dark);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            color: var(--sidebar-text);
+        }
+
+        .bg-decor {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.2;
+        }
+
+        /* Sidebar UI */
+        .sidebar {
+            width: 400px;
+            background: var(--sidebar-bg);
+            padding: 25px;
+            box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+            z-index: 100;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* UPDATED: Shiny White 3D Logo */
+        .sidebar h1 {
+            font-family: 'Fredoka One', cursive;
+            color: #FFFFFF;
+            font-size: 2rem;
+            line-height: 1.2;
+            text-align: center;
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+            text-shadow: 
+                0 1px 0 #ccc,
+                0 2px 0 #bbb,
+                0 3px 0 #aaa,
+                0 4px 0 #999,
+                0 5px 0 #888,
+                0 6px 1px rgba(0,0,0,0.1),
+                0 0 5px rgba(255,255,255,0.3),
+                0 1px 3px rgba(0,0,0,0.3),
+                0 3px 5px rgba(0,0,0,0.2),
+                0 5px 10px rgba(0,0,0,0.25);
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            margin: 20px 0 10px 0;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--input-bg);
+            padding-bottom: 5px;
+        }
+
+        .control-group { margin-bottom: 15px; }
+        .control-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 6px;
+            font-size: 12px;
+            color: #94A3B8;
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            background: var(--input-bg);
+            color: white;
+            font-family: inherit;
+            font-weight: 600;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        select:focus, input:focus { border-color: var(--primary); }
+
+        .flex-row { display: flex; gap: 10px; }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-gen { background: var(--primary); color: white; box-shadow: 0 5px 0 var(--primary-dark); }
+        .btn-sol { background: #10B981; color: white; box-shadow: 0 5px 0 #059669; }
+        .btn-print { background: var(--accent); color: #0F172A; box-shadow: 0 5px 0 #CA8A04; }
+        .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
+
+        /* Worksheet Display */
+        .preview-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .worksheet-a4 {
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            padding: 12mm;
+            box-shadow: 0 0 60px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            color: #1E293B;
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .ws-header { text-align: center; margin-bottom: 25px; }
+        .ws-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 48px;
+            color: var(--primary);
+            margin: 0;
+            filter: drop-shadow(4px 4px 0 rgba(0,0,0,0.1));
+        }
+
+        .ws-meta-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-weight: 700;
+            color: #64748B;
+            border-bottom: 4px dotted #E2E8F0;
+            padding-bottom: 12px;
+        }
+
+        .maze-outer {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ws-instruction {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: #334155;
+            background: #F8FAFC;
+            padding: 10px 40px;
+            border-radius: 100px;
+            border: 2px solid #F1F5F9;
+            text-align: center;
+        }
+
+        .maze-container {
+            display: grid;
+            background: #fff;
+            padding: 15px;
+            position: relative;
+            /* UPDATED: Removed problematic clip-path for Octagon to prevent cutting off */
+        }
+
+        /* Shapes - Updated Octagon to not cut off borders */
+        .shape-square { border-radius: 25px; border: 10px solid var(--maze-wall); }
+        .shape-circle { border-radius: 50%; overflow: hidden; border: 10px solid var(--maze-wall); }
+        .shape-octagon { border-radius: 35px; border: 10px solid var(--maze-wall); } /* Simpler rounded corner for octagon look without clipping */
+
+        .cell { position: relative; background: #fff; }
+        .cell.void { opacity: 0; pointer-events: none; }
+
+        .wall {
+            position: absolute;
+            background: var(--maze-wall);
+            z-index: 5;
+            border-radius: 20px;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.12), inset 1px 1px 1px rgba(255,255,255,0.4);
+        }
+        .w-t { top: -5px; height: 10px; width: 100%; left: 0; }
+        .w-b { bottom: -5px; height: 10px; width: 100%; left: 0; }
+        .w-l { left: -5px; width: 100%; height: 100%; top: 0; width: 10px; }
+        .w-r { right: -5px; width: 10px; height: 100%; top: 0; }
+
+        .arrow {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 60%; height: 60%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            display: none;
+            opacity: 0.9;
+        }
+        .show-sol .is-path .arrow { display: block; }
+
+        .marker {
+            position: absolute;
+            width: 100%; height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            z-index: 10;
+            filter: drop-shadow(3px 3px 0 rgba(0,0,0,0.15));
+        }
+
+        .ws-footer {
+            text-align: center;
+            padding: 15px;
+            font-weight: 800;
+            color: #CBD5E1;
+            font-size: 13px;
+            letter-spacing: 2px;
+        }
+
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { background: white; height: auto; }
+            .sidebar, .bg-decor { display: none !important; }
+            .preview-area { padding: 0; overflow: visible; display: block; }
+            .worksheet-a4 { 
+                box-shadow: none !important; margin: 0; border: none;
+                width: 210mm; height: 297mm; page-break-after: always;
+            }
+        }
+        .rtl { direction: rtl; }
+    </style>
+
+<style id="plumkids-integration">
+.plumkids-return{
+  position:fixed;right:14px;bottom:14px;z-index:99999;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:42px;padding:0 14px;border-radius:999px;
+  background:#7136d4;color:#fff;text-decoration:none;
+  font:800 13px Arial,Helvetica,sans-serif;
+  box-shadow:0 8px 24px rgba(49,25,87,.25);
+  border:2px solid rgba(255,255,255,.75);
+}
+.plumkids-return:hover{background:#5f28bd}
+@media(max-width:640px){
+  .plumkids-return{right:10px;bottom:10px;font-size:12px;min-height:38px;padding:0 12px}
+}
+@media print{.plumkids-return{display:none!important}}
+</style>
+
+</head>
+<body>
+<a class="plumkids-return" href="../mi-plumkids.html" aria-label="Volver a Mi Plumkids">← Mi Plumkids</a>
+
+    <svg class="bg-decor" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+        <g fill="white" fill-opacity="0.05">
+            <circle cx="10%" cy="20%" r="50" />
+            <rect x="80%" y="10%" width="80" height="80" rx="20" transform="rotate(15)" />
+            <path d="M50,150 L100,200 L50,250 Z" />
+            <circle cx="85%" cy="80%" r="70" />
+            <rect x="15%" y="75%" width="60" height="60" rx="30" />
+        </g>
+    </svg>
+
+    <aside class="sidebar">
+        <h1>Plumkids<br>Generador de Laberintos</h1>
+
+        <div class="section-title">Configuración general</div>
+        <div class="control-group">
+            <label>Idioma predeterminado (completa el texto automáticamente)</label>
+            <select id="langSelect" onchange="changeLang()">
+                <option value="en">Inglés</option>
+                <option value="es" selected>🌎 Español (Latinoamérica)</option>
+                <option value="fr">Français (Francés)</option>
+                <option value="de">Deutsch (Alemán)</option>
+                <option value="it">Italiano</option>
+                <option value="pt">Português</option>
+                <option value="nl">Nederlands (Neerlandés)</option>
+                <option value="ru">Русский (Ruso)</option>
+                <option value="zh">中文 (Chino simplificado)</option>
+                <option value="ja">日本語 (Japonés)</option>
+                <option value="ko">한국어 (Coreano)</option>
+                <option value="ar">العربية (Árabe - RTL)</option>
+                <option value="hi">हिन्दी (Hindi)</option>
+                <option value="id">Bahasa Indonesia</option>
+                <option value="tr">Türkçe (Turco)</option>
+                <option value="vi">Tiếng Việt (Vietnamita)</option>
+            </select>
+        </div>
+
+        <div class="section-title">Configuración visual</div>
+        <div class="control-group">
+            <label>Forma y estructura</label>
+            <select id="shape" onchange="generate()">
+                <option value="square">Cuadrado moderno redondeado</option>
+                <option value="circle">Círculo geométrico perfecto</option>
+                <option value="octagon">Octágono profesional</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Nivel de dificultad</label>
+            <select id="size" onchange="generate()">
+                <option value="10">Pequeño explorador (Fácil)</option>
+                <option value="15" selected>Navegante junior (Medio)</option>
+                <option value="20">Maestro del laberinto (Difícil)</option>
+                <option value="25">Ultra genio (Pro)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Tema de color</label>
+            <div class="flex-row">
+                <div onclick="setTheme('default')" style="background:#6C5CE7; width:40px; height:40px; border-radius:12px; cursor:pointer; border:3px solid #fff;"></div>
+                <div onclick="setTheme('candy')" style="background:#FF477E; width:40px; height:40px; border-radius:12px; cursor:pointer; border:3px solid #fff;"></div>
+                <div onclick="setTheme('ocean')" style="background:#00D2D3; width:40px; height:40px; border-radius:12px; cursor:pointer; border:3px solid #fff;"></div>
+                <div onclick="setTheme('sun')" style="background:#F0932B; width:40px; height:40px; border-radius:12px; cursor:pointer; border:3px solid #fff;"></div>
+            </div>
+        </div>
+
+        <div class="section-title">Marcadores con emojis</div>
+        <div class="control-group">
+            <label>Emoji de inicio (personaje)</label>
+            <input type="text" id="startEmoji" value="🚀" maxlength="2" oninput="generate()">
+        </div>
+        <div class="control-group">
+            <label>Emoji final (meta)</label>
+            <input type="text" id="endEmoji" value="🏁" maxlength="2" oninput="generate()">
+        </div>
+
+        <div class="section-title">Editor de texto completo</div>
+        <div class="control-group">
+            <label>Título de la hoja</label>
+            <input type="text" id="inTitle" value="LABERINTO DIVERTIDO">
+        </div>
+        <div class="control-group">
+            <label>Instrucciones</label>
+            <input type="text" id="inInstruct" value="¡Ayuda al cohete a llegar a la meta!">
+        </div>
+        <div class="flex-row">
+            <div class="control-group">
+                <label>Campo de nombre</label>
+                <input type="text" id="inName" value="NOMBRE:">
+            </div>
+            <div class="control-group">
+                <label>Campo de fecha</label>
+                <input type="text" id="inClass" value="FECHA:">
+            </div>
+        </div>
+        <div class="control-group">
+            <label>Texto del pie de página</label>
+            <input type="text" id="inFooter" value="Creado con Plumkids">
+        </div>
+
+        <button class="btn btn-gen" onclick="generate()">✨ ¡GENERAR!</button>
+        <button class="btn btn-sol" onclick="toggleSolution()">💡 MOSTRAR/OCULTAR RESPUESTA</button>
+        <button class="btn btn-print" onclick="window.print()">🖨️ IMPRIMIR</button>
+		<button class="btn btn-print" onclick="saveAsImage()">💾 GUARDAR COMO IMAGEN</button>
+		<div style="font-size:11px; color:#64748B; text-align:center; margin-top:6px; line-height:1.4;">
+    (solo puedes guardar sin la respuesta si usas el navegador Chrome o Edge)
+</div>
+
+
+    </aside>
+
+    <main class="preview-area">
+        <div class="worksheet-a4" id="ws">
+            <div class="ws-header">
+                <h2 class="ws-title" id="outTitle">LABERINTO DIVERTIDO</h2>
+                <div class="ws-meta-row">
+                    <span id="outName">NOMBRE: _________________</span>
+                    <span id="outClass">FECHA: _________________</span>
+                </div>
+            </div>
+
+            <div class="maze-outer">
+                <div class="ws-instruction" id="outInstruct">¡Ayuda al cohete a llegar a la meta!</div>
+                <div id="grid" class="maze-container"></div>
+            </div>
+
+            <div class="ws-footer" id="outFooter">
+                Creado con Plumkids
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // UPDATED: Translation Database (16 Languages)
+        const translations = {
+            en: { t: "AMAZING MAZE", i: "Help the rocket find the finish line!", n: "NAME:", c: "CLASS:", f: "Creado con Plumkids" },
+            es: { t: "LABERINTO DIVERTIDO", i: "¡Ayuda al cohete a llegar a la meta!", n: "NOMBRE:", c: "FECHA:", f: "Creado con Plumkids" },
+            fr: { t: "LE LABYRINTHE", i: "Aide la fusée à trouver l'arrivée !", n: "NOM:", c: "CLASSE:", f: "© 2026 PUZZLES PREMIUM • TOUS DROITS RÉSERVÉS" },
+            de: { t: "DAS LABYRINTH", i: "Hilf der Rakete, das Ziel zu finden!", n: "NAME:", c: "KLASSE:", f: "© 2026 PREMIUM RÄTSEL • ALLE RECHTE VORBEHALTEN" },
+            it: { t: "IL LABIRINTO", i: "Aiuta il razzo a trovare il traguardo!", n: "NOME:", c: "CLASSE:", f: "© 2026 PUZZLE PREMIUM • TUTTI I DIRITTI RISERVATI" },
+            pt: { t: "O LABIRINTO", i: "Ajude o foguete a encontrar a chegada!", n: "NOME:", c: "TURMA:", f: "© 2026 PUZZLES PREMIUM • TODOS OS DIREITOS RESERVADOS" },
+            nl: { t: "HET DOOLHOF", i: "Help de raket de finish te vinden!", n: "NAAM:", c: "KLAS:", f: "© 2026 PREMIUM PUZZELS • ALLE RECHTEN VOORBEHOUDEN" },
+            ru: { t: "УДИВИТЕЛЬНЫЙ ЛАБИРИНТ", i: "Помоги ракете найти финиш!", n: "ИМЯ:", c: "КЛАСС:", f: "© 2026 ПРЕМИУМ ПАЗЛЫ • ВСЕ ПРАВА ЗАЩИЩЕНЫ" },
+            zh: { t: "神奇迷宫", i: "帮助火箭找到终点线！", n: "姓名:", c: "班级:", f: "© 2026 优质儿童益智 • 版权所有" },
+            ja: { t: "すごいめいろ", i: "ロケットがゴールにつけるようにてつだってね！", n: "なまえ:", c: "クラス:", f: "© 2026 プレミアムキッズパズル • All Rights Reserved" },
+            ko: { t: "놀라운 미로", i: "로켓이 결승선을 찾도록 도와주세요!", n: "이름:", c: "반:", f: "© 2026 프리미엄 키즈 퍼즐 • 판권 소유" },
+            ar: { t: "المتاهة المدهشة", i: "ساعد الصاروخ في العثور على خط النهاية!", n: "الاسم:", c: "الفصل:", f: "© 2026 ألغاز أطفال مميزة • جميع الحقوق محفوظة" },
+            hi: { t: "अद्भुत भूलभुलैया", i: "रॉकेट को फिनिश लाइन खोजने में मदद करें!", n: "नाम:", c: "कक्षा:", f: "© 2026 प्रीमियम किड्स पज़ल्स • सर्वाधिकार सुरक्षित" },
+            id: { t: "LABIRIN AJAIB", i: "Bantu roket menemukan garis finish!", n: "NAMA:", c: "KELAS:", f: "© 2026 TEKA-TEKI PREMIUM • HAK CIPTA DILINDUNGI" },
+            tr: { t: "MUHTEŞEM LABİRENT", i: "Roketin bitiş çizgisini bulmasına yardım et!", n: "İSİM:", c: "SINIF:", f: "© 2026 PREMİUM ÇOCUK BULMACALARI • TÜM HAKLARI SAKLIDIR" },
+            vi: { t: "MÊ CUNG KỲ DIỆU", i: "Hãy giúp tên lửa tìm thấy vạch đích!", n: "TÊN:", c: "LỚP:", f: "© 2026 CÂU ĐỐ TRẺ EM CAO CẤP • ĐÃ ĐĂNG KÝ BẢN QUYỀN" }
+        };
+
+        let maze = [];
+        let sol = [];
+
+        function setTheme(t) { document.body.setAttribute('data-theme', t); }
+
+        // Sync inputs
+        const sync = (idIn, idOut, suffix = "") => {
+            const elIn = document.getElementById(idIn);
+            const elOut = document.getElementById(idOut);
+            elIn.oninput = () => elOut.innerText = elIn.value + suffix;
+            elOut.innerText = elIn.value + suffix;
+        };
+
+        sync("inTitle", "outTitle");
+        sync("inInstruct", "outInstruct");
+        sync("inName", "outName", " _________________");
+        sync("inClass", "outClass", " _________________");
+        sync("inFooter", "outFooter");
+
+        // UPDATED: Language changer function
+        function changeLang() {
+            const lang = document.getElementById('langSelect').value;
+            const data = translations[lang];
+            document.getElementById('inTitle').value = data.t;
+            document.getElementById('inInstruct').value = data.i;
+            document.getElementById('inName').value = data.n;
+            document.getElementById('inClass').value = data.c;
+            document.getElementById('inFooter').value = data.f;
+            
+            // Trigger input events to update preview
+            ['inTitle', 'inInstruct', 'inName', 'inClass', 'inFooter'].forEach(id => {
+                document.getElementById(id).dispatchEvent(new Event('input'));
+            });
+
+            // Handle RTL for Arabic
+            const ws = document.getElementById('ws');
+            if(lang === 'ar') ws.classList.add('rtl');
+            else ws.classList.remove('rtl');
+        }
+
+        function toggleSolution() { document.getElementById('ws').classList.toggle('show-sol'); }
+
+        function generate() {
+            const size = parseInt(document.getElementById('size').value);
+            const shape = document.getElementById('shape').value;
+            const sEmoji = document.getElementById('startEmoji').value || "🚀";
+            const eEmoji = document.getElementById('endEmoji').value || "🏁";
+            const container = document.getElementById('grid');
+            
+            container.innerHTML = '';
+            container.classList.remove('show-sol');
+            container.className = 'maze-container shape-' + shape;
+            container.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+
+            // 1. Initialize
+            maze = Array.from({length: size}, (_, y) => 
+                Array.from({length: size}, (_, x) => ({
+                    x, y, visited: false,
+                    isVoid: checkVoid(x, y, size, shape),
+                    walls: { t: true, r: true, b: true, l: true }
+                }))
+            );
+
+            // 2. Algorithm (Recursive Backtracker)
+            let startNode = findFirstCell(maze, size);
+            let stack = [startNode];
+            startNode.visited = true;
+
+            while(stack.length > 0) {
+                let curr = stack[stack.length - 1];
+                let neighbors = getUnvisitedNeighbors(curr, maze, size);
+                if(neighbors.length > 0) {
+                    let next = neighbors[Math.floor(Math.random() * neighbors.length)];
+                    removeWalls(curr, next.node, next.dir);
+                    next.node.visited = true;
+                    stack.push(next.node);
+                } else {
+                    stack.pop();
+                }
+            }
+
+            // 3. Solve (BFS for correct path only)
+            solve(maze, size);
+
+            // 4. Render
+            // UPDATED: Slightly reduced max cellSize to ensure Octagon fits well
+            const cellSize = Math.floor(520 / size);
+            maze.forEach(row => row.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'cell' + (c.isVoid ? ' void' : '');
+                div.style.width = cellSize + 'px';
+                div.style.height = cellSize + 'px';
+
+                if(!c.isVoid) {
+                    if(c.walls.t) div.innerHTML += '<div class="wall w-t"></div>';
+                    if(c.walls.r) div.innerHTML += '<div class="wall w-r"></div>';
+                    if(c.walls.b) div.innerHTML += '<div class="wall w-b"></div>';
+                    if(c.walls.l) div.innerHTML += '<div class="wall w-l"></div>';
+
+                    if(c === sol[0]) div.innerHTML += `<div class="marker">${sEmoji}</div>`;
+                    if(c === sol[sol.length-1]) div.innerHTML += `<div class="marker">${eEmoji}</div>`;
+
+                    const idx = sol.indexOf(c);
+                    if(idx !== -1 && idx < sol.length - 1) {
+                        div.classList.add('is-path');
+                        const next = sol[idx+1];
+                        const rot = next.x > c.x ? 90 : next.x < c.x ? 270 : next.y > c.y ? 180 : 0;
+                        div.innerHTML += `<svg class="arrow" viewBox="0 0 24 24" style="transform: translate(-50%, -50%) rotate(${rot}deg)"><path fill="var(--primary)" d="M12,2L4.5,20.29L5.21,21L12,18L18.79,21L19.5,20.29L12,2Z"/></svg>`;
+                    }
+                }
+                container.appendChild(div);
+            }));
+        }
+
+        function checkVoid(x, y, s, shape) {
+            const mid = (s - 1) / 2;
+            const d = Math.sqrt(Math.pow(x - mid, 2) + Math.pow(y - mid, 2));
+            if(shape === 'circle') return d > mid + 0.1;
+            // UPDATED: Adjusted Octagon logic to be a bit tighter
+            if(shape === 'octagon') return (Math.abs(x - mid) + Math.abs(y - mid)) > s * 0.8;
+            return false;
+        }
+
+        function findFirstCell(m, s) {
+            for(let y=0; y<s; y++) for(let x=0; x<s; x++) if(!m[y][x].isVoid) return m[y][x];
+        }
+
+        function getUnvisitedNeighbors(c, m, s) {
+            const res = [];
+            const dirs = [[0,-1,'t','b'], [1,0,'r','l'], [0,1,'b','t'], [-1,0,'l','r']];
+            dirs.forEach(([dx, dy, wall]) => {
+                const nx = c.x + dx, ny = c.y + dy;
+                if(nx >= 0 && nx < s && ny >= 0 && ny < s) {
+                    const node = m[ny][nx];
+                    if(!node.isVoid && !node.visited) res.push({node, dir: wall});
+                }
+            });
+            return res;
+        }
+
+        function removeWalls(a, b, dir) {
+            if(dir === 't') { a.walls.t = false; b.walls.b = false; }
+            if(dir === 'r') { a.walls.r = false; b.walls.l = false; }
+            if(dir === 'b') { a.walls.b = false; b.walls.t = false; }
+            if(dir === 'l') { a.walls.l = false; b.walls.r = false; }
+        }
+
+        function solve(m, s) {
+            const start = findFirstCell(m, s);
+            let end;
+            for(let y=s-1; y>=0; y--) {
+                for(let x=s-1; x>=0; x--) if(!m[y][x].isVoid) { end = m[y][x]; break; }
+                if(end) break;
+            }
+
+            let queue = [[start]];
+            let visited = new Set([`${start.x},${start.y}`]);
+            sol = [];
+
+            while(queue.length > 0) {
+                let path = queue.shift();
+                let curr = path[path.length - 1];
+                if(curr === end) { sol = path; return; }
+
+                [['t',0,-1], ['r',1,0], ['b',0,1], ['l',-1,0]].forEach(([w, dx, dy]) => {
+                    if(!curr.walls[w]) {
+                        let nx = curr.x + dx, ny = curr.y + dy;
+                        if(!visited.has(`${nx},${ny}`)) {
+                            visited.add(`${nx},${ny}`);
+                            queue.push([...path, m[ny][nx]]);
+                        }
+                    }
+                });
+            }
+        }
+
+        window.onload = () => { changeLang(); generate(); };
+    </script>
+	<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+function saveAsImage() {
+    const target = document.getElementById("ws");
+
+    html2canvas(target, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff"
+    }).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "laberinto-plumkids.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    });
+}
+</script>
+
+</body>
+</html>

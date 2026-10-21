@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plumkids | Generador de Crucigramas</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #4758b8;
+            --primary-dark: #2c3a80;
+            --secondary: #5d6dce;
+            --bg-color: #f4f6f9;
+            --cell-size: 34px; 
+            --a4-width: 210mm;
+            --a4-height: 297mm;
+        }
+
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #2c3e50;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 360px;
+            background: #fff;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            border-right: 1px solid #ddd;
+        }
+
+        .sidebar h2 {
+            margin: 0 0 10px 0;
+            font-family: 'Baloo 2', sans-serif;
+            font-weight: 800;
+            font-size: 1.6rem;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+
+        .panel-section {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .panel-section label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #7f8c8d;
+        }
+
+        select, input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 2px solid #dfe6e9;
+            background: #fff;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            color: #2d3436;
+            font-size: 0.9rem;
+        }
+
+        .color-row { display: flex; align-items: center; gap: 10px; }
+        input[type="color"] { width: 50px; height: 40px; border: none; background: none; cursor: pointer; }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            color: white;
+            margin-bottom: 8px;
+            transition: transform 0.1s;
+        }
+        .btn:active { transform: translateY(2px); }
+        .btn-gen { background: var(--primary); box-shadow: 0 4px 0 var(--primary-dark); }
+        .btn-ans { background: #6c5ce7; box-shadow: 0 4px 0 #4834d4; }
+        .btn-print { background: #fdcb6e; color: #d35400; box-shadow: 0 4px 0 #e1b12c; }
+
+        .preview-area {
+            flex: 1;
+            background-color: #e5e5f7;
+            background-image:  radial-gradient(#444cf7 0.5px, transparent 0.5px), radial-gradient(#444cf7 0.5px, #e5e5f7 0.5px);
+            background-size: 20px 20px;
+            padding: 40px;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        .paper {
+            width: var(--a4-width);
+            min-height: var(--a4-height);
+            background: white;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            -webkit-print-color-adjust: exact !important; 
+            print-color-adjust: exact !important;
+        }
+
+        .paper-header {
+            background: var(--primary);
+            padding: 25px 40px 15px 40px;
+            color: white;
+            border-bottom: 5px solid var(--primary-dark);
+            -webkit-print-color-adjust: exact !important; 
+            print-color-adjust: exact !important;
+        }
+
+        .brand-title {
+            font-family: 'Baloo 2', cursive;
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin: 0;
+            text-shadow: 3px 3px 0px rgba(0,0,0,0.15);
+            line-height: 1;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .student-info {
+            display: flex;
+            gap: 30px;
+            margin-top: 15px;
+            background: rgba(255,255,255,0.15);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px dashed rgba(255,255,255,0.3);
+        }
+
+        .info-line { 
+            flex: 1; 
+            border-bottom: 2px dotted rgba(255,255,255,0.8); 
+            height: 30px; 
+            display: flex; 
+            align-items: flex-end; 
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.1rem;
+        }
+
+        .paper-content {
+            flex: 1;
+            padding: 20px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .instruction-box {
+            background: #fff;
+            padding: 8px 25px;
+            border-radius: 20px;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+        }
+
+        .grid-container {
+            display: grid;
+            gap: 2px;
+            padding: 8px;
+            background: var(--primary);
+            border-radius: 8px;
+            box-shadow: 0 8px 0 var(--primary-dark), 0 15px 20px rgba(0,0,0,0.15);
+            margin-bottom: 20px;
+            -webkit-print-color-adjust: exact !important; 
+            print-color-adjust: exact !important;
+        }
+
+        .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            background: white;
+            border-radius: 3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #333;
+            position: relative;
+            box-shadow: inset 0 -3px 0 #ecf0f1;
+            -webkit-print-color-adjust: exact !important; 
+            print-color-adjust: exact !important;
+            user-select: none;
+        }
+
+        .cell.black { background: transparent; box-shadow: none; }
+        
+        .cell .num {
+            position: absolute;
+            top: 1px; left: 2px;
+            font-size: 0.55rem;
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .cell .letter { display: none; }
+        .show-answers .cell .letter { display: block; color: var(--primary); }
+
+        .clues-wrapper {
+            width: 100%;
+            display: flex;
+            gap: 20px;
+            font-size: 0.85rem;
+            align-items: flex-start;
+        }
+
+        .clue-col {
+            flex: 1;
+            background: #fcfcfc;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .clue-title {
+            font-family: 'Baloo 2', sans-serif;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: var(--primary);
+            border-bottom: 2px solid #eee;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .clue-list { list-style: none; padding: 0; margin: 0; }
+        .clue-item { 
+            margin-bottom: 6px; 
+            display: flex; 
+            gap: 6px; 
+            line-height: 1.3;
+            color: #444;
+        }
+        .clue-num-badge {
+            background: var(--primary);
+            color: white;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 1px;
+            -webkit-print-color-adjust: exact !important; 
+            print-color-adjust: exact !important;
+        }
+
+        .paper-footer {
+            text-align: center;
+            padding: 10px;
+            font-size: 0.75rem;
+            color: #bdc3c7;
+            border-top: 1px dashed #ddd;
+            font-weight: 600;
+        }
+
+        @media print {
+            @page { margin: 0; size: A4 portrait; }
+            body { background: white; height: 100%; width: 100%; display: block; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .sidebar { display: none !important; }
+            .preview-area { padding: 0; margin: 0; background: white; display: block; width: 100%; height: 100%; }
+            .paper { box-shadow: none; margin: 0; width: 100%; min-height: 100vh; page-break-after: always; border: none; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .grid-container { box-shadow: 0 4px 0 var(--primary-dark) !important; background: var(--primary) !important; }
+            .cell { box-shadow: inset 0 -2px 0 #ddd !important; border: 1px solid #eee; }
+            .instruction-box { box-shadow: 0 2px 0 rgba(0,0,0,0.1) !important; border: 2px solid var(--primary) !important; }
+            ::-webkit-scrollbar { display: none; }
+        }
+    </style>
+
+<style id="plumkids-integration">
+.plumkids-return{
+  position:fixed;right:14px;bottom:14px;z-index:99999;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:42px;padding:0 14px;border-radius:999px;
+  background:#7136d4;color:#fff;text-decoration:none;
+  font:800 13px Arial,Helvetica,sans-serif;
+  box-shadow:0 8px 24px rgba(49,25,87,.25);
+  border:2px solid rgba(255,255,255,.75);
+}
+.plumkids-return:hover{background:#5f28bd}
+@media(max-width:640px){
+  .plumkids-return{right:10px;bottom:10px;font-size:12px;min-height:38px;padding:0 12px}
+}
+@media print{.plumkids-return{display:none!important}}
+</style>
+
+</head>
+<body>
+<a class="plumkids-return" href="../mi-plumkids.html" aria-label="Volver a Mi Plumkids">← Mi Plumkids</a>
+
+    <div class="sidebar">
+        <h2 style="font-size:2rem; line-height:1.2; text-transform:none;">Plumkids<br>Generador de Crucigramas</h2>
+        
+        <div class="panel-section">
+            <label>1. Configuración</label>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+                <select id="langSelect" title="Idioma">
+                    <option value="en">Inglés</option>
+                    <option value="id">Indonesio</option>
+                    <option value="es" selected>🌎 Español (Latinoamérica)</option>
+                    <option value="fr">Francés</option>
+                    <option value="de">Alemán</option>
+                    <option value="it">Italiano</option>
+                    <option value="pt">Portugués</option>
+                    <option value="nl">Neerlandés</option>
+                    <option value="pl">Polaco</option>
+                    <option value="tr">Turco</option>
+                </select>
+                <select id="levelSelect" title="Dificultad">
+                    <option value="easy">Fácil</option>
+                    <option value="medium">Medio</option>
+                    <option value="hard" selected>Difícil</option>
+                </select>
+            </div>
+            <select id="topicSelect" title="Tema">
+                <option value="mix">★ Mezcla aleatoria (recomendado)</option>
+                <option value="animals">Animales</option>
+                <option value="food">Comida y frutas</option>
+                <option value="school">Objetos escolares</option>
+                <option value="jobs">Profesiones</option>
+                <option value="sports">Deportes</option>
+                <option value="nature">Naturaleza</option>
+                <option value="home">Hogar</option>
+                <option value="transport">Transporte</option>
+            </select>
+        </div>
+
+        <div class="panel-section">
+            <label>2. Diseño y texto</label>
+            <div class="color-row">
+                <input type="color" id="colorPicker" value="#4758b8">
+                <span style="font-size:0.8rem;">Color del tema</span>
+            </div>
+            <div style="margin-top:10px">
+                <input type="text" id="inpTitle" placeholder="Título">
+                <input type="text" id="inpInst" placeholder="Instrucciones">
+                <div style="display:flex; gap:5px; margin-top:5px;">
+                    <input type="text" id="inpName" placeholder="Nombre">
+                    <input type="text" id="inpClass" placeholder="Fecha">
+                </div>
+                <input type="text" id="inpFooter" placeholder="Pie de página" style="margin-top:5px;">
+            </div>
+        </div>
+
+        <div class="panel-section" style="flex:1; display:flex; flex-direction:column;">
+            <label>3. Palabras personalizadas (opcional)</label>
+            <textarea id="wordInput" placeholder="PALABRA:Pista" style="flex:1;"></textarea>
+            <small style="color:#aaa; font-size:0.7rem; margin-top:5px;">Déjalo vacío para usar la base automática.</small>
+        </div>
+
+        <button class="btn btn-gen" id="btnGen">⚡ ¡GENERAR!</button>
+        <button class="btn btn-ans" id="btnAns">👁️ MOSTRAR RESPUESTAS</button>
+        <button class="btn btn-print" onclick="window.print()">🖨️ IMPRIMIR</button>
+		<button class="btn btn-print" onclick="saveAsImage()">💾 GUARDAR COMO IMAGEN</button>
+
+    </div>
+
+    <div class="preview-area">
+        <div class="paper" id="paper">
+            <div class="paper-header">
+                <h1 class="brand-title" id="outTitle">CRUCIGRAMA</h1>
+                <div class="student-info">
+                    <div class="info-line"><span style="margin-right:10px; font-weight:700;" id="outName">Nombre:</span></div>
+                    <div class="info-line"><span style="margin-right:10px; font-weight:700;" id="outClass">Fecha:</span></div>
+                </div>
+            </div>
+
+            <div class="paper-content">
+                <div class="instruction-box" id="outInst">Instrucciones</div>
+                <div id="crosswordGrid" class="grid-container"></div>
+                
+                <div class="clues-wrapper">
+                    <div class="clue-col">
+                        <div class="clue-title" id="outAcross">HORIZONTAL</div>
+                        <ul class="clue-list" id="listAcross"></ul>
+                    </div>
+                    <div class="clue-col">
+                        <div class="clue-title" id="outDown">VERTICAL</div>
+                        <ul class="clue-list" id="listDown"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="paper-footer" id="outFooter">Creado con Plumkids</div>
+        </div>
+    </div>
+
+    <script>
+        const DB = {
+            en: { 
+                ui: { title: "CROSSWORD", inst: "Fill in the grid with correct words!", name: "Name:", class: "Class:", across: "ACROSS", down: "DOWN", footer: "Created with Pro Crossword Maker" },
+                topics: {
+                    animals: "LION:The king of the jungle\nTIGER:Big cat with stripes\nELEPHANT:Large animal with a trunk\nZEBRA:Black and white horse\nMONKEY:Loves to eat bananas\nSNAKE:Long reptile no legs\nFROG:Green jumper in pond\nBEAR:Loves honey\nCOW:Gives us milk\nDUCK:Says quack\nCAT:Says meow\nHORSE:Strong animal used for riding\nFISH:Swims in water\nBIRD:Flies in the sky\nRABBIT:Long ears hop fast",
+                    food: "APPLE:Red crunchy fruit\nBANANA:Yellow curved fruit\nORANGE:Round citrus fruit\nGRAPE:Small purple fruit\nLEMON:Sour yellow fruit\nPEAR:Green bell shape\nBREAD:Used for sandwiches\nEGG:Laid by chickens\nCAKE:Sweet dessert food\nPIZZA:Round with cheese\nMILK:White drink from cows\nWATER:Clear liquid to drink",
+                    school: "PEN:Write with ink\nBOOK:Read pages\nDESK:Sit and work\nCHAIR:Seat with back\nBAG:Carry books\nRULER:Measure lines\nGLUE:Stick paper\nPENCIL:Write and erase\nERASER:Fix mistakes\nTEACHER:Guides the class\nSCISSORS:Cut paper\nMAP:Shows the world",
+                    jobs: "DOCTOR:Heals sick people\nTEACHER:Teaches students\nPOLICE:Protects city\nCHEF:Cooks food\nPILOT:Flies planes\nFARMER:Grows crops\nARTIST:Paints pictures\nBAKER:Bakes fresh bread\nDENTIST:Fixes teeth\nDRIVER:Drives bus",
+                    sports: "SOCCER:Kick the ball\nBASKETBALL:Hoop game\nTENNIS:Racket sport\nSWIMMING:Move in water\nRUNNING:Move fast\nGOLF:Club and ball\nBASEBALL:Bat and ball\nKARATE:Fighting art\nCYCLING:Riding bike",
+                    nature: "SUN:Hot star in sky\nMOON:Night light\nSTAR:Twinkles at night\nTREE:Tall plant wood\nFLOWER:Colorful plant\nRAIN:Water from sky\nSNOW:Cold white ice\nWIND:Moving air\nCLOUD:White in sky\nSEA:Salt water",
+                    home: "BED:Sleep here\nSOFA:Sit here\nTABLE:Eat here\nLAMP:Makes light\nDOOR:Enter room\nWINDOW:Look out\nKITCHEN:Cook here\nTOILET:Bathroom seat\nROOF:Top of house\nTV:Watch movies",
+                    transport: "CAR:Four wheels engine\nBUS:Carries many people\nTRAIN:Runs on tracks\nPLANE:Flies in air\nBOAT:Floats on water\nBIKE:Two wheels pedal\nTRUCK:Carries heavy loads\nSHIP:Big ocean boat"
+                }
+            },
+            id: { 
+                ui: { title: "TEKA TEKI SILANG", inst: "Isilah kotak dengan jawaban yang tepat!", name: "Nama:", class: "Kelas:", across: "MENDATAR", down: "MENURUN", footer: "Dibuat dengan Generator TTS Pro" },
+                topics: {
+                    animals: "GAJAH:Hewan besar berbelalai\nSINGA:Raja hutan buas\nMACAN:Kucing besar belang\nULAR:Reptil panjang melata\nIKAN:Bernapas dengan insang\nBURUNG:Terbang dengan sayap\nAYAM:Berkokok pagi hari\nSAPI:Hasilkan susu murni\nKUDA:Hewan kuat yang bisa ditunggangi\nKUCING:Hewan lucu meong\nKELINCI:Telinga panjang lompat\nBUAYA:Reptil sungai ganas\nMONYET:Suka makan pisang\nBEBEK:Berenang dan kwek\nKAMBING:Makan rumput",
+                    food: "APEL:Buah merah renyah\nPISANG:Buah kuning panjang\nJERUK:Buah oranye segar\nANGGUR:Buah ungu kecil\nNANAS:Kulit kasar berduri\nSEMANGKA:Hijau isi merah\nROTI:Makanan dari tepung\nNASI:Makanan pokok kita\nSUSU:Minuman sehat putih\nTELUR:Dihasilkan oleh ayam\nKEJU:Olahan susu asin\nAIR:Minuman bening vital",
+                    school: "BUKU:Jendela dunia\nPENA:Alat tulis tinta\nTAS:Bawa alat sekolah\nMEJA:Tempat alas tulis\nKURSI:Tempat duduk siswa\nPENGGARIS:Alat ukur panjang\nPENGHAPUS:Hapus tulisan pensil\nGURU:Pengajar di kelas\nKELAS:Ruang belajar siswa\nSEPATU:Alas kaki sekolah\nPENSIL:Tulis bisa dihapus\nPETA:Gambar bumi datar",
+                    jobs: "DOKTER:Obati orang sakit\nPOLISI:Tangkap penjahat\nGURU:Mengajar di sekolah\nPETANI:Tanam padi sawah\nNELAYAN:Cari ikan laut\nPILOT:Sopir pesawat terbang\nSOPIR:Pengemudi mobil bis\nKOKI:Masak di restoran\nTENTARA:Jaga keamanan negara\nTUKANG:Membangun bangunan",
+                    sports: "SEPAKBOLA:Tendang bola gawang\nBASKET:Bola masuk keranjang\nRENANG:Olahraga di air\nLARI:Gerak kaki cepat\nBULUTANGKIS:Raket dan kok\nTENIS:Raket bola kuning\nCATUR:Asah otak papan\nSEPEDA:Gowes roda dua\nTINJU:Pukul pakai sarung",
+                    nature: "MATAHARI:Bintang siang panas\nBULAN:Satelit bumi malam\nBINTANG:Kelip di langit\nGUNUNG:Dataran tinggi menjulang\nLAUT:Air asin luas\nSUNGAI:Aliran air tawar\nHUTAN:Banyak pohon lebat\nHUJAN:Air dari langit\nANGIN:Udara yang bergerak\nAWAN:Kapas di langit",
+                    home: "RUMAH:Tempat tinggal kita\nKASUR:Tempat untuk tidur\nKURSI:Perabot untuk duduk\nMEJA:Perabot taruh barang\nLEMARI:Simpan baju rapi\nDAPUR:Ruang untuk masak\nJENDELA:Lubang cahaya dinding\nPINTU:Jalan masuk keluar\nATAP:Pelindung dari hujan\nTELEVISI:Nonton film berita",
+                    transport: "MOBIL:Roda empat bermesin\nMOTOR:Roda dua bermesin\nBIS:Angkut banyak orang\nKERETA:Jalan di rel\nPESAWAT:Terbang di udara\nKAPAL:Berlayar di laut\nSEPEDA:Kayuh roda dua\nTRUK:Angkut barang berat"
+                }
+            },
+            tr: { 
+                ui: { title: "BULMACA", inst: "Bulmacayı doğru kelimelerle çözün!", name: "İsim:", class: "Sınıf:", across: "SOLDAN SAĞA", down: "YUKARIDAN AŞAĞIYA", footer: "Bulmaca Oluşturucu ile Hazırlandı" },
+                topics: {
+                    animals: "ASLAN:Ormanın kralı\nKAPLAN:Çizgili büyük kedi\nFIL:Hortumlu büyük hayvan\nZURAFA:Uzun boyunlu hayvan\nMAYMUN:Muz seven hayvan\nYILAN:Sürünen uzun hayvan\nKURBAGA:Zıplayan yeşil hayvan\nAYI:Bal seven hayvan\nINEK:Süt veren hayvan\nORDEK:Vak vak der\nKEDI:Miyav diyen evcil\nAT:Hızlı koşan ve binilen hayvan\nBALIK:Suda yaşayan hayvan\nKUS:Gökyüzünde uçar\nTAVSAN:Uzun kulaklı zıplar",
+                    food: "ELMA:Kırmızı kütür meyve\nMUZ:Sarı uzun meyve\nPORTAKAL:Turuncu sulu meyve\nUZUM:Salkımlı küçük meyve\nLIMON:Ekşi sarı meyve\nARMUT:Yeşil tatlı meyve\nEKMEK:Fırından taze çıkar\nYUMURTA:Tavuktan gelir\nPASTA:Doğum günü tatlısı\nPIZZA:Yuvarlak peynirli yemek\nSUT:İnekten gelen içecek\nSU:Yaşam kaynağı sıvı",
+                    school: "KALEM:Yazı yazma aracı\nKITAP:Okumak için sayfalar\nSIRA:Oturup çalışılan masa\nSANDALYE:Oturmak için eşya\nCANTA:Kitap taşıma aracı\nCETVEL:Düz çizgi çizer\nYAPISTIRICI:Kağıt yapıştırır\nKURSUN:Silinebilir kalem\nSILGI:Hataları siler\nOGRETMEN:Dersi anlatan kişi\nMAKAS:Kağıt kesmek için\nHARITA:Dünyayı gösterir",
+                    jobs: "DOKTER:Hastaları iyileştirir\nOGRETMEN:Öğrencilere öğretir\nPOLIS:Şehri korur\nASCI:Yemek pişirir\nPILOT:Uçak kullanır\nCIFTCI:Sebze meyve yetiştirir\nRESSAM:Resim yapar\nFIRINCI:Ekmek pişirir\nDISCI:Dişleri tedavi eder\nSOFOR:Araba kullanır",
+                    sports: "FUTBOL:Ayakla oynanan top\nBASKETBOL:Pota ve top oyunu\nTENIS:Raketle oynanır\nYUZME:Suda yapılan spor\nKOSU:Hızlı yürüme sporu\nGOLF:Sopa ve küçük top\nBEYZBOL:Sopa ve top oyunu\nKARATE:Savunma sanatı\nBISIKLET:İki tekerlekli spor",
+                    nature: "GUNES:Sıcak gök cismi\nAY:Gece parlayan uydu\nYILDIZ:Gece parlayan nokta\nAGAC:Yapraklı büyük bitki\nCICEK:Renkli güzel bitki\nYAGMUR:Buluttan düşen su\nKAR:Soğuk beyaz yağış\nRUZGAR:Esen hava akımı\nBULUT:Gökyüzündeki beyazlık\nDENIZ:Tuzlu büyük su",
+                    home: "YATAK:Uyumak için eşya\nKOLTUK:Oturmak için rahat\nMASA:Yemek yenen yer\nLAMBA:Işık veren eşya\nKAPI:Odaya giriş yeri\nPENCERE:Dışarı bakılan cam\nMUTFAK:Yemek yapılan oda\nTUVALET:Banyo ihtiyacı\nCATI:Evin tepesi\nTV:Film izlenen cihaz",
+                    transport: "ARABA:Dört tekerlekli taşıt\nOTOBUS:Toplu taşıma aracı\nTREN:Raylarda gider\nUCAK:Havada uçar\nGEMI:Denizde gider\nBISIKLET:Pedallı taşıt\nKAMYON:Yük taşıyan araç\nTEKNE:Küçük deniz aracı"
+                }
+            },
+            es: { 
+                ui: { title: "CRUCIGRAMA", inst: "¡Completa con las palabras correctas!", name: "Nombre:", class: "Fecha:", across: "HORIZONTAL", down: "VERTICAL", footer: "Creado con Plumkids" },
+                topics: {
+                    animals: "LEON:Rey de la selva\nTIGRE:Gato grande rayas\nELEFANTE:Tiene trompa larga\nCEBRA:Caballo blanco negro\nMONO:Come muchas bananas\nSERPIENTE:Reptil largo sin patas\nRANA:Salta en el lago\nOSO:Le gusta la miel\nVACA:Nos da leche rica\nPATO:Nada y dice cuac\nGATO:Mascota dice miau\nCABALLO:Animal fuerte para montar\nPEZ:Nada bajo el agua\nAVE:Vuela por el aire\nCONEJO:Orejas largas salta",
+                    food: "MANZANA:Fruta roja redonda\nBANANA:Fruta amarilla larga\nNARANJA:Fruta citrica redonda\nUVA:Fruta pequeña morada\nLIMON:Fruta amarilla acida\nPERA:Fruta verde dulce\nPAN:Para hacer sandwich\nHUEVO:Ponen las gallinas\nPASTEL:Dulce de postre\nPIZZA:Comida italiana redonda\nLECHE:Bebida blanca vaca\nAGUA:Liquido para beber",
+                    school: "BOLIGRAFO:Escribir con tinta\nLIBRO:Leer las paginas\nMESA:Trabajar en clase\nSILLA:Para sentarse\nMOCHILA:Llevar los libros\nREGLA:Medir las lineas\nPEGAMENTO:Pegar el papel\nLAPIZ:Escribir y borrar\nGOMA:Borrar errores\nMAESTRO:Enseña la clase\nTIJERAS:Cortar el papel\nMAPA:Muestra el mundo",
+                    jobs: "DOCTOR:Cura a enfermos\nMAESTRO:Enseña alumnos\nPOLICIA:Protege ciudad\nCOCINERO:Prepara comida\nPILOTO:Vuela aviones\nGRANJERO:Cultiva plantas\nARTISTA:Pinta cuadros\nPANADERO:Hornea pan fresco\nDENTISTA:Arregla dientes\nCHOFER:Conduce el bus",
+                    sports: "FUTBOL:Patear el balon\nBALONCESTO:Canasta y pelota\nTENIS:Deporte de raqueta\nNADAR:Moverse en agua\nCORRER:Moverse rapido\nGOLF:Palo y pelota\nBEISBOL:Bate y pelota\nKARATE:Arte marcial\nCICLISMO:Montar bicicleta",
+                    nature: "SOL:Estrella caliente dia\nLUNA:Luz de la noche\nESTRELLA:Brilla en cielo\nARBOL:Planta alta madera\nFLOR:Planta de colores\nLLUVIA:Agua del cielo\nNIEVE:Hielo blanco frio\nVIENTO:Aire que mueve\nNUBE:Blanca en cielo\nMAR:Agua salada grande",
+                    home: "CAMA:Dormir aqui\nSOFA:Sentarse sala\nMESA:Comer aqui\nLAMPARA:Dar luz casa\nPUERTA:Entrar al cuarto\nVENTANA:Mirar afuera\nCOCINA:Cocinar aqui\nBAÑO:Aseo personal\nTECHO:Arriba de casa\nTV:Ver peliculas",
+                    transport: "AUTO:Cuatro ruedas motor\nAUTOBUS:Lleva mucha gente\nTREN:Va por vias\nAVION:Vuela en aire\nBARCO:Flota en agua\nBICICLETA:Dos ruedas pedal\nCAMION:Lleva carga pesada\nMETRO:Tren subterraneo"
+                }
+            },
+            de: { 
+                ui: { title: "KREUZWORT", inst: "Fülle das Gitter aus!", name: "Name:", class: "Klasse:", across: "WAAGERECHT", down: "SENKRECHT", footer: "Kreuzworträtsel Generator" },
+                topics: {
+                    animals: "LOWE:König des Dschungels\nTIGER:Große Katze Streifen\nELEFANT:Tier mit Rüssel\nZEBRA:Pferd schwarz weiß\nAFFE:Isst gerne Bananen\nSCHLANGE:Reptil ohne Beine\nFROSCH:Grüner Hüpfer Teich\nBAR:Mag gerne Honig\nKUH:Gibt uns Milch\nENTE:Schwimmt im Wasser\nKATZE:Sagt Miau\nPFERD:Starkes Reittier\nFISCH:Schwimmt im Wasser\nVOGEL:Fliegt in Luft\nHASE:Lange Ohren hüpft",
+                    food: "APFEL:Rote runde Frucht\nBANANE:Gelbe krumme Frucht\nORANGE:Runde saftige Frucht\nTRAUBE:Kleine lila Frucht\nZITRONE:Saure gelbe Frucht\nBIRNE:Grüne süße Frucht\nBROT:Vom Bäcker frisch\nEI:Von Hühnern gelegt\nKUCHEN:Süßes Dessert\nPIZZA:Rund mit Käse\nMILCH:Weißes Getränk Kuh\nWASSER:Klares Getränk",
+                    school: "STIFT:Schreiben mit Tinte\nBUCH:Seiten zum Lesen\nTISCH:Arbeiten in Klasse\nSTUHL:Zum Sitzen da\nTASCHE:Bücher tragen\nLINEAL:Gerade Linien messen\nKLEBER:Papier kleben\nBLEISTIFT:Schreiben radieren\nRADIERER:Fehler wegmachen\nLEHRER:Unterrichtet Klasse\nSCHERE:Papier schneiden\nKARTE:Zeigt die Welt",
+                    jobs: "ARZT:Hilft kranken Leuten\nLEHRER:Lehrt die Schüler\nPOLIZEI:Schützt die Stadt\nKOCH:Macht das Essen\nPILOT:Fliegt das Flugzeug\nBAUER:Pflanzt Essen an\nMALER:Malt schöne Bilder\nBACKER:Backt frisches Brot\nZAHNARZT:Repariert Zähne\nFAHRER:Fährt den Bus",
+                    sports: "FUSSBALL:Ball ins Tor\nBASKETBALL:Korb und Ball\nTENNIS:Sport mit Schläger\nSCHWIMMEN:Bewegung im Wasser\nLAUFEN:Schnelles Gehen\nGOLF:Schläger und Ball\nBASEBALL:Schlagen und laufen\nKARATE:Kampfsportart\nRADFAHREN:Fahrrad fahren",
+                    nature: "SONNE:Heißer Stern Tag\nMOND:Licht in Nacht\nSTERN:Funkelt am Himmel\nBAUM:Große Pflanze Holz\nBLUME:Bunte Pflanze\nREGEN:Wasser vom Himmel\nSCHNEE:Kaltes weißes Eis\nWIND:Bewegte Luft\nWOLKE:Weiß am Himmel\nMEER:Großes Salzwasser",
+                    home: "BETT:Hier schlafen\nSOFA:Hier sitzen\nTISCH:Hier essen\nLAMPE:Macht Licht\nTUR:Eingang zum Raum\nFENSTER:Raus schauen\nKUCHE:Hier kochen\nBAD:Hier waschen\nDACH:Oben am Haus\nTV:Filme schauen",
+                    transport: "AUTO:Vier Räder Motor\nBUS:Viele Leute fahren\nZUG:Fährt auf Schienen\nFLUGZEUG:Fliegt in Luft\nBOOT:Schwimmt auf Wasser\nFAHRRAD:Zwei Räder Pedal\nLKW:Trägt schwere Last\nSCHIFF:Großes Boot Meer"
+                }
+            },
+            fr: { 
+                ui: { title: "MOTS CROISÉS", inst: "Remplissez la grille !", name: "Nom:", class: "Classe:", across: "HORIZONTAL", down: "VERTICAL", footer: "Créateur de Mots Croisés" },
+                topics: {
+                    animals: "LION:Roi de la jungle\nTIGRE:Gros chat rayé\nELEPHANT:Grand avec trompe\nZEBRE:Cheval noir blanc\nSINGE:Aime les bananes\nSERPENT:Reptile sans pattes\nGRENOUILLE:Verte et saute\nOURS:Aime le miel\nVACHE:Donne du lait\nCANARD:Nage dans l'eau\nCHAT:Dit miaou\nCHEVAL:Animal fort pour monter\nPOISSON:Nage dans l'eau\nOISEAU:Vole dans le ciel\nLAPIN:Longues oreilles",
+                    food: "POMME:Fruit rouge rond\nBANANE:Fruit jaune long\nORANGE:Fruit rond jus\nRAISIN:Petit fruit violet\nCITRON:Fruit jaune acide\nPOIRE:Fruit vert doux\nPAIN:Frais du boulanger\nOEUF:Pendu par poule\nGATEAU:Dessert sucré\nPIZZA:Ronde avec fromage\nLAIT:Boisson blanche\nEAU:Liquide vital",
+                    school: "STYLO:Ecrire avec encre\nLIVRE:Lire des pages\nBUREAU:Table de travail\nCHAISE:Pour s'asseoir\nSAC:Porter les livres\nREGLE:Mesurer lignes\nCOLLE:Coller papier\nCRAYON:Ecrire et gommer\nGOMME:Effacer erreurs\nPROF:Enseigne la classe\nCISEAUX:Couper papier\nCARTE:Montre le monde",
+                    jobs: "DOCTOR:Soigne les malades\nPROF:Enseigne élèves\nPOLICE:Protège la ville\nCUISINIER:Prépare repas\nPILOTE:Vole avion\nFERMIER:Cultive plantes\nARTISTE:Peint tableaux\nBOULANGER:Cuit le pain\nDENTISTE:Soigne dents\nCHAUFFEUR:Conduit le bus",
+                    sports: "FOOTBALL:Tirer le ballon\nBASKET:Ballon au panier\nTENNIS:Sport de raquette\nNATATION:Nager dans l'eau\nCOURSE:Courir très vite\nGOLF:Club et balle\nBASEBALL:Batte et balle\nKARATE:Art martial\nVELO:Rouler bicyclette",
+                    nature: "SOLEIL:Etoile chaude jour\nLUNE:Lumière nuit\nETOILE:Brille au ciel\nARBRE:Grande plante bois\nFLEUR:Plante colorée\nPLUIE:Eau du ciel\nNEIGE:Glace blanche froide\nVENT:Air qui bouge\nNUAGE:Blanc dans ciel\nMER:Eau salée bleue",
+                    home: "LIT:Dormir ici\nCANAPE:S'asseoir salon\nTABLE:Manger ici\nLAMPE:Donne lumière\nPORTE:Entrer pièce\nFENETRE:Regarder dehors\nCUISINE:Préparer repas\nTOILETTE:Salle de bain\nTOIT:Haut de maison\nTELE:Voir des films",
+                    transport: "VOITURE:Quatre roues moteur\nBUS:Transporte gens\nTRAIN:Roule sur rails\nAVION:Vole dans air\nBATEAU:Flotte sur eau\nVELO:Deux roues pédale\nCAMION:Transporte lourd\nNAVIRE:Grand bateau mer"
+                }
+            },
+            it: { 
+                ui: { title: "PAROLE CROCIATE", inst: "Risolvi il puzzle!", name: "Nome:", class: "Classe:", across: "ORIZZONTALI", down: "VERTICALI", footer: "Creatore di Puzzle" },
+                topics: {
+                    animals: "LEONE:Il re della giungla\nTIGRE:Gatto a strisce\nELEFANTE:Ha una proboscide\nZEBRA:Cavallo bianco nero\nSCIMMIA:Mangia le banane\nSERPENTE:Rettile senza zampe\nRANA:Salta nello stagno\nORSO:Ama il miele\nMUCCA:Ci da il latte\nANATRA:Nuota e starnazza\nGATTO:Dice miao\nCAVALLO:Animale forte da cavalcare\nPESCE:Nuota in acqua\nUCCELLO:Vola nel cielo\nCONIGLIO:Orecchie lunghe",
+                    food: "MELA:Frutto rosso tondo\nBANANA:Frutto giallo lungo\nARANCIA:Frutto rotondo agro\nUVA:Piccolo frutto viola\nLIMONE:Frutto giallo aspro\nPERA:Frutto verde dolce\nPANE:Fresco dal fornaio\nUOVO:Fatto da galline\nTORTA:Dolce per dessert\nPIZZA:Tonda con formaggio\nLATTE:Bevanda bianca\nACQUA:Liquido da bere",
+                    school: "PENNA:Scrivere con inchiostro\nLIBRO:Leggere le pagine\nBANCO:Tavolo di scuola\nSEDIA:Per sedersi\nZAINO:Portare i libri\nRIGHELLO:Misurare linee\nCOLLA:Attaccare carta\nMATITA:Scrivere cancellare\nGOMMA:Cancellare errori\nMAESTRO:Insegna in classe\nFORBICI:Tagliare carta\nMAPPA:Mostra il mondo",
+                    jobs: "MEDICO:Cura i malati\nMAESTRO:Insegna studenti\nPOLIZIA:Protegge città\nCUOCO:Prepara cibo\nPILOTA:Vola aerei\nCONTADINO:Coltiva cibo\nARTISTA:Dinge quadri\nFORNAIO:Prepara il pane\nDENTISTA:Cura i denti\nAUTISTA:Guida il bus",
+                    sports: "CALCIO:Tirare la palla\nBASKET:Palla nel cesto\nTENNIS:Sport con racchetta\nNUOTO:Muoversi in acqua\nCORSA:Muoversi veloce\nGOLF:Mazza e palla\nBASEBALL:Mazza e palla\nKARATE:Arte marziale\nCICLISMO:Andare in bici",
+                    nature: "SOLE:Stella calda giorno\nLUNA:Luce di notte\nSTELLA:Brilla nel cielo\nALBERO:Pianta alta legno\nFIORE:Pianta colorata\nPIOGGIA:Acqua dal cielo\nNEVE:Ghiaccio bianco freddo\nVENTO:Aria che muove\nNUVOLA:Bianca nel cielo\nMARE:Acqua salata blu",
+                    home: "LETTO:Dormire qui\nDIVANO:Sedersi qui\nTAVOLO:Mangiare qui\nLAMPADA:Fa luce\nPORTA:Entrare stanza\nFINESTRA:Guardare fuori\nCUCINA:Cucinare qui\nBAGNO:Lavarsi qui\nTETTO:Sopra la casa\nTV:Vedere film",
+                    transport: "AUTO:Quattro ruote motore\nBUS:Porta persone\nTRENO:Corre su binari\nAEREO:Vola in aria\nBARCA:Galleggia acqua\nBICI:Due ruote pedali\nCAMION:Porta carichi\nNAVE:Grande barca mare"
+                }
+            },
+            pt: { 
+                ui: { title: "PALAVRAS CRUZADAS", inst: "Preencha a grelha!", name: "Nome:", class: "Classe:", across: "HORIZONTAL", down: "VERTICAL", footer: "Gerador de Palavras Cruzadas" },
+                topics: {
+                    animals: "LEAO:Rei da selva\nTIGRE:Gato grande riscas\nELEFANTE:Tem tromba grande\nZEBRA:Cavalo preto branco\nMACACO:Gosta de bananas\nCOBRA:Reptil sem pernas\nSAPO:Salta no lago\nURSO:Gosta de mel\nVACA:Nos da leite\nPATO:Nada na lagoa\nGATO:Diz miau\nCAVALO:Animal forte para montar\nPEIXE:Nada na agua\nAVE:Voa no ceu\nCOELHO:Orelhas grandes",
+                    food: "MACA:Fruta vermelha\nBANANA:Fruta amarela longa\nLARANJA:Fruta redonda suco\nUVA:Fruta pequena roxa\nLIMAO:Fruta amarela azeda\nPERA:Fruta verde dolce\nPAO:Fresco da padaria\nOVO:Galinha poe\nBOLO:Doce de sobremesa\nPIZZA:Redonda com queijo\nLEITE:Bebida branca\nAGUA:Liquido vital",
+                    school: "CANETA:Escrever tinta\nLIVRO:Ler paginas\nMESA:Trabalhar aula\nCADEIRA:Para sentar\nMOCHILA:Levar livros\nREGUA:Medir linhas\nCOLA:Colar papel\nLAPIS:Escrever apagar\nBORRACHA:Apagar erros\nPROFESSOR:Ensina a turma\nTESOURA:Cortar papel\nMAPA:Mostra o mundo",
+                    jobs: "MEDICO:Cura doentes\nPROFESSOR:Ensina alunos\nPOLICIA:Protege cidade\nCOZINHEIRO:Faz comida\nPILOTO:Voa aviao\nAGRICULTOR:Cultiva plantas\nARTISTA:Pinta quadros\nPADEIRO:Faz pão fresco\nDENTISTA:Trata dentes\nMOTORISTA:Conduz onibus",
+                    sports: "FUTEBOL:Chutar a bola\nBASQUETE:Bola no cesto\nTENIS:Esporte raquete\nNATACAO:Nadar na agua\nCORRIDA:Correr rapido\nGOLF:Taco e bola\nBEISEBOL:Taco e bola\nKARATE:Arte marcial\nCICLISMO:Andar bicicleta",
+                    nature: "SOL:Estrela quente dia\nLUA:Luz da noite\nESTRELA:Brilla no ceu\nARVORE:Planta alta madeira\nFLOR:Planta colorida\nCHUVA:Agua do ceu\nNEVE:Gelo branco frio\nVENTO:Ar em movimento\nNUVEM:Branca no ceu\nMAR:Agua salgada",
+                    home: "CAMA:Dormir aqui\nSOFA:Sentar sala\nMESA:Comer aqui\nLAMPADA:Dar luz\nPORTA:Entrar quarto\nJANELA:Olhar fora\nCOZINHA:Cozinhar aqui\nBANHEIRO:Lavar aqui\nTELHADO:Topo da casa\nTV:Ver filmes",
+                    transport: "CARRO:Quatro rodas motor\nONIBUS:Leva muita gente\nTREM:Anda nos trilhos\nAVIAO:Voa no ar\nBARCO:Flutua na agua\nBICICLETA:Duas rodas pedal\nCAMINHAO:Leva carga pesada\nNAVIO:Grande barco mar"
+                }
+            },
+            nl: { 
+                ui: { title: "KRUISWOORD", inst: "Vul het rooster in!", name: "Naam:", class: "Klas:", across: "HORIZONTAAL", down: "VERTICAAL", footer: "Puzzelmaker Pro" },
+                topics: {
+                    animals: "LEEUW:Koning van jungle\nTIJGER:Grote gestreepte kat\nOLIFANT:Dier met slurf\nZEBRA:Paard zwart wit\nAAP:Eet graag bananen\nSLANG:Reptiel zonder poten\nKIKKER:Groene springer\nBEER:Houdt van honing\nKOE:Geeft ons melk\nEEND:Zwemt in water\nKAT:Zegt miau\nPAARD:Sterk dier om op te rijden\nVIS:Zwemt in zee\nVOGEL:Vliegt in lucht\nKONIJN:Lange oren",
+                    food: "APPEL:Rood rond fruit\nBANAAN:Geel lang fruit\nSINAASAPPEL:Oranje rond fruit\nDRUIF:Klein paars fruit\nCITROEN:Zuur geel fruit\nPEER:Groen zoet fruit\nBROOD:Vers van de bakker\nEI:Van een kip\nTAART:Zoet dessert\nPIZZA:Rond met kaas\nMELK:Witte drank koe\nWATER:Helder drinken",
+                    school: "PEN:Schrijven met inkt\nBOEK:Paginas lezen\nTAFEL:Aan werken\nSTOEL:Op zitten\nTAS:Boeken dragen\nLINIAAL:Lijnen meten\nLIJM:Papier plakken\nPOTLOOD:Schrijven gummen\nGUM:Fouten weg\nLERAAR:Geeft les\nSCHAAR:Papier knippen\nKAART:Toont de wereld",
+                    jobs: "DOKTER:Geneest zieken\nLERAAR:Leert kinderen\nPOLITIE:Beschermt stad\nKOK:Maakt eten\nPILOOT:Vliegt vliegtuig\nBOER:Verbouwt eten\nKUNSTENAAR:Schildert\nBAKKER:Bakt vers brood\nTANDARTS:Maakt tanden\nCHAUFFEUR:Rijdt de bus",
+                    sports: "VOETBAL:Bal trappen\nBASKETBAL:Bal in ring\nTENNIS:Racket sport\nZWEMMEN:In het water\nRENNEN:Snel lopen\nGOLF:Club en bal\nHONKBAL:Knuppel en bal\nKARATE:Vechtsport\nFIETSEN:Op de fiets",
+                    nature: "ZON:Hete ster dag\nMAAN:Licht in nacht\nSTER:Fonkel in lucht\nBOOM:Grote plant hout\nBLOEM:Kleurige plant\nREGEN:Water uit lucht\nSNEEUW:Koud wit ijs\nWIND:Lucht die beweegt\nWOLK:Wit in lucht\nZEE:Zout water",
+                    home: "BED:Hier slapen\nBANK:Hier zitten\nTAFEL:Hier eten\nLAMP:Geeft licht\nDEUR:Kamer binnen\nRAAM:Naar buiten\nKEUKEN:Hier koken\nTOILET:De wc\nDAK:Bovenop huis\nTV:Films kijken",
+                    transport: "AUTO:Vier wielen motor\nBUS:Vervoert mensen\nTREIN:Rijdt op rails\nVLIEGTUIG:Vliegt in lucht\nBOOT:Drijft op water\nFIETS:Twee wielen trapper\nVRACHTWAGEN:Zware lading\nSCHIP:Grote boot zee"
+                }
+            },
+            pl: { 
+                ui: { title: "KRZYŻÓWKA", inst: "Rozwiąż krzyżówkę!", name: "Imię:", class: "Klasa:", across: "POZIOMO", down: "PIONOWO", footer: "Generator Krzyżówek" },
+                topics: {
+                    animals: "LEW:Krol dzungli\nTYGRYS:Kot w paski\nSLON:Ma dluga trabe\nZEBRA:Kon w paski\nMALPA:Lubi banany\nWAZ:Pelza po ziemi\nZABA:Skacze w stawie\nNIEDZWIEDZ:Lubi miod\nKROWA:Daje mleko\nKACZKA:Plywa w wodzie\nKOT:Mowi miau\nKON:Silne zwierze do jazdy\nRYBA:Zyje w wodzie\nPTAK:Lata na niebie\nKROLIK:Dlugi uszy",
+                    food: "JABLKO:Czerwony owoc\nBANAN:Zolty dlugi owoc\nPOMARANCZA:Cytrusowy owoc\nWINOGRONO:Maly fioletowy\nCYTRYNA:Kwasny owoc\nGRUSZKA:Zielony owoc\nCHLEB:Swiezy od piekarza\nJAJKO:Od kury\nCIASTO:Slodki deser\nPIZZA:Okragla z serem\nMLEKO:Bialy napoj\nWODA:Do picia",
+                    school: "DLUGOPIS:Pisanie tuszem\nKSIAZKA:Czytanie stron\nLAWKA:Stolik szkolny\nKRZESLO:Do siedzenia\nPLECAK:Na ksiazki\nLINIJKA:Mierzenie linii\nKLEJ:Klejenie papieru\nOLOWEK:Pisanie gumowanie\nGUMKA:Scieranie bledow\nNAUCZYCIEL:Uczy klase\nNOZYCZKI:Ciecie papieru\nMAPA:Pokazuje swiat",
+                    jobs: "LEKARZ:Leczy chorych\nNAUCZYCIEL:Uczy dzieci\nPOLICJA:Chroni miasto\nKUCHARZ:Gotuje jedzenie\nPILOT:Lata samolotem\nROLNIK:Uprawia rosliny\nARTYSTA:Maluje obrazy\nPIEKARZ:Piecze swiezy chleb\nDENTYSTA:Leczy zeby\nKIEROWCA:Prowadzi bus",
+                    sports: "PILKA:Kopanie do bramki\nKOSZYKOWKA:Rzut do kosza\nTENIS:Sport z rakieta\nPLYWANIE:Ruch w wodzie\nBIEGANIE:Szybki ruch\nGOLF:Kij i pilka\nBASEBALL:Kij i pilka\nKARATE:Sztuka walki\nROWER:Jazda rowerem",
+                    nature: "SLONCE:Goraca gwiazda\nKSIEZYC:Swieci w nocy\nGWIAZDA:Mala na niebie\nDRZEWO:Wysoka roslina\nKWIAT:Kolorowa roslina\nDESZCZ:Woda z nieba\nSNIEG:Zimny bialy\nWIATR:Ruch powietrza\nCHMURA:Biala na niebie\nMORZE:Slona woda",
+                    home: "LOZKO:Tu spisz\nKANAPA:Tu siedzisz\nSTOL:Tu jesz\nLAMPA:Daje swiatlo\nDRZWI:Wejscie do pokoju\nOKNO:Patrzec na zewnatrz\nKUCHNIA:Tu gotujesz\nLAZIENKA:Tu sie myjesz\nDACH:Gora domu\nTV:Ogladanie filmow",
+                    transport: "AUTO:Cztery kola silnik\nAUTOBUS:Wiezie ludzi\nPOCIAG:Jedzie po szynach\nSAMOLOT:Lata w powietrzu\nLODZ:Plywa po wodzie\nROWER:Dwa kola pedaly\nCIEZAROWKA:Ciezki ladunek\nSTATEK:Duza lodz morze"
+                }
+            }
+        };
+
+        const UI = {
+            lang: document.getElementById('langSelect'),
+            level: document.getElementById('levelSelect'),
+            topic: document.getElementById('topicSelect'),
+            color: document.getElementById('colorPicker'),
+            words: document.getElementById('wordInput'),
+            btnGen: document.getElementById('btnGen'),
+            btnAns: document.getElementById('btnAns'),
+            title: document.getElementById('outTitle'),
+            inst: document.getElementById('outInst'),
+            name: document.getElementById('outName'),
+            cls: document.getElementById('outClass'),
+            across: document.getElementById('outAcross'),
+            down: document.getElementById('outDown'),
+            footer: document.getElementById('outFooter'),
+            grid: document.getElementById('crosswordGrid'),
+            lAcross: document.getElementById('listAcross'),
+            lDown: document.getElementById('listDown'),
+            paper: document.getElementById('paper'),
+            inpTitle: document.getElementById('inpTitle'),
+            inpInst: document.getElementById('inpInst'),
+            inpName: document.getElementById('inpName'),
+            inpClass: document.getElementById('inpClass'),
+            inpFooter: document.getElementById('inpFooter')
+        };
+
+        UI.lang.addEventListener('change', updateDB);
+        UI.topic.addEventListener('change', updateDB);
+        UI.level.addEventListener('change', () => generate()); 
+        UI.color.addEventListener('input', updateColor);
+        
+        UI.inpTitle.addEventListener('input', (e) => UI.title.textContent = e.target.value);
+        UI.inpInst.addEventListener('input', (e) => UI.inst.textContent = e.target.value);
+        UI.inpName.addEventListener('input', (e) => UI.name.textContent = e.target.value);
+        UI.inpClass.addEventListener('input', (e) => UI.cls.textContent = e.target.value);
+        UI.inpFooter.addEventListener('input', (e) => UI.footer.textContent = e.target.value);
+        
+        UI.btnGen.addEventListener('click', generate);
+        UI.btnAns.addEventListener('click', () => UI.paper.classList.toggle('show-answers'));
+
+        function updateColor() {
+            const c = UI.color.value;
+            document.documentElement.style.setProperty('--primary', c);
+            document.documentElement.style.setProperty('--primary-dark', shadeColor(c, -30));
+        }
+
+        function shadeColor(color, percent) {
+            var R = parseInt(color.substring(1,3),16);
+            var G = parseInt(color.substring(3,5),16);
+            var B = parseInt(color.substring(5,7),16);
+            R = parseInt(R * (100 + percent) / 100);
+            G = parseInt(G * (100 + percent) / 100);
+            B = parseInt(B * (100 + percent) / 100);
+            R = (R<255)?R:255; G = (G<255)?G:255; B = (B<255)?B:255;
+            var RR = ((R.toString(16).length==1)?"0"+R.toString(16):R.toString(16));
+            var GG = ((G.toString(16).length==1)?"0"+G.toString(16):G.toString(16));
+            var BB = ((B.toString(16).length==1)?"0"+B.toString(16):B.toString(16));
+            return "#"+RR+GG+BB;
+        }
+
+        function updateDB() {
+            const l = UI.lang.value;
+            const t = UI.topic.value;
+            const db = DB[l] || DB['en'];
+            
+            UI.title.textContent = db.ui.title; 
+            UI.inst.textContent = db.ui.inst;
+            UI.name.textContent = db.ui.name;
+            UI.cls.textContent = db.ui.class;
+            UI.across.textContent = db.ui.across;
+            UI.down.textContent = db.ui.down;
+            UI.footer.textContent = db.ui.footer;
+
+            UI.inpTitle.value = db.ui.title;
+            UI.inpInst.value = db.ui.inst;
+            UI.inpName.value = db.ui.name;
+            UI.inpClass.value = db.ui.class;
+            UI.inpFooter.value = db.ui.footer;
+
+            let rawWords = "";
+            if(t === 'mix') {
+                let all = [];
+                Object.values(db.topics).forEach(txt => all.push(txt));
+                rawWords = all.join('\n');
+            } else {
+                rawWords = db.topics[t] || db.topics['animals'];
+            }
+            UI.words.value = rawWords;
+            generate();
+        }
+
+        function generate() {
+            UI.paper.classList.remove('show-answers');
+            const level = UI.level.value;
+            let gridSize = 10;
+            let maxWords = 10;
+            
+            if(level === 'easy') { gridSize = 8; maxWords = 8; }
+            if(level === 'medium') { gridSize = 10; maxWords = 12; }
+            if(level === 'hard') { gridSize = 12; maxWords = 25; } 
+
+            const raw = UI.words.value.trim().split('\n');
+            let wordList = raw.map(line => {
+                const parts = line.split(':');
+                if(parts.length < 2) return null;
+                const w = parts[0].trim();
+                const c = parts[1].trim();
+                if(!w || w.length < 2 || w.length > gridSize) return null;
+                return { word: w.toUpperCase().replace(/[^A-Z]/g, ''), clue: c || '???' };
+            }).filter(Boolean);
+
+            if(wordList.length === 0) return;
+
+            let bestGrid = null;
+            let maxPlaced = -1;
+
+            for(let attempt = 0; attempt < 40; attempt++) {
+                let currentPool = [...wordList].sort(() => Math.random() - 0.5);
+                if(attempt % 3 === 0) currentPool.sort((a,b) => b.word.length - a.word.length);
+
+                let grid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(null));
+                let placed = [];
+
+                const first = currentPool[0];
+                placeOnGrid(grid, placed, first, Math.floor((gridSize-first.word.length)/2), Math.floor(gridSize/2), 'across');
+                
+                for(let i=1; i<currentPool.length; i++) {
+                    if(placed.length >= maxWords) break;
+                    let wObj = currentPool[i];
+                    let fits = false;
+                    let placedIndices = placed.map((_, idx) => idx).sort(() => Math.random() - 0.5);
+
+                    for(let pIdx of placedIndices) {
+                        if(fits) break;
+                        let pWord = placed[pIdx];
+                        for(let j=0; j<wObj.word.length; j++) {
+                            if(fits) break;
+                            let char = wObj.word[j];
+                            for(let k=0; k<pWord.word.length; k++) {
+                                if(pWord.word[k] === char) {
+                                    let ix = pWord.dir==='across' ? pWord.x + k : pWord.x;
+                                    let iy = pWord.dir==='across' ? pWord.y : pWord.y + k;
+                                    let tryDir = pWord.dir === 'across' ? 'down' : 'across';
+                                    let startX = tryDir === 'across' ? ix - j : ix;
+                                    let startY = tryDir === 'across' ? iy : iy - j;
+                                    if(canPlace(grid, gridSize, wObj.word, startX, startY, tryDir)) {
+                                        placeOnGrid(grid, placed, wObj, startX, startY, tryDir);
+                                        fits = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if(placed.length > maxPlaced) {
+                    maxPlaced = placed.length;
+                    bestGrid = { grid, placed };
+                }
+            }
+
+            render(bestGrid, gridSize);
+        }
+
+        function canPlace(grid, size, word, x, y, dir) {
+            if(x < 0 || y < 0) return false;
+            if(dir === 'across' && x + word.length > size) return false;
+            if(dir === 'down' && y + word.length > size) return false;
+            for(let i=0; i<word.length; i++) {
+                let cx = dir === 'across' ? x + i : x;
+                let cy = dir === 'across' ? y : y + i;
+                let cell = grid[cy][cx];
+                if(cell !== null && cell !== word[i]) return false;
+                if(cell === null) {
+                    if(dir === 'across') {
+                        if(cy>0 && grid[cy-1][cx]!==null) return false;
+                        if(cy<size-1 && grid[cy+1][cx]!==null) return false;
+                    } else {
+                        if(cx>0 && grid[cy][cx-1]!==null) return false;
+                        if(cx<size-1 && grid[cy][cx+1]!==null) return false;
+                    }
+                }
+            }
+            let bx = dir==='across' ? x-1 : x;
+            let by = dir==='across' ? y : y-1;
+            if(bx>=0 && by>=0 && grid[by][bx]!==null) return false;
+            let ax = dir==='across' ? x+word.length : x;
+            let ay = dir==='across' ? y : y+word.length;
+            if(ax<size && ay<size && grid[ay][ax]!==null) return false;
+            return true;
+        }
+
+        function placeOnGrid(grid, placedList, wObj, x, y, dir) {
+            for(let i=0; i<wObj.word.length; i++) {
+                let cx = dir === 'across' ? x + i : x;
+                let cy = dir === 'across' ? y : y + i;
+                grid[cy][cx] = wObj.word[i];
+            }
+            placedList.push({ ...wObj, x, y, dir });
+        }
+
+        function render(data, size) {
+            if(!data) return;
+            data.placed.sort((a,b) => (a.y - b.y) || (a.x - b.x));
+            let num = 1;
+            for(let i=0; i<data.placed.length; i++) {
+                if(data.placed[i].num) continue;
+                data.placed[i].num = num;
+                for(let j=i+1; j<data.placed.length; j++) {
+                    if(data.placed[j].x === data.placed[i].x && data.placed[j].y === data.placed[i].y) {
+                        data.placed[j].num = num;
+                    }
+                }
+                num++;
+            }
+            UI.grid.innerHTML = '';
+            UI.grid.style.gridTemplateColumns = `repeat(${size}, var(--cell-size))`;
+            for(let r=0; r<size; r++) {
+                for(let c=0; c<size; c++) {
+                    const char = data.grid[r][c];
+                    const div = document.createElement('div');
+                    if(char) {
+                        div.className = 'cell';
+                        const startWord = data.placed.find(w => w.x === c && w.y === r);
+                        if(startWord) div.innerHTML += `<span class="num">${startWord.num}</span>`;
+                        div.innerHTML += `<span class="letter">${char}</span>`;
+                    } else {
+                        div.className = 'cell black';
+                    }
+                    UI.grid.appendChild(div);
+                }
+            }
+            UI.lAcross.innerHTML = '';
+            UI.lDown.innerHTML = '';
+            data.placed.forEach(w => {
+                const li = document.createElement('li');
+                li.className = 'clue-item';
+                li.innerHTML = `<div class="clue-num-badge">${w.num}</div><span>${w.clue}</span>`;
+                if(w.dir === 'across') UI.lAcross.appendChild(li);
+                else UI.lDown.appendChild(li);
+            });
+        }
+
+        updateColor();
+        updateDB();
+    </script>
+	<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+	<script>
+function saveAsImage() {
+    const target = document.getElementById("paper");
+
+    html2canvas(target, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff"
+    }).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "crossword-worksheet.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    });
+}
+</script>
+
+
+</body>
+</html>
