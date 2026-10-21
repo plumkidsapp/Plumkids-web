@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mi Plumkids</title><link rel="stylesheet" href="account.css"></head><body><header class="top"><div class="wrap top-in"><a class="logo" href="index.html"><span class="plum"></span>Plumkids</a><div class="top-actions"><a class="btn btn-light hide-mobile" href="index.html#apps">Explorar apps</a><button id="logoutBtn" class="btn btn-danger">Salir</button></div></div></header><main class="wrap dashboard"><div id="loading"><div class="spinner"></div></div><div id="dashboardContent" hidden><div id="accessNotice" class="notice"></div><section class="welcome"><div><span class="badge">MI PLUMKIDS</span><h1 id="welcomeName">Hola</h1><p>Administra tus apps y perfiles familiares.</p></div><a class="btn btn-primary" href="index.html#apps">Comprar otra app</a></section><div class="dashboard-grid"><section class="panel"><div class="panel-head"><h2>Mis apps</h2><span id="appCount" class="badge">0 apps</span></div><div id="appsContainer" class="apps-grid"></div></section><aside class="panel"><div class="panel-head"><h2>Niños/as</h2></div><div id="childrenContainer"></div><form id="childForm" class="inline-form"><strong>Agregar perfil</strong><div class="field"><label>Nombre</label><input name="name" maxlength="80" required></div><div class="field"><label>Edad</label><input name="age" type="number" min="2" max="17" required></div><button class="btn btn-outline full" type="submit">Agregar</button></form></aside></div>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mi Plumkids</title><link rel="stylesheet" href="account.css"></head><body><header class="top"><div class="wrap top-in"><a class="logo" href="index.html"><span class="plum"></span>Plumkids</a><div class="top-actions"><a class="btn btn-light hide-mobile" href="index.html#apps">Explorar apps</a><button id="logoutBtn" class="btn btn-danger">Salir</button></div></div></header><main class="wrap dashboard"><div id="loading"><div class="spinner"></div></div><div id="dashboardContent" hidden><div id="accessNotice" class="notice"></div><section class="welcome"><div><span class="badge">MI PLUMKIDS</span><h1 id="welcomeName">Hola</h1><p>Administra tus apps, herramientas y perfiles familiares.</p></div><a class="btn btn-primary" href="index.html#apps">Explorar productos</a></section><div class="dashboard-grid"><section class="panel"><div class="panel-head"><h2>Mis apps y herramientas</h2><span id="appCount" class="badge">0 accesos</span></div><div id="appsContainer" class="apps-grid"></div></section><aside class="panel"><div class="panel-head"><h2>Niños/as</h2></div><div id="childrenContainer"></div><form id="childForm" class="inline-form"><strong>Agregar perfil</strong><div class="field"><label>Nombre</label><input name="name" maxlength="80" required></div><div class="field"><label>Edad</label><input name="age" type="number" min="2" max="17" required></div><button class="btn btn-outline full" type="submit">Agregar</button></form></aside></div>
 <section id="progressPanel" class="panel" style="margin-top:20px">
   <div class="panel-head"><h2>Progreso de aprendizaje</h2><span class="badge">NUEVO</span></div>
   <div id="progressSummary"><p class="muted">Aún no hay actividad registrada.</p></div>
@@ -8,7 +8,8 @@ const appInfo={
   'lectoaventura':{name:'LectoAventura',image:'assets/app-lecto.png',url:'play/lectoaventura.html'},
   'mateaventura':{name:'MateAventura',image:'assets/app-mate.png',url:'play/mateaventura.html'},
   'memoria-magica':{name:'Memoria Mágica',image:'assets/app-memoria.png',url:'play/memoria-magica.html'},
-  'emociones-en-juego':{name:'Emociones en Juego',image:'assets/app-emociones.png',url:'play/emociones-en-juego.html'}
+  'emociones-en-juego':{name:'Emociones en Juego',image:'assets/app-emociones.png',url:'play/emociones-en-juego.html'},
+  'plumkids-builder':{name:'Plumkids Builder',image:'',emoji:'🧰',url:'builder/index.html'}
 };
 async function api(url,opts){
   const r=await fetch(url,{credentials:'same-origin',...(opts||{})});
@@ -21,17 +22,20 @@ function escapeHtml(v){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':
 function renderApps(entitlements){
   const c=document.getElementById('appsContainer');
   c.innerHTML='';
-  document.getElementById('appCount').textContent=`${entitlements.length} ${entitlements.length===1?'app':'apps'}`;
+  document.getElementById('appCount').textContent=`${entitlements.length} ${entitlements.length===1?'acceso':'accesos'}`;
   if(!entitlements.length){
-    c.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="emoji">🎮</div><h3>Aún no tienes apps activadas</h3><p>Después de una compra aprobada, la app aparecerá aquí.</p><a class="btn btn-primary" href="index.html#apps">Explorar apps</a></div>';
+    c.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="emoji">🎮</div><h3>Aún no tienes productos activados</h3><p>Después de una compra aprobada, el producto aparecerá aquí.</p><a class="btn btn-primary" href="index.html#apps">Explorar productos</a></div>';
     return;
   }
   entitlements.forEach(e=>{
-    const a=appInfo[e.app_slug]||{name:e.app_slug,image:'',url:'#'};
+    const a=appInfo[e.app_slug]||{name:e.app_slug,image:'',emoji:'🎮',url:'#'};
     const art=a.image
       ? `<div class="app-art app-art-image"><img src="${a.image}" alt="${a.name}"></div>`
-      : `<div class="app-art">🎮</div>`;
-    c.insertAdjacentHTML('beforeend',`<article class="app-card">${art}<div class="app-body"><h3>${a.name}</h3><p>Acceso habilitado para tu cuenta.</p><a class="btn btn-primary full" href="${a.url}">Abrir app</a></div></article>`);
+      : `<div class="app-art">${a.emoji||'🎮'}</div>`;
+    const desc=e.app_slug==='plumkids-builder'
+      ? '10 generadores de actividades infantiles.'
+      : 'Acceso habilitado para tu cuenta.';
+    c.insertAdjacentHTML('beforeend',`<article class="app-card">${art}<div class="app-body"><h3>${a.name}</h3><p>${desc}</p><a class="btn btn-primary full" href="${a.url}">Abrir</a></div></article>`);
   });
 }
 function renderChildren(children){const c=document.getElementById('childrenContainer');c.innerHTML='';if(!children.length){c.innerHTML='<p class="muted">Aún no has agregado perfiles.</p>';return}children.forEach(ch=>c.insertAdjacentHTML('beforeend',`<div class="child-card"><strong>${escapeHtml(ch.name)}</strong><span>${ch.age} años</span></div>`))}
@@ -41,10 +45,9 @@ if(accessParams.get('access')==='required'){
   const slug=accessParams.get('app');
   const item=appInfo[slug];
   const n=document.getElementById('accessNotice');
-  n.textContent=`${item?.name||'Esta aplicación'} no está habilitada en esta cuenta.`;
+  n.textContent=`${item?.name||'Este producto'} no está habilitado en esta cuenta.`;
   n.className='notice show error';
 }
-
 
 function renderLearningProgress(rows){
   const c=document.getElementById('progressSummary');

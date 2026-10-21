@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Plumkids Builder</title>
+<link rel="stylesheet" href="../account.css">
+<style>
+body{background:linear-gradient(180deg,#fbf8ff,#f6fbff)}
+.builder-shell{width:min(1080px,calc(100% - 28px));margin:28px auto 60px}
+.builder-hero{background:linear-gradient(135deg,#7540dd,#9b68ee);color:#fff;border-radius:26px;padding:30px;box-shadow:0 16px 42px rgba(71,40,115,.16);display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+.builder-hero h1{margin:8px 0 10px;font-size:38px}.builder-hero p{margin:0;line-height:1.6;max-width:720px;color:#f4ecff}
+.hero-icon{font-size:82px}
+.tool-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin:30px 0 16px}
+.tool-head h2{margin:0}.tool-head p{margin:5px 0 0;color:var(--muted)}
+.tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.tool{background:#fff;border:1px solid var(--line);border-radius:20px;padding:19px;display:flex;flex-direction:column;min-height:225px;box-shadow:0 8px 26px rgba(55,31,88,.05)}
+.tool.active{border-color:#c6afea}
+.tool-icon{font-size:42px}.tool h3{margin:10px 0 6px}.tool p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
+.tool .tool-actions{margin-top:auto;padding-top:16px}.tool .btn{width:100%}
+.soon{background:#f5f1fa;color:#81778d;cursor:not-allowed}
+.beta-note{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:17px;padding:15px;color:#655a74;font-size:13px}
+@media(max-width:820px){.tools{grid-template-columns:1fr 1fr}.builder-hero{grid-template-columns:1fr}.hero-icon{display:none}}
+@media(max-width:560px){.tools{grid-template-columns:1fr}.builder-hero{padding:22px}.builder-hero h1{font-size:31px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap top-in">
+<a class="logo" href="../index.html"><span class="plum"></span>Plumkids</a>
+<div class="top-actions"><a class="btn btn-light" href="../mi-plumkids.html">Mi Plumkids</a></div>
+</div></header>
+
+<main class="builder-shell">
+<section class="builder-hero">
+<div>
+<span class="badge" style="background:#fff;color:#6d35ce">BETA PRIVADA</span>
+<h1>Plumkids Builder</h1>
+<p>10 herramientas para crear actividades infantiles imprimibles. En esta primera integración estamos validando el generador original de Matemáticas antes de activar los otros nueve.</p>
+</div>
+<div class="hero-icon">🧰✨</div>
+</section>
+
+<div class="tool-head">
+<div><h2>Generadores</h2><p>Producto original integrado a la plataforma Plumkids.</p></div>
+</div>
+
+<section class="tools">
+<article class="tool active"><div class="tool-icon">➕</div><h3>Matemáticas</h3><p>Crea hojas de suma, resta, multiplicación y división, con dificultad y cantidad de ejercicios configurables.</p><div class="tool-actions"><a class="btn btn-primary" href="matematicas.html">Abrir generador</a></div></article>
+<article class="tool"><div class="tool-icon">🍎</div><h3>Matemáticas con Emojis</h3><p>Actividades matemáticas visuales con apoyo de emojis.</p><div class="tool-actions"><button class="btn soon" disabled>Próximamente</button></div></article>
+<article class="tool"><div class="tool-icon">🧩</div><h3>Secuencias</h3><p>Crea ejercicios infantiles de secuencias y patrones.</p><div class="tool-actions"><button class="btn soon" disabled>Próximamente</button></div></article>
+<article class="tool"><div class="tool-icon">🕒</div><h3>Quiz del Reloj</h3><p>Genera actividades para practicar lectura y comprensión de la hora.</p><div class="tool-actions"><button class="btn soon" disabled>Próximamente</button></div></article>
+<article class="tool"><div class="tool-icon">🌀</div><h3>Laberintos</h3><p>Genera laberintos infantiles listos para resolver e imprimir.</p><div class="tool-actions"><button class="btn soon" disabled>Próximamente</button></div></article>
+<article class="tool"><div class="tool-icon">✏️</div><h3>Crucigramas</h3><p>Crea crucigramas personalizados para vocabulario y aprendizaje.</p><div class="tool-actions"><button class="btn soon" disabled>Próximamente</button></div></article>
+<article class="tool"><div class="tool-icon">🔎</div><h3>Sopa de Letras</h3><p>Genera sopas de letras personalizadas.</p><div class="tool-actions"><button class="btn soon" disabled>Próximamente</button></div></article>
+<article class="tool"><div class="tool-icon">📚</div><h3>Hojas de Vocabulario</h3><p>Crea hojas de trabajo para reforzar vocabulario.</p><div class="tool-actions"><button class="btn soon" disabled>Próximamente</button></div></article>
+<article class="tool"><div class="tool-icon">🔷</div><h3>Trazado de Formas</h3><p>Actividades imprimibles para practicar figuras y trazado.</p><div class="tool-actions"><button class="btn soon" disabled>Próximamente</button></div></article>
+<article class="tool"><div class="tool-icon">〰️</div><h3>Trazos de Líneas</h3><p>Genera ejercicios de preescritura y control grafomotor.</p><div class="tool-actions"><button class="btn soon" disabled>Próximamente</button></div></article>
+</section>
+
+<div class="beta-note"><strong>Importante:</strong> Plumkids Builder está separado de las cuatro apps actuales. Esta integración no modifica LectoAventura, MateAventura, Memoria Mágica ni Emociones en Juego.</div>
+</main>
+<footer class="footer">© 2026 Plumkids · Builder.</footer>
+</body>
+</html>

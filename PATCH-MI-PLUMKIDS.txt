@@ -1,0 +1,13 @@
+// v23 reference patch for mi-plumkids.html
+// Add this entry inside const appInfo:
+'plumkids-builder':{name:'Plumkids Builder',image:'',emoji:'🧰',url:'builder/index.html'}
+
+// Recommended wording changes:
+// "Mis apps" -> "Mis apps y herramientas"
+// appCount suffix -> "acceso/accesos"
+// empty message -> "Aún no tienes productos activados"
+
+// In renderApps, change the fallback artwork line from:
+// : `<div class="app-art">🎮</div>`;
+// to:
+// : `<div class="app-art">${a.emoji||'🎮'}</div>`;
