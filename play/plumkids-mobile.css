@@ -1,0 +1,75 @@
+/* Plumkids v25 responsive layer: screen only. Print rules from the original app stay intact. */
+@media screen and (max-width: 820px){
+  html,body{max-width:100%;overflow-x:hidden!important}
+  body{
+    height:auto!important;min-height:100vh!important;
+    display:flex!important;flex-direction:column!important;
+    overflow-y:auto!important;
+  }
+
+  /* Control panels become the first mobile section. */
+  .sidebar, aside, .settings-panel, #settings-panel{
+    order:1!important;width:100%!important;max-width:none!important;
+    min-width:0!important;height:auto!important;max-height:none!important;
+    position:relative!important;top:auto!important;left:auto!important;right:auto!important;
+    overflow:visible!important;border-radius:0!important;
+    padding:18px!important;box-shadow:none!important;
+  }
+
+  .app-container, #app{
+    width:100%!important;height:auto!important;min-height:0!important;
+    display:flex!important;flex-direction:column!important;
+    gap:0!important;padding:0!important;
+  }
+
+  /* Preview/output is shown below the controls. */
+  .preview-area,.workspace,.main-content,main,#worksheet-container{
+    order:2!important;width:100%!important;max-width:100%!important;
+    min-width:0!important;height:auto!important;min-height:0!important;
+    padding:14px!important;margin:0!important;
+    overflow:visible!important;display:block!important;
+  }
+
+  /* Direct-body worksheet used by Secuencias. */
+  body > .worksheet-wrapper{order:2!important}
+
+  select,input,textarea,button,.btn,.main-btn,.btn-action,.btn-print{
+    min-height:44px;
+    font-size:16px!important;
+  }
+  input[type="color"]{min-height:40px}
+  .flex-row{flex-wrap:wrap}
+  .theme-selector{grid-template-columns:repeat(6,minmax(34px,1fr))!important}
+  .color-presets{flex-wrap:wrap}
+
+  /* The real A4 document is scaled by plumkids-mobile.js, not resized,
+     so print/export geometry remains unchanged. */
+  .pk-scale-shell{
+    position:relative!important;width:100%!important;max-width:100%!important;
+    overflow:hidden!important;margin:0 auto!important;
+    background:transparent!important;
+  }
+  .pk-scale-target{
+    transform-origin:top left!important;
+    flex:none!important;
+    max-width:none!important;
+  }
+
+  .plumkids-return{
+    right:10px!important;bottom:10px!important;min-height:42px!important;
+    padding:0 13px!important;font-size:12px!important;
+  }
+}
+
+@media screen and (max-width: 430px){
+  .sidebar, aside, .settings-panel, #settings-panel{padding:14px!important}
+  .preview-area,.workspace,.main-content,main,#worksheet-container{padding:10px!important}
+  h1,.sidebar h1,.panel-logo,.panel-header,.logo,.brand{font-size:1.45rem!important}
+  .panel,.panel-section,.control-block{padding:12px!important}
+}
+
+/* Preserve output exactly when printing. */
+@media print{
+  .pk-scale-shell{display:contents!important}
+  .pk-scale-target{transform:none!important}
+}

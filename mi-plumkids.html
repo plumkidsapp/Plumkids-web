@@ -1,101 +1,62 @@
 <!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mi Plumkids</title><link rel="stylesheet" href="account.css">
 <style>
-.tool-art{height:150px;padding:16px;background:linear-gradient(135deg,var(--g1),var(--g2));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#fff}
-.tool-mark{display:grid;place-items:center;min-width:84px;min-height:70px;padding:8px 12px;border-radius:20px;background:rgba(255,255,255,.92);color:#40206f;font-weight:900;font-size:26px;letter-spacing:-1px;box-shadow:0 8px 25px rgba(33,14,61,.14)}
-.tool-art small{font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,.18)}
-@media(max-width:760px){.tool-art{height:170px}}
-</style></head><body><header class="top"><div class="wrap top-in"><a class="logo" href="index.html"><span class="plum"></span>Plumkids</a><div class="top-actions"><a class="btn btn-light hide-mobile" href="index.html#apps">Explorar apps</a><button id="logoutBtn" class="btn btn-danger">Salir</button></div></div></header><main class="wrap dashboard"><div id="loading"><div class="spinner"></div></div><div id="dashboardContent" hidden><div id="accessNotice" class="notice"></div><section class="welcome"><div><span class="badge">MI PLUMKIDS</span><h1 id="welcomeName">Hola</h1><p>Administra tus aplicaciones y perfiles familiares.</p></div><a class="btn btn-primary" href="index.html#apps">Explorar productos</a></section><div class="dashboard-grid"><section class="panel"><div class="panel-head"><h2>Mis apps</h2><span id="appCount" class="badge">0 apps</span></div><div id="appsContainer" class="apps-grid"></div></section><aside class="panel"><div class="panel-head"><h2>Niños/as</h2></div><div id="childrenContainer"></div><form id="childForm" class="inline-form"><strong>Agregar perfil</strong><div class="field"><label>Nombre</label><input name="name" maxlength="80" required></div><div class="field"><label>Edad</label><input name="age" type="number" min="2" max="17" required></div><button class="btn btn-outline full" type="submit">Agregar</button></form></aside></div>
-<section id="progressPanel" class="panel" style="margin-top:20px">
-  <div class="panel-head"><h2>Progreso de aprendizaje</h2><span class="badge">NUEVO</span></div>
-  <div id="progressSummary"><p class="muted">Aún no hay actividad registrada.</p></div>
+.dashboard{width:min(1180px,calc(100% - 32px))}
+.welcome{background:linear-gradient(135deg,#eef9ff,#f8f0ff);border:1px solid #e2ddf2;border-radius:24px;padding:23px 25px}
+.catalog-panel{margin-top:20px}.catalog-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.catalog-tab{border:0;border-radius:12px;padding:10px 14px;background:#f4f1f9;color:#625a6d;font-weight:900;cursor:pointer}.catalog-tab.active{background:linear-gradient(135deg,#814ce7,#632dcc);color:#fff}
+.apps-grid{grid-template-columns:repeat(3,1fr)}.app-card{box-shadow:0 8px 24px rgba(48,34,85,.05);transition:.18s}.app-card:hover{transform:translateY(-3px);box-shadow:0 13px 30px rgba(48,34,85,.09)}.tool-art-v25{height:145px;padding:10px;background:linear-gradient(135deg,#faf7ff,#f6fbff);display:grid;place-items:center}.tool-art-v25 img{width:104px;height:104px;display:block}.app-body h3{font-size:16px;line-height:1.25}.app-body p{min-height:38px}
+.section-label{display:flex;align-items:center;gap:8px;margin:20px 0 12px;font-weight:900;font-size:19px}.section-label:first-child{margin-top:0}.section-label small{font-size:10px;background:#f0e7ff;color:#6e3bd0;border-radius:999px;padding:5px 8px}.app-card[data-hidden="true"]{display:none}
+@media(max-width:980px){.apps-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.apps-grid{grid-template-columns:1fr}.welcome{padding:20px}.catalog-tabs{display:grid;grid-template-columns:1fr}.catalog-tab{width:100%}}
+</style></head><body>
+<header class="top"><div class="wrap top-in"><a class="logo" href="index.html"><span class="plum"></span>Plumkids</a><div class="top-actions"><a class="btn btn-light hide-mobile" href="index.html">Inicio</a><button id="logoutBtn" class="btn btn-danger">Salir</button></div></div></header>
+<main class="dashboard"><div id="loading"><div class="spinner"></div></div><div id="dashboardContent" hidden><div id="accessNotice" class="notice"></div>
+<section class="welcome"><div><span class="badge">MI PLUMKIDS</span><h1 id="welcomeName">Hola</h1><p>Aquí están tus apps y herramientas educativas.</p></div><a class="btn btn-primary" href="index.html">Explorar Plumkids</a></section>
+<div class="dashboard-grid catalog-panel"><section class="panel">
+<div class="panel-head"><h2>Mis apps</h2><span id="appCount" class="badge">0 apps</span></div>
+<div class="catalog-tabs"><button class="catalog-tab active" data-filter="all">Todas</button><button class="catalog-tab" data-filter="game">Apps para jugar</button><button class="catalog-tab" data-filter="tool">Herramientas para crear</button></div>
+<div id="appsContainer" class="apps-grid"></div>
 </section>
-</div></main><footer class="footer">© 2026 Plumkids · Mi Plumkids.</footer><script>
+<aside class="panel"><div class="panel-head"><h2>Niños/as</h2></div><div id="childrenContainer"></div><form id="childForm" class="inline-form"><strong>Agregar perfil</strong><div class="field"><label>Nombre</label><input name="name" maxlength="80" required></div><div class="field"><label>Edad</label><input name="age" type="number" min="2" max="17" required></div><button class="btn btn-outline full" type="submit">Agregar</button></form></aside></div>
+<section id="progressPanel" class="panel" style="margin-top:20px"><div class="panel-head"><h2>Progreso de aprendizaje</h2><span class="badge">NUEVO</span></div><div id="progressSummary"><p class="muted">Aún no hay actividad registrada.</p></div></section>
+</div></main><footer class="footer">© 2026 Plumkids · Mi Plumkids.</footer>
+<script>
 const appInfo={
-  'lectoaventura':{name:'LectoAventura',image:'assets/app-lecto.png',url:'play/lectoaventura.html',desc:'Acceso habilitado para tu cuenta.'},
-  'mateaventura':{name:'MateAventura',image:'assets/app-mate.png',url:'play/mateaventura.html',desc:'Acceso habilitado para tu cuenta.'},
-  'memoria-magica':{name:'Memoria Mágica',image:'assets/app-memoria.png',url:'play/memoria-magica.html',desc:'Acceso habilitado para tu cuenta.'},
-  'emociones-en-juego':{name:'Emociones en Juego',image:'assets/app-emociones.png',url:'play/emociones-en-juego.html',desc:'Acceso habilitado para tu cuenta.'},
-  'crucigramas':{name:'Generador de Crucigramas',mark:'A↔B',g1:'#6f42d8',g2:'#a36df0',url:'play/crucigramas.html',desc:'Crea crucigramas personalizados.'},
-  'hojas-vocabulario':{name:'Generador de Hojas de Vocabulario',mark:'ABC',g1:'#3f75d8',g2:'#71a4f2',url:'play/hojas-vocabulario.html',desc:'Crea hojas de vocabulario listas para imprimir.'},
-  'laberintos':{name:'Generador de Laberintos',mark:'↝',g1:'#d26643',g2:'#eea85f',url:'play/laberintos.html',desc:'Genera laberintos infantiles personalizados.'},
-  'matematicas-emojis':{name:'Generador de Matemáticas con Emojis',mark:'2+🍎',g1:'#e6538f',g2:'#f38ab5',url:'play/matematicas-emojis.html',desc:'Crea matemáticas visuales con emojis.'},
-  'matematicas':{name:'Generador de Matemáticas',mark:'7+5',g1:'#438f4c',g2:'#73bd6e',url:'play/matematicas.html',desc:'Genera hojas de operaciones matemáticas.'},
-  'quiz-reloj':{name:'Generador de Quiz del Reloj',mark:'12:30',g1:'#4e79a7',g2:'#7fa8ce',url:'play/quiz-reloj.html',desc:'Crea ejercicios para aprender la hora.'},
-  'secuencias':{name:'Generador de Secuencias',mark:'1·2·?',g1:'#8d58bc',g2:'#c087de',url:'play/secuencias.html',desc:'Diseña actividades de secuencias y patrones.'},
-  'sopa-letras':{name:'Generador de Sopa de Letras',mark:'ABC',g1:'#347d88',g2:'#68b3b5',url:'play/sopa-letras.html',desc:'Crea sopas de letras personalizadas.'},
-  'trazado-formas':{name:'Generador de Trazado de Formas',mark:'○△□',g1:'#d37a3e',g2:'#f2b46f',url:'play/trazado-formas.html',desc:'Crea actividades de trazado de formas.'},
-  'trazos-lineas':{name:'Generador de Trazos de Líneas',mark:'〰〰',g1:'#6d67c7',g2:'#9b96e6',url:'play/trazos-lineas.html',desc:'Genera ejercicios de preescritura y trazos.'},
-  'plumkids-builder':{name:'Kids Builder',mark:'10',g1:'#6f42d8',g2:'#a36df0',url:'builder/index.html',desc:'Versión piloto anterior.'}
+  'lectoaventura':{name:'LectoAventura',image:'assets/app-lecto.png',url:'play/lectoaventura.html',desc:'Lectura y lenguaje con actividades interactivas.',kind:'game'},
+  'mateaventura':{name:'MateAventura',image:'assets/app-mate.png',url:'play/mateaventura.html',desc:'Matemáticas en formato de aventura.',kind:'game'},
+  'memoria-magica':{name:'Memoria Mágica',image:'assets/app-memoria.png',url:'play/memoria-magica.html',desc:'Memoria y atención mediante retos.',kind:'game'},
+  'emociones-en-juego':{name:'Emociones en Juego',image:'assets/app-emociones.png',url:'play/emociones-en-juego.html',desc:'Reconoce emociones y desarrolla empatía.',kind:'game'},
+  'crucigramas':{name:'Crucigramas',image:'assets/tool-crucigramas.svg',url:'play/crucigramas.html',desc:'Crea crucigramas personalizados.' ,kind:'tool'},
+  'hojas-vocabulario':{name:'Hojas de Vocabulario',image:'assets/tool-hojas-vocabulario.svg',url:'play/hojas-vocabulario.html',desc:'Genera fichas de vocabulario.' ,kind:'tool'},
+  'laberintos':{name:'Laberintos',image:'assets/tool-laberintos.svg',url:'play/laberintos.html',desc:'Crea laberintos para diferentes edades.' ,kind:'tool'},
+  'matematicas-emojis':{name:'Matemáticas con Emojis',image:'assets/tool-matematicas-emojis.svg',url:'play/matematicas-emojis.html',desc:'Ejercicios matemáticos visuales.' ,kind:'tool'},
+  'matematicas':{name:'Matemáticas',image:'assets/tool-matematicas.svg',url:'play/matematicas.html',desc:'Genera operaciones y ejercicios.' ,kind:'tool'},
+  'quiz-reloj':{name:'Quiz del Reloj',image:'assets/tool-quiz-reloj.svg',url:'play/quiz-reloj.html',desc:'Actividades para aprender la hora.' ,kind:'tool'},
+  'secuencias':{name:'Secuencias',image:'assets/tool-secuencias.svg',url:'play/secuencias.html',desc:'Crea ejercicios de patrones.' ,kind:'tool'},
+  'sopa-letras':{name:'Sopa de Letras',image:'assets/tool-sopa-letras.svg',url:'play/sopa-letras.html',desc:'Genera sopas de letras personalizadas.' ,kind:'tool'},
+  'trazado-formas':{name:'Trazado de Formas',image:'assets/tool-trazado-formas.svg',url:'play/trazado-formas.html',desc:'Fichas de práctica de formas.' ,kind:'tool'},
+  'trazos-lineas':{name:'Trazos de Líneas',image:'assets/tool-trazos-lineas.svg',url:'play/trazos-lineas.html',desc:'Ejercicios de preescritura y trazos.' ,kind:'tool'},
+  'plumkids-builder':{name:'Kids Builder',image:'',url:'builder/index.html',desc:'Versión piloto anterior.',kind:'old'}
 };
-async function api(url,opts){
-  const r=await fetch(url,{credentials:'same-origin',...(opts||{})});
-  if(r.status===401){
-    const next=location.pathname+location.search;
-    location.href='login.html?next='+encodeURIComponent(next);
-    throw new Error('Sesión expirada')
-  }const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Error');return d}
+async function api(url,opts){const r=await fetch(url,{credentials:'same-origin',...(opts||{})});if(r.status===401){const next=location.pathname+location.search;location.href='login.html?next='+encodeURIComponent(next);throw new Error('Sesión expirada')}const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Error');return d}
 function escapeHtml(v){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function renderApps(entitlements){
-  const c=document.getElementById('appsContainer');
-  c.innerHTML='';
-  document.getElementById('appCount').textContent=`${entitlements.length} ${entitlements.length===1?'app':'apps'}`;
-  if(!entitlements.length){
-    c.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="emoji">🎮</div><h3>Aún no tienes apps activadas</h3><p>Después de una compra aprobada, la app aparecerá aquí.</p><a class="btn btn-primary" href="index.html#apps">Explorar apps</a></div>';
-    return;
-  }
-  entitlements.forEach(e=>{
-    const a=appInfo[e.app_slug]||{name:e.app_slug,image:'',mark:'APP',g1:'#6f42d8',g2:'#a36df0',url:'#',desc:'Acceso habilitado para tu cuenta.'};
-    const art=a.image
-      ? `<div class="app-art app-art-image"><img src="${a.image}" alt="${escapeHtml(a.name)}"></div>`
-      : `<div class="tool-art" style="--g1:${a.g1};--g2:${a.g2}"><div class="tool-mark">${a.mark}</div><small>PLUMKIDS APP</small></div>`;
-    c.insertAdjacentHTML('beforeend',`<article class="app-card">${art}<div class="app-body"><h3>${escapeHtml(a.name)}</h3><p>${escapeHtml(a.desc)}</p><a class="btn btn-primary full" href="${a.url}">Abrir</a></div></article>`);
-  });
+ const c=document.getElementById('appsContainer');c.innerHTML='';
+ const visible=entitlements.filter(e=>e.app_slug!=='plumkids-builder');
+ document.getElementById('appCount').textContent=`${visible.length} ${visible.length===1?'app':'apps'}`;
+ if(!visible.length){c.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="emoji">🎮</div><h3>Aún no tienes apps activadas</h3><p>Después de una compra aprobada, aparecerán aquí.</p><a class="btn btn-primary" href="index.html">Explorar Plumkids</a></div>';return}
+ const ordered=[...visible].sort((a,b)=>{const ka=appInfo[a.app_slug]?.kind==='game'?0:1;const kb=appInfo[b.app_slug]?.kind==='game'?0:1;return ka-kb});
+ ordered.forEach(e=>{const a=appInfo[e.app_slug]||{name:e.app_slug,image:'',url:'#',desc:'Acceso habilitado.',kind:'tool'};
+   const art=a.kind==='tool'
+    ? `<div class="tool-art-v25"><img src="${a.image}" alt="${escapeHtml(a.name)}"></div>`
+    : `<div class="app-art app-art-image"><img src="${a.image}" alt="${escapeHtml(a.name)}"></div>`;
+   c.insertAdjacentHTML('beforeend',`<article class="app-card" data-kind="${a.kind}">${art}<div class="app-body"><h3>${escapeHtml(a.name)}</h3><p>${escapeHtml(a.desc)}</p><a class="btn btn-primary full" href="${a.url}">Abrir</a></div></article>`);
+ });
 }
+document.querySelectorAll('.catalog-tab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.catalog-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');const f=btn.dataset.filter;document.querySelectorAll('.app-card').forEach(card=>card.dataset.hidden=(f!=='all'&&card.dataset.kind!==f)?'true':'false')}));
 function renderChildren(children){const c=document.getElementById('childrenContainer');c.innerHTML='';if(!children.length){c.innerHTML='<p class="muted">Aún no has agregado perfiles.</p>';return}children.forEach(ch=>c.insertAdjacentHTML('beforeend',`<div class="child-card"><strong>${escapeHtml(ch.name)}</strong><span>${ch.age} años</span></div>`))}
-
-const accessParams=new URLSearchParams(location.search);
-if(accessParams.get('access')==='required'){
-  const slug=accessParams.get('app');
-  const item=appInfo[slug];
-  const n=document.getElementById('accessNotice');
-  n.textContent=`${item?.name||'Esta aplicación'} no está habilitada en esta cuenta.`;
-  n.className='notice show error';
-}
-
-function renderLearningProgress(rows){
-  const c=document.getElementById('progressSummary');
-  if(!c)return;
-  if(!rows.length){
-    c.innerHTML='<p class="muted">Aún no hay actividad registrada. Cuando un niño complete una actividad, aparecerá aquí.</p>';
-    return;
-  }
-  c.innerHTML='<div class="progress-list"></div>';
-  const list=c.querySelector('.progress-list');
-  rows.forEach(r=>{
-    const total=5;
-    const done=Math.min(total,Number(r.completed_activities)||0);
-    const pct=Math.round(done/total*100);
-    list.insertAdjacentHTML('beforeend',`
-      <div class="progress-row">
-        <div>
-          <strong>${escapeHtml(r.child_name)} · ${escapeHtml(r.app_name)}</strong>
-          <span>${done} de ${total} actividades · ${Number(r.stars)||0} estrellas · ${Number(r.total_score)||0} puntos</span>
-        </div>
-        <div class="mini-progress"><span style="width:${pct}%"></span></div>
-      </div>`);
-  });
-}
-
-async function load(){try{
-  const [me,ent,children,learning]=await Promise.all([api('/api/auth/me'),api('/api/entitlements'),api('/api/children'),api('/api/learning/summary')]);
-  document.getElementById('welcomeName').textContent=`Hola, ${me.user.first_name}`;
-  const visible=(ent.entitlements||[]).filter(e=>e.app_slug!=='plumkids-builder');
-  renderApps(visible);
-  renderChildren(children.children||[]);
-  renderLearningProgress(learning.progress||[]);
-  document.getElementById('loading').hidden=true;
-  document.getElementById('dashboardContent').hidden=false
-}catch(e){console.error(e)}}
+const accessParams=new URLSearchParams(location.search);if(accessParams.get('access')==='required'){const slug=accessParams.get('app');const item=appInfo[slug];const n=document.getElementById('accessNotice');n.textContent=`${item?.name||'Esta aplicación'} no está habilitada en esta cuenta.`;n.className='notice show error'}
+function renderLearningProgress(rows){const c=document.getElementById('progressSummary');if(!c)return;if(!rows.length){c.innerHTML='<p class="muted">Aún no hay actividad registrada. Cuando un niño complete una actividad, aparecerá aquí.</p>';return}c.innerHTML='<div class="progress-list"></div>';const list=c.querySelector('.progress-list');rows.forEach(r=>{const total=5;const done=Math.min(total,Number(r.completed_activities)||0);const pct=Math.round(done/total*100);list.insertAdjacentHTML('beforeend',`<div class="progress-row"><div><strong>${escapeHtml(r.child_name)} · ${escapeHtml(r.app_name)}</strong><span>${done} de ${total} actividades · ${Number(r.stars)||0} estrellas · ${Number(r.total_score)||0} puntos</span></div><div class="mini-progress"><span style="width:${pct}%"></span></div></div>`)})}
+async function load(){try{const [me,ent,children,learning]=await Promise.all([api('/api/auth/me'),api('/api/entitlements'),api('/api/children'),api('/api/learning/summary')]);document.getElementById('welcomeName').textContent=`¡Hola, ${me.user.first_name}!`;renderApps(ent.entitlements||[]);renderChildren(children.children||[]);renderLearningProgress(learning.progress||[]);document.getElementById('loading').hidden=true;document.getElementById('dashboardContent').hidden=false}catch(e){console.error(e)}}
 document.getElementById('logoutBtn').addEventListener('click',async()=>{try{await fetch('/api/auth/logout',{method:'POST'})}finally{location.href='login.html'}});
 document.getElementById('childForm').addEventListener('submit',async(e)=>{e.preventDefault();const f=e.currentTarget;try{await api('/api/children',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:f.name.value.trim(),age:Number(f.age.value)})});f.reset();const d=await api('/api/children');renderChildren(d.children||[])}catch(err){alert(err.message)}});
 load();
